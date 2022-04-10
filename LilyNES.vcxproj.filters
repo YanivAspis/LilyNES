@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\nes">
+      <UniqueIdentifier>{00e400e7-ba45-4ddd-8cfc-df2e36286629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\nes">
+      <UniqueIdentifier>{2a8a8f14-63f8-4f8b-891e-de156d10e2d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{0cd345ee-a08a-44a4-a310-043e6b54371d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{8371824a-f197-451d-ab2a-d3e0452ecfe7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="nes\BitwiseUtils.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\Bus.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\BusDevice.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\CPU2A03.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\RAMDevice.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\LilyNESApp.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\wxMainFrame.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\NES.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\TestDevice.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\wxCPUStatePanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\wxRAMStatePanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="nes\Bus.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\BitwiseUtils.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\BusDevice.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\CPU2A03.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\RAMDevice.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\LilyNESApp.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxMainFrame.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\NES.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\TestDevice.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxCPUStatePanel.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxNESStateEvent.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxRAMStatePanel.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
