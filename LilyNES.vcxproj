@@ -155,6 +155,7 @@
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
     <ClCompile Include="nes\CPU2A03.cpp" />
+    <ClCompile Include="nes\CPUInstruction.cpp" />
     <ClCompile Include="nes\NES.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\TestDevice.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="nes\Bus.h" />
     <ClInclude Include="nes\BusDevice.h" />
     <ClInclude Include="nes\CPU2A03.h" />
+    <ClInclude Include="nes\CPUInstruction.h" />
     <ClInclude Include="nes\NES.h" />
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\TestDevice.h" />

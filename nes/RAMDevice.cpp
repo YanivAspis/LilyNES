@@ -27,12 +27,10 @@ void RAMDevice::HardReset() {
 	m_RAMContent[0x401] = 0x2;
 }
 
-// TODO: use util to do masking
 uint8_t RAMDevice::Read(uint16_t address) {
 	return m_RAMContent[BitwiseUtils::ClearUpperBits16(address - RAM_ADDRESS_START, 11)];
 }
 
-// TODO: use util to do masking
 void RAMDevice::Write(uint16_t address, uint8_t data) {
 	m_RAMContent[BitwiseUtils::ClearUpperBits16(address - RAM_ADDRESS_START, 11)] = data;
 }

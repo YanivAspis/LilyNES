@@ -38,13 +38,21 @@ wxThread::ExitCode wxMainFrame::Entry()
     m_nes.HardReset();
     while (!GetThread()->TestDestroy())
     {
-        m_nes.Clock();
-        {
-            wxCriticalSectionLocker lock(m_currNESState_cs);
-            m_currNESState = m_nes.GetState();
+        try {
+            m_nes.Clock();
+
+            {
+                wxCriticalSectionLocker lock(m_currNESState_cs);
+                m_currNESState = m_nes.GetState();
+            }
+            wxQueueEvent(this, new wxThreadEvent(EVT_NES_STATE_THREAD_UPDATE));
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
-        wxQueueEvent(this, new wxThreadEvent(EVT_NES_STATE_THREAD_UPDATE));
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        catch (IllegalInstructionException ex) {
+            wxMessageBox("Illegal instruction detected. Killing emulation.");
+            return wxThread::ExitCode(1);
+        }
     }
     return wxThread::ExitCode(0);
 }

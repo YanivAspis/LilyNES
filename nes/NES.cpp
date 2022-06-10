@@ -35,6 +35,4 @@ void NES::LoadState(NESState& state)
 void NES::Clock()
 {
 	m_cpu.Clock();
-	m_cpuBus.Write(0x1034, 0x4);
-	m_cpuBus.Write(0x0, m_cpuBus.Read(0x834));
 }

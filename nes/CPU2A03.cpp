@@ -50,6 +50,12 @@ CPU2A03::CPU2A03() {
 	m_regS = 0;
 	m_regPC = 0;
 	m_regP.value = 0;
+
+	m_cyclesRemaining = 0;
+	m_irqRequestsPending = 0;
+	m_nmiRaised = false;
+
+	this->PopulateFunctionMaps();
 }
 
 void CPU2A03::ConnectToBus(Bus* cpuBus) {
@@ -67,6 +73,10 @@ void CPU2A03::SoftReset() {
 
 	m_regP.flags.SoftReset();
 
+	m_cyclesRemaining = NUM_RESET_CYCLES;
+	m_irqRequestsPending = 0;
+	m_nmiRaised = false;
+
 	m_regPC = this->FetchInitialPC();
 }
 
@@ -79,6 +89,10 @@ void CPU2A03::HardReset() {
 	// decremented by 3 even though nothing is pushed.
 	m_regS = SP_INITIAL_VALUE;
 	m_regP.flags.HardReset();
+
+	m_cyclesRemaining = NUM_RESET_CYCLES;
+	m_irqRequestsPending = 0;
+	m_nmiRaised = false;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -106,10 +120,35 @@ void CPU2A03::LoadState(CPUState& state) {
 
 void CPU2A03::Clock()
 {
-	BitwiseUtils::Inc8Bit(m_regA);
-	BitwiseUtils::Dec8Bit(m_regX);
-	m_regY = 0x50;
-	BitwiseUtils::Inc8Bit(m_regP.value);
+	// Still performing previous instruction
+	if (m_cyclesRemaining > 0) {
+		m_cyclesRemaining--;
+		return;
+	}
+
+	// Check if an interrupt needs to be handled
+	if (m_nmiRaised || (!m_regP.flags.I && m_irqRequestsPending > 0)) {
+		this->HandleInterrupt(false);
+		return;
+	}
+	
+	// No interrupt, perform next instruction
+	uint8_t opCode = this->m_cpuBus->Read(m_regPC);
+	Inc16Bit(m_regPC);
+	CPUInstruction instruction = s_opCodeTable[opCode];
+	int baseCycles = instruction.baseCycleCount;
+
+	// read value/target for the instruction to act upon
+	uint8_t value;
+	uint16_t targetAddress;
+	bool accumulatorMode;
+	int addrModeAdditionalCycles = m_addressModeFunctions[instruction.addressMode](*this, value, targetAddress, accumulatorMode);
+
+	// actually execute the instruction
+	int executionAdditionalCycles = m_executeFunctions[instruction.mnemonic](*this, value, targetAddress, accumulatorMode);
+
+	// set amount of cycles to wait until next instruction
+	m_cyclesRemaining = baseCycles + addrModeAdditionalCycles + executionAdditionalCycles;
 }
 
 uint16_t CPU2A03::FetchInitialPC() {

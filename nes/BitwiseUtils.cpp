@@ -40,6 +40,16 @@ namespace BitwiseUtils {
 		return (num1 + num2) & 0xFF;
 	}
 
+	uint8_t ShiftRight8(uint8_t num, int numBits) {
+		assert(numBits >= 0 && numBits <= 8);
+		return (num >> numBits) & 0xFF;
+	}
+
+	uint8_t ShiftLeft8(uint8_t num, int numBits) {
+		assert(numBits >= 0 && numBits <= 8);
+		return (num << numBits) & 0xFF;
+	}
+
 	void Inc8Bit(uint8_t& num) {
 		num++;
 		num &= 0xFF;
@@ -88,6 +98,16 @@ namespace BitwiseUtils {
 		return (num1 + num2) & 0xFFFF;
 	}
 
+	uint16_t ShiftRight16(uint16_t num, int numBits) {
+		assert(numBits >= 0 && numBits <= 16);
+		return (num >> numBits) & 0xFFFF;
+	}
+
+	uint16_t ShiftLeft16(uint16_t num, int numBits) {
+		assert(numBits >= 0 && numBits <= 16);
+		return (num << numBits) & 0xFFFF;
+	}
+
 	void Inc16Bit(uint16_t& num) {
 		num++;
 		num &= 0xFFFF;
@@ -100,6 +120,18 @@ namespace BitwiseUtils {
 
 	uint16_t CombineBytes(uint8_t lowByte, uint8_t highByte) {
 		return lowByte | (highByte << 8);
+	}
+
+	uint8_t ExtractLowByte(uint16_t word) {
+		return word & 0xFF;
+	}
+
+	uint8_t ExtractHighByte(uint16_t word) {
+		return (word & 0xFF00) >> 8;
+	}
+
+	bool IsUpperByteTheSame(uint16_t word1, uint16_t word2) {
+		return ExtractHighByte(word1) == ExtractHighByte(word2);
 	}
 
 }
