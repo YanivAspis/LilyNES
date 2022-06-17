@@ -14,6 +14,8 @@ wxCPUStatePanel::wxCPUStatePanel(wxWindow* parent) : wxPanel(parent, wxID_ANY) {
 	const int rowBorder = 10;
 	const int flagsRowBorder = 20;
 	const int flagsBorder = 10;
+	const int otherInfoBorder = 25;
+	const int otherInfoLabelToValBorder = 15;
 
 	wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer* topSizer2 = new wxBoxSizer(wxVERTICAL);
@@ -109,10 +111,26 @@ wxCPUStatePanel::wxCPUStatePanel(wxWindow* parent) : wxPanel(parent, wxID_ANY) {
 	flagsSizer->Add(cFlagSizer, 0, wxLEFT, flagsBorder);
 
 
+	wxBoxSizer* otherInfoSizer = new wxBoxSizer(wxHORIZONTAL);
+	m_cyclesName = new wxStaticText(this, wxID_ANY, wxString("Cycles:"));
+	m_cyclesVal = new wxStaticText(this, wxID_ANY, wxString("0"));
+	m_irqPendingName = new wxStaticText(this, wxID_ANY, wxString("IRQ:"));
+	m_irqPendingVal = new wxStaticText(this, wxID_ANY, wxString("0"));
+	m_nmiRaisedName = new wxStaticText(this, wxID_ANY, wxString("NMI:"));
+	m_nmiRaisedVal = new wxStaticText(this, wxID_ANY, wxString("0"));
+	otherInfoSizer->Add(m_cyclesName, 0, wxLEFT, otherInfoLabelToValBorder);
+	otherInfoSizer->Add(m_cyclesVal, 0, wxLEFT, otherInfoLabelToValBorder);
+	otherInfoSizer->Add(m_irqPendingName, 0, wxLEFT, otherInfoLabelToValBorder);
+	otherInfoSizer->Add(m_irqPendingVal, 0, wxLEFT, otherInfoLabelToValBorder);
+	otherInfoSizer->Add(m_nmiRaisedName, 0, wxLEFT, otherInfoLabelToValBorder);
+	otherInfoSizer->Add(m_nmiRaisedVal, 0, wxLEFT, otherInfoLabelToValBorder);
+
+
 	innerFrameSizer->Add(regAXSizer, 0, wxALIGN_CENTER);
 	innerFrameSizer->Add(regYSSizer, 0, wxTOP | wxALIGN_CENTER, rowBorder);
 	innerFrameSizer->Add(regPCPSizer, 0, wxTOP | wxALIGN_CENTER, rowBorder);
 	innerFrameSizer->Add(flagsSizer, 0, wxTOP | wxALIGN_CENTER, flagsRowBorder);
+	innerFrameSizer->Add(otherInfoSizer, 0, wxTOP | wxALIGN_CENTER, otherInfoBorder);
 
 	topSizer2->Add(innerFrameSizer, 1, wxALIGN_CENTER);
 	topSizer->Add(topSizer2, 1, wxALIGN_CENTER);
@@ -156,6 +174,13 @@ void wxCPUStatePanel::OnResize(wxSizeEvent& evt) {
 	m_flagZVal->SetFont(wxFont(wxFontInfo(fontSize)));
 	m_flagCVal->SetFont(wxFont(wxFontInfo(fontSize)));
 
+	m_cyclesName->SetFont(wxFont(wxFontInfo(fontSize)));
+	m_cyclesVal->SetFont(wxFont(wxFontInfo(fontSize)));
+	m_irqPendingName->SetFont(wxFont(wxFontInfo(fontSize)));
+	m_irqPendingVal->SetFont(wxFont(wxFontInfo(fontSize)));
+	m_nmiRaisedName->SetFont(wxFont(wxFontInfo(fontSize)));
+	m_nmiRaisedVal->SetFont(wxFont(wxFontInfo(fontSize)));
+
 	evt.Skip();
 }
 
@@ -176,4 +201,8 @@ void wxCPUStatePanel::OnGUIUpdate(wxNESStateEvent<CPUState>& evt) {
 	m_flagIVal->SetLabel(wxString::Format(wxT("%d"), state.regP.flags.I));
 	m_flagZVal->SetLabel(wxString::Format(wxT("%d"), state.regP.flags.Z));
 	m_flagCVal->SetLabel(wxString::Format(wxT("%d"), state.regP.flags.C));
+
+	m_cyclesVal->SetLabel(wxString::Format(wxT("%d"), state.cyclesRemaining));
+	m_irqPendingVal->SetLabel(wxString::Format(wxT("%d"), state.irqPending));
+	m_nmiRaisedVal->SetLabel(wxString::Format(wxT("%d"), state.nmiRaised));
 }

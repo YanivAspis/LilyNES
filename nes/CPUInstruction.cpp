@@ -276,7 +276,7 @@ std::array<CPUInstruction, OPCODE_TABLE_SIZE> CPU2A03::s_opCodeTable = {
 	CPUInstruction((uint8_t)0xFF, INSTR_ILLEGAL, MODE_IMPLIED, 1)
 };
 
-std::array<Instruction_Mnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> s_MnemonicsWithoutAdditionalCycles = {
+std::array<InstructionMnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> s_mnemonicsWithoutAdditionalCycles = {
 	INSTR_ASL,
 	INSTR_DEC,
 	INSTR_INC,
@@ -907,8 +907,8 @@ void CPU2A03::HandleInterrupt(bool initiatedByBrk) {
 		vectorLow = ADDR_IRQ_BRK_VECTOR_LOW;
 		vectorHigh = ADDR_IRQ_BRK_VECTOR_HIGH;
 		// If there are IRQ pending, assume we are handling those. The programmer might handle the BRK instead
-		if (!m_regP.flags.I && m_irqRequestsPending > 0) {
-			m_irqRequestsPending--;
+		if (!m_regP.flags.I && m_irqPending > 0) {
+			m_irqPending--;
 		}
 		else if (!initiatedByBrk) {
 			// Can't handle IRQ and BRK was not initiated, so don't do anything

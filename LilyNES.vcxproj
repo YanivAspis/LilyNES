@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="GUI\LilyNESApp.cpp" />
     <ClCompile Include="GUI\wxCPUStatePanel.cpp" />
+    <ClCompile Include="GUI\wxDisassemblerPanel.cpp" />
     <ClCompile Include="GUI\wxMainFrame.cpp" />
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
     <ClCompile Include="nes\BitwiseUtils.cpp" />
@@ -163,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="GUI\LilyNESApp.h" />
     <ClInclude Include="GUI\wxCPUStatePanel.h" />
+    <ClInclude Include="GUI\wxDisassemblerPanel.h" />
     <ClInclude Include="GUI\wxMainFrame.h" />
     <ClInclude Include="GUI\wxNESStateEvent.h" />
     <ClInclude Include="GUI\wxRAMStatePanel.h" />

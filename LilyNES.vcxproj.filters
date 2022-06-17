@@ -63,6 +63,9 @@
     <ClCompile Include="nes\CPUInstruction.cpp">
       <Filter>Source Files\nes</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\wxDisassemblerPanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -103,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="nes\CPUInstruction.h">
       <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxDisassemblerPanel.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

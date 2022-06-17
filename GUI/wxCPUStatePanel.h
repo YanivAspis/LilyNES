@@ -4,7 +4,6 @@
 #include "wxNESStateEvent.h"
 #include "../nes/CPU2A03.h"
 
-
 wxDECLARE_EVENT(EVT_CPU_STATE_GUI_UPDATE, wxNESStateEvent<CPUState>);
 
 
@@ -47,6 +46,14 @@ private:
 	wxStaticText* m_flagIVal;
 	wxStaticText* m_flagZVal;
 	wxStaticText* m_flagCVal;
+
+	// Other info
+	wxStaticText* m_cyclesName;
+	wxStaticText* m_cyclesVal;
+	wxStaticText* m_irqPendingName;
+	wxStaticText* m_irqPendingVal;
+	wxStaticText* m_nmiRaisedName;
+	wxStaticText* m_nmiRaisedVal;
 
 
 	wxDECLARE_EVENT_TABLE();

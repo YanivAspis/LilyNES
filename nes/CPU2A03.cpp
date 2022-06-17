@@ -35,6 +35,13 @@ CPUState::CPUState() {
 	regS = 0;
 	regPC = 0;
 	regP.value = 0;
+
+	cyclesRemaining = 0;
+	irqPending = 0;
+	nmiRaised = false;
+
+	instructionFirstCycle = false;
+	currInstructionAddress = 0;
 }
 
 
@@ -52,8 +59,11 @@ CPU2A03::CPU2A03() {
 	m_regP.value = 0;
 
 	m_cyclesRemaining = 0;
-	m_irqRequestsPending = 0;
+	m_irqPending = 0;
 	m_nmiRaised = false;
+
+	m_instructionFirstCycle = false;
+	m_currInstructionAddress = 0;
 
 	this->PopulateFunctionMaps();
 }
@@ -74,8 +84,11 @@ void CPU2A03::SoftReset() {
 	m_regP.flags.SoftReset();
 
 	m_cyclesRemaining = NUM_RESET_CYCLES;
-	m_irqRequestsPending = 0;
+	m_irqPending = 0;
 	m_nmiRaised = false;
+
+	m_instructionFirstCycle = false;
+	m_currInstructionAddress = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -91,8 +104,11 @@ void CPU2A03::HardReset() {
 	m_regP.flags.HardReset();
 
 	m_cyclesRemaining = NUM_RESET_CYCLES;
-	m_irqRequestsPending = 0;
+	m_irqPending = 0;
 	m_nmiRaised = false;
+
+	m_instructionFirstCycle = false;
+	m_currInstructionAddress = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -105,8 +121,15 @@ CPUState CPU2A03::GetState() const {
 	state.regS = m_regS;
 	state.regPC = m_regPC;
 	state.regP.value = m_regP.value;
-	return state;
 
+	state.cyclesRemaining = m_cyclesRemaining;
+	state.irqPending = m_irqPending;
+	state.nmiRaised = m_nmiRaised;
+
+	state.instructionFirstCycle = m_instructionFirstCycle;
+	state.currInstructionAddress = m_currInstructionAddress;
+
+	return state;
 }
 
 void CPU2A03::LoadState(CPUState& state) {
@@ -116,6 +139,13 @@ void CPU2A03::LoadState(CPUState& state) {
 	m_regS = state.regS;
 	m_regPC = state.regPC;
 	m_regP.value = state.regP.value;
+
+	m_cyclesRemaining = state.cyclesRemaining;
+	m_irqPending = state.irqPending;
+	m_nmiRaised = state.nmiRaised;
+
+	m_instructionFirstCycle = state.instructionFirstCycle;
+	m_currInstructionAddress = state.currInstructionAddress;
 }
 
 void CPU2A03::Clock()
@@ -123,14 +153,18 @@ void CPU2A03::Clock()
 	// Still performing previous instruction
 	if (m_cyclesRemaining > 0) {
 		m_cyclesRemaining--;
+		m_instructionFirstCycle = false;
 		return;
 	}
 
 	// Check if an interrupt needs to be handled
-	if (m_nmiRaised || (!m_regP.flags.I && m_irqRequestsPending > 0)) {
+	if (m_nmiRaised || (!m_regP.flags.I && m_irqPending > 0)) {
 		this->HandleInterrupt(false);
 		return;
 	}
+
+	m_instructionFirstCycle = true;
+	m_currInstructionAddress = m_regPC;
 	
 	// No interrupt, perform next instruction
 	uint8_t opCode = this->m_cpuBus->Read(m_regPC);
@@ -143,6 +177,15 @@ void CPU2A03::Clock()
 	uint16_t targetAddress;
 	bool accumulatorMode;
 	int addrModeAdditionalCycles = m_addressModeFunctions[instruction.addressMode](*this, value, targetAddress, accumulatorMode);
+
+	// Fix addressing mode additional cycles for those instructions that don't actually have any
+	/*
+	for (Instruction_Mnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
+		if (mnemonic == instruction.mnemonic) {
+			addrModeAdditionalCycles = 0;
+			break;
+		}
+	}*/
 
 	// actually execute the instruction
 	int executionAdditionalCycles = m_executeFunctions[instruction.mnemonic](*this, value, targetAddress, accumulatorMode);

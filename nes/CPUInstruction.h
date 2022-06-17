@@ -5,7 +5,7 @@
 #include "CPU2A03.h"
 
 
-enum Instruction_Mnemonic {
+enum InstructionMnemonic {
 	INSTR_ADC,
 	INSTR_AND,
 	INSTR_ASL,
@@ -83,10 +83,10 @@ enum AddressingMode {
 
 
 struct CPUInstruction {
-	CPUInstruction(uint8_t opCode, Instruction_Mnemonic mnemonic, AddressingMode addressMode, int baseCycleCount) :
+	CPUInstruction(uint8_t opCode, InstructionMnemonic mnemonic, AddressingMode addressMode, int baseCycleCount) :
 		opCode(opCode), mnemonic(mnemonic), addressMode(addressMode), baseCycleCount(baseCycleCount) {}
 	uint8_t opCode;
-	Instruction_Mnemonic mnemonic;
+	InstructionMnemonic mnemonic;
 	AddressingMode addressMode;
 	int baseCycleCount;
 };

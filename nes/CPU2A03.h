@@ -14,8 +14,8 @@ constexpr uint8_t SP_INITIAL_VALUE = 0xFD;
 // upon certain events
 constexpr uint16_t ADDR_NMI_VECTOR_LOW = 0xFFFA;
 constexpr uint16_t ADDR_NMI_VECTOR_HIGH = 0xFFFB;
-constexpr uint16_t ADDR_RESET_VECTOR_LOW = 0x400;// 0xFFFC;
-constexpr uint16_t ADDR_RESET_VECTOR_HIGH = 0x401;// 0xFFFD;
+constexpr uint16_t ADDR_RESET_VECTOR_LOW = 0x7FE;// 0xFFFC;
+constexpr uint16_t ADDR_RESET_VECTOR_HIGH = 0x7FF;// 0xFFFD;
 constexpr uint16_t ADDR_IRQ_BRK_VECTOR_LOW = 0xFFFE;
 constexpr uint16_t ADDR_IRQ_BRK_VECTOR_HIGH = 0xFFFF;
 
@@ -53,11 +53,18 @@ struct CPUState {
 	uint16_t regPC;
 	CPUStatusRegister regP;
 
+	int cyclesRemaining;
+	int irqPending;
+	bool nmiRaised;
+
+	bool instructionFirstCycle;
+	uint16_t currInstructionAddress;
+
 	CPUState();
 };
 
 struct CPUInstruction;
-enum Instruction_Mnemonic;
+enum InstructionMnemonic;
 enum AddressingMode;
 
 
@@ -81,7 +88,7 @@ public:
 
 
 	static std::array<CPUInstruction, OPCODE_TABLE_SIZE> s_opCodeTable;
-	static std::array<Instruction_Mnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> s_MnemonicsWithoutAdditionalCycles;
+	static std::array<InstructionMnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> s_mnemonicsWithoutAdditionalCycles;
 
 private:
 	// Address mode functions
@@ -191,11 +198,16 @@ private:
 	CPUStatusRegister m_regP;
 
 	int m_cyclesRemaining;
-	int m_irqRequestsPending;
+	int m_irqPending;
 	bool m_nmiRaised;
 
+	// True if this is the first cycle for the current instruction. Needed for the disassembler
+	bool m_instructionFirstCycle;
+	// Address of current instruction. Needed for disassembler
+	uint16_t m_currInstructionAddress;
 
-	std::map<Instruction_Mnemonic, std::function<int(CPU2A03&, uint8_t, uint16_t, bool)> > m_executeFunctions;
+
+	std::map<InstructionMnemonic, std::function<int(CPU2A03&, uint8_t, uint16_t, bool)> > m_executeFunctions;
 	std::map<AddressingMode, std::function<int(CPU2A03&, uint8_t&, uint16_t&, bool&)> > m_addressModeFunctions;
 
 };
