@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <list>
+#include <memory>
 #include "BusDevice.h"
 
 class Bus {
@@ -18,6 +19,7 @@ public:
 	void Write(uint16_t address, uint8_t data);
 
 	void ConnectDevice(BusDevice* device);
+	void DisconnectDevice(BusDevice* device);
 	void DisconnectAllDevices();
 private:
 	bool DoAddressesCollide(BusDevice* device);

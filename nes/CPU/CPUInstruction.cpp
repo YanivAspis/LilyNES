@@ -1,5 +1,6 @@
 #include "CPUInstruction.h"
-#include "BitwiseUtils.h"
+#include "../../BitwiseUtils.h"
+
 using namespace BitwiseUtils;
 
 std::array<CPUInstruction, OPCODE_TABLE_SIZE> CPU2A03::s_opCodeTable = {
@@ -276,7 +277,7 @@ std::array<CPUInstruction, OPCODE_TABLE_SIZE> CPU2A03::s_opCodeTable = {
 	CPUInstruction((uint8_t)0xFF, INSTR_ILLEGAL, MODE_IMPLIED, 1)
 };
 
-std::array<InstructionMnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> s_mnemonicsWithoutAdditionalCycles = {
+std::array<InstructionMnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> CPU2A03::s_mnemonicsWithoutAdditionalCycles = {
 	INSTR_ASL,
 	INSTR_DEC,
 	INSTR_INC,
@@ -466,7 +467,7 @@ int CPU2A03::IndirectIndexedY(uint8_t& value, uint16_t& targetAddress, bool& acc
 
 
 int CPU2A03::Adc(uint8_t value, uint16_t targetAddress, bool accumulatorMode) {
-	if (this->m_regP.flags.D) {
+	if (m_decimalAllowed && this->m_regP.flags.D) {
 		return this->AdcDecimalMode(value);
 	}
 	else {
@@ -512,9 +513,9 @@ int CPU2A03::Beq(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 
 int CPU2A03::Bit(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 {
-	uint8_t result = m_regA & value;
-	this->UpdateZNFlags(result);
-	m_regP.flags.V = TestBit8(result, 6);
+	m_regP.flags.Z = (m_regA & value) == 0;
+	m_regP.flags.V = TestBit8(value, 6);
+	m_regP.flags.N = TestBit8(value, 7);
 	return 0;
 }
 
@@ -713,7 +714,11 @@ int CPU2A03::Pha(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 
 int CPU2A03::Php(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 {
-	this->PushToStack(m_regP.value);
+	// B and Unused should be set when pushed into stack
+	CPUStatusRegister pToPush = m_regP;
+	pToPush.flags.B = 1;
+	pToPush.flags.Unused = 1;
+	this->PushToStack(pToPush.value);
 	return 0;
 }
 
@@ -726,7 +731,12 @@ int CPU2A03::Pla(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 
 int CPU2A03::Plp(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regP.value = this->PullFromStack();
+	// B and Unused flags are ignored when pulled
+	CPUStatusRegister pPulled;
+	pPulled.value = this->PullFromStack();
+	pPulled.flags.B = 0;
+	pPulled.flags.Unused = 1;
+	m_regP = pPulled;
 	return 0;
 }
 
@@ -768,8 +778,10 @@ int CPU2A03::Ror(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 
 int CPU2A03::Rti(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 {
-	// B value of P may be different than its value before the interrupt, but this has no effect on anything
+	// B and Unused flags are ignored when pulled from stack
 	m_regP.value = this->PullFromStack();
+	m_regP.flags.B = 0;
+	m_regP.flags.Unused = 1;
 	uint8_t pcLow = this->PullFromStack();
 	uint8_t pcHigh = this->PullFromStack();
 	m_regPC = CombineBytes(pcLow, pcHigh);
@@ -788,7 +800,7 @@ int CPU2A03::Rts(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 
 int CPU2A03::Sbc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 {
-	if (this->m_regP.flags.D) {
+	if (m_decimalAllowed && this->m_regP.flags.D) {
 		return this->SbcDecimalMode(value);
 	}
 	else {
@@ -922,6 +934,7 @@ void CPU2A03::HandleInterrupt(bool initiatedByBrk) {
 	CPUStatusRegister pToPush;
 	pToPush.value = m_regP.value;
 	pToPush.flags.B = initiatedByBrk;
+	pToPush.flags.Unused = 1;
 	this->PushToStack(pToPush.value);
 
 	uint8_t newAddrLow = m_cpuBus->Read(vectorLow);
@@ -1000,6 +1013,7 @@ int CPU2A03::SbcBinaryMode(uint8_t value) {
 }
 
 int CPU2A03::SbcDecimalMode(uint8_t value) {
+	// TODO: Implement?
 	return 0;
 }
 

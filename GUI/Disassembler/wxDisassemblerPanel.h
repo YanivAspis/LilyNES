@@ -2,12 +2,11 @@
 #include <cstdint>
 #include <queue>
 #include <wx/wx.h>
-#include "wxMainFrame.h"
-#include "wxNESStateEvent.h"
-#include "../nes/NES.h"
-#include "../nes/CPUInstruction.h"
-#include "../nes/RAMDevice.h"
-
+#include "../wxMainFrame.h"
+#include "../wxNESStateEvent.h"
+#include "../../nes/NES.h"
+#include "../../nes/CPU/CPUInstruction.h"
+#include "wxLargeUnselectableListBox.h"
 class wxMainFrame;
 
 class DisassemblerLineData {
@@ -15,6 +14,13 @@ public:
 	DisassemblerLineData(uint16_t beginAddress, int length, InstructionMnemonic mnemonic, AddressingMode addressingMode, uint8_t dataLow, uint8_t dataHigh) :
 		m_beginAddress(beginAddress), m_length(length), m_mnemonic(mnemonic), m_addressingMode(addressingMode), m_dataLow(dataLow), m_dataHigh(dataHigh) {}
 	std::string ToString();
+
+	uint16_t GetAddress() const;
+	int GetLength() const;
+	InstructionMnemonic GetMnemonic() const;
+	AddressingMode GetAddressingMode() const;
+	uint8_t GetDataLow() const;
+	uint8_t GetDataHigh() const;
 
 private:
 	std::string ImpliedToString();
@@ -42,7 +48,8 @@ private:
 class Disassembler {
 public:
 	Disassembler() : m_currAddress(0) {}
-	void Initialize(std::array<uint8_t, RAM_PHYSICAL_SIZE> programContent, uint16_t beginAddress, uint16_t endAddress, uint16_t currAddress);
+	void Initialize(std::vector<uint8_t> programContent, uint16_t beginAddress, uint16_t endAddress, uint16_t currAddress);
+	void Clear();
 	void SetNextAddress(uint16_t newAddress);
 	int GetCurrentAddressIndex() const;
 	std::vector<std::string> GetProgramLines();
@@ -61,10 +68,10 @@ private:
 
 struct DisassemblerInitializeInfo {
 	DisassemblerInitializeInfo() = default;
-	DisassemblerInitializeInfo(std::array<uint8_t, RAM_PHYSICAL_SIZE> content, uint16_t bAddress, uint16_t eAddress, uint16_t cAddress) :
+	DisassemblerInitializeInfo(std::vector<uint8_t> content, uint16_t bAddress, uint16_t eAddress, uint16_t cAddress) :
 		programContent(content), beginAddress(bAddress), endAddress(eAddress), currAddress(cAddress) {}
 
-	std::array<uint8_t, RAM_PHYSICAL_SIZE> programContent;
+	std::vector<uint8_t> programContent;
 	uint16_t beginAddress;
 	uint16_t endAddress;
 	uint16_t currAddress;
@@ -81,8 +88,8 @@ public:
 	bool IsInitialized() const;
 
 	void OnInitialize(wxNESStateEvent<DisassemblerInitializeInfo>& evt);
+	void Clear();
 	void OnNextAddress(wxNESStateEvent<uint16_t>& evt);
-	void OnResize(wxSizeEvent& evt);
 
 private:
 	wxMainFrame* m_mainFrame;
@@ -90,7 +97,5 @@ private:
 	Disassembler m_disassembler;
 	bool m_isInitialized;
 
-	wxListBox* m_programListBox;
-
-	wxDECLARE_EVENT_TABLE();
+	wxLargeUnselectableListBox* m_programListBox;
 };

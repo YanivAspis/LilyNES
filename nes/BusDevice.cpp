@@ -8,8 +8,7 @@
 #include "BusDevice.h"
 #include <assert.h>
 
-BusDevice::BusDevice(std::list<AddressRange> addressRanges) {
-	m_bus = nullptr;
+BusDevice::BusDevice(std::list<AddressRange> addressRanges) : m_bus(nullptr) {
 	m_addressRanges = std::list<AddressRange>(addressRanges);
 }
 

@@ -6,7 +6,7 @@
  */
 
 #include "CPU2A03.h"
-#include "BitwiseUtils.h"
+#include "../../BitwiseUtils.h"
 #include <assert.h>
 
 using namespace BitwiseUtils;
@@ -22,7 +22,7 @@ void CPUStatusFlag::HardReset() {
 	Z = 0;
 	I = 1; // Interrupts are disabled on power up
 	D = 0;
-	B = 1; // Mimics behaviour of actual NES
+	B = 0; // Mimics behaviour of actual NES
 	Unused = 1; // Mimics behaviour of actual NES
 	V = 0;
 	N = 0;
@@ -42,12 +42,16 @@ CPUState::CPUState() {
 
 	instructionFirstCycle = false;
 	currInstructionAddress = 0;
+	opCodeByte = 0;
+	firstArgByte = 0;
+	secondArgByte = 0;
 }
 
 
 
-CPU2A03::CPU2A03() {
+CPU2A03::CPU2A03(bool decimalAllowed) {
 	m_cpuBus = nullptr;
+	m_decimalAllowed = decimalAllowed;
 
 	// Just sets Regs to 0 in c'tor. Call HardReset to change
 	// to correct Power Up values.
@@ -64,8 +68,16 @@ CPU2A03::CPU2A03() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
+	m_opCodeByte = 0;
+	m_firstArgByte = 0;
+	m_secondArgByte= 0;
 
 	this->PopulateFunctionMaps();
+}
+
+CPU2A03::~CPU2A03() {
+	// ensure no dangling pointer
+	m_cpuBus = nullptr;
 }
 
 void CPU2A03::ConnectToBus(Bus* cpuBus) {
@@ -89,6 +101,9 @@ void CPU2A03::SoftReset() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
+	m_opCodeByte = 0;
+	m_firstArgByte = 0;
+	m_secondArgByte = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -109,6 +124,9 @@ void CPU2A03::HardReset() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
+	m_opCodeByte = 0;
+	m_firstArgByte = 0;
+	m_secondArgByte = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -128,6 +146,9 @@ CPUState CPU2A03::GetState() const {
 
 	state.instructionFirstCycle = m_instructionFirstCycle;
 	state.currInstructionAddress = m_currInstructionAddress;
+	state.opCodeByte = m_opCodeByte;
+	state.firstArgByte = m_firstArgByte;
+	state.secondArgByte = m_secondArgByte;
 
 	return state;
 }
@@ -146,13 +167,16 @@ void CPU2A03::LoadState(CPUState& state) {
 
 	m_instructionFirstCycle = state.instructionFirstCycle;
 	m_currInstructionAddress = state.currInstructionAddress;
+	m_opCodeByte = state.opCodeByte;
+	m_firstArgByte = state.firstArgByte;
+	m_secondArgByte = state.secondArgByte;
 }
 
 void CPU2A03::Clock()
 {
 	// Still performing previous instruction
+	m_cyclesRemaining--;
 	if (m_cyclesRemaining > 0) {
-		m_cyclesRemaining--;
 		m_instructionFirstCycle = false;
 		return;
 	}
@@ -165,6 +189,9 @@ void CPU2A03::Clock()
 
 	m_instructionFirstCycle = true;
 	m_currInstructionAddress = m_regPC;
+	m_opCodeByte = this->m_cpuBus->Read(m_regPC);
+	m_firstArgByte = this->m_cpuBus->Read(Add16Bit(m_regPC, 1));
+	m_secondArgByte = this->m_cpuBus->Read(Add16Bit(m_regPC, 2));
 	
 	// No interrupt, perform next instruction
 	uint8_t opCode = this->m_cpuBus->Read(m_regPC);
@@ -179,13 +206,12 @@ void CPU2A03::Clock()
 	int addrModeAdditionalCycles = m_addressModeFunctions[instruction.addressMode](*this, value, targetAddress, accumulatorMode);
 
 	// Fix addressing mode additional cycles for those instructions that don't actually have any
-	/*
-	for (Instruction_Mnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
+	for (InstructionMnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
 		if (mnemonic == instruction.mnemonic) {
 			addrModeAdditionalCycles = 0;
 			break;
 		}
-	}*/
+	}
 
 	// actually execute the instruction
 	int executionAdditionalCycles = m_executeFunctions[instruction.mnemonic](*this, value, targetAddress, accumulatorMode);
@@ -194,8 +220,18 @@ void CPU2A03::Clock()
 	m_cyclesRemaining = baseCycles + addrModeAdditionalCycles + executionAdditionalCycles;
 }
 
+void CPU2A03::RaiseIRQ() {
+	m_irqPending += 1;
+}
+
+void CPU2A03::RaiseNMI() {
+	m_nmiRaised = true;
+}
+
 uint16_t CPU2A03::FetchInitialPC() {
 	uint8_t lowByte = m_cpuBus->Read(ADDR_RESET_VECTOR_LOW);
 	uint8_t highByte = m_cpuBus->Read(ADDR_RESET_VECTOR_HIGH);
+	//uint8_t lowByte = 0x00;
+	//uint8_t highByte = 0xC0;
 	return CombineBytes(lowByte, highByte);
 }

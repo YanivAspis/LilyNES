@@ -61,10 +61,15 @@ void Bus::Write(uint16_t address, uint8_t data) {
 	return;
 }
 
-void Bus::ConnectDevice(BusDevice *device) {
+void Bus::ConnectDevice(BusDevice* device) {
 	assert(!DoAddressesCollide(device));
 	device->ConnectToBus(this);
 	m_devices.push_back(device);
+}
+
+void Bus::DisconnectDevice(BusDevice* device) {
+	device->DisconnectFromBus();
+	m_devices.remove(device);
 }
 
 void Bus::DisconnectAllDevices() {

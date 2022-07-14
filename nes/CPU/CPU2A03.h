@@ -4,7 +4,7 @@
 #include <array>
 #include <map>
 #include <functional>
-#include "Bus.h"
+#include "../Bus.h"
 #include "CPUInstruction.h"
 
 constexpr uint8_t STACK_PAGE = 0x01;
@@ -14,15 +14,15 @@ constexpr uint8_t SP_INITIAL_VALUE = 0xFD;
 // upon certain events
 constexpr uint16_t ADDR_NMI_VECTOR_LOW = 0xFFFA;
 constexpr uint16_t ADDR_NMI_VECTOR_HIGH = 0xFFFB;
-constexpr uint16_t ADDR_RESET_VECTOR_LOW = 0x7FE;// 0xFFFC;
-constexpr uint16_t ADDR_RESET_VECTOR_HIGH = 0x7FF;// 0xFFFD;
+constexpr uint16_t ADDR_RESET_VECTOR_LOW = 0xFFFC;
+constexpr uint16_t ADDR_RESET_VECTOR_HIGH = 0xFFFD;
 constexpr uint16_t ADDR_IRQ_BRK_VECTOR_LOW = 0xFFFE;
 constexpr uint16_t ADDR_IRQ_BRK_VECTOR_HIGH = 0xFFFF;
 
 constexpr int OPCODE_TABLE_SIZE = 256;
 constexpr int NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES = 7;
 
-constexpr int NUM_RESET_CYCLES = 6;
+constexpr int NUM_RESET_CYCLES = 7;
 
 
 struct CPUStatusFlag {
@@ -59,6 +59,9 @@ struct CPUState {
 
 	bool instructionFirstCycle;
 	uint16_t currInstructionAddress;
+	uint8_t opCodeByte;
+	uint8_t firstArgByte;
+	uint8_t secondArgByte;
 
 	CPUState();
 };
@@ -72,7 +75,10 @@ enum AddressingMode;
 
 class CPU2A03 {
 public:
-	CPU2A03();
+	CPU2A03(bool decimalAllowed);
+	~CPU2A03();
+	CPU2A03(const CPU2A03&) = delete;
+	CPU2A03& operator=(const CPU2A03&) = delete;
 
 	void ConnectToBus(Bus* cpuBus);
 	void SoftReset();
@@ -189,6 +195,8 @@ private:
 	uint16_t FetchInitialPC();
 
 	Bus* m_cpuBus;
+	// Controls whether decimal mode has any effect. In NES it does not
+	bool m_decimalAllowed;
 
 	uint8_t m_regA;
 	uint8_t m_regX;
@@ -205,6 +213,9 @@ private:
 	bool m_instructionFirstCycle;
 	// Address of current instruction. Needed for disassembler
 	uint16_t m_currInstructionAddress;
+	uint8_t m_opCodeByte;
+	uint8_t m_firstArgByte;
+	uint8_t m_secondArgByte;
 
 
 	std::map<InstructionMnemonic, std::function<int(CPU2A03&, uint8_t, uint16_t, bool)> > m_executeFunctions;

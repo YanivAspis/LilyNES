@@ -147,35 +147,45 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BitwiseUtils.cpp" />
+    <ClCompile Include="GUI\Disassembler\wxDisassemblerPanel.cpp" />
+    <ClCompile Include="GUI\Disassembler\wxLargeUnselectableListBox.cpp" />
     <ClCompile Include="GUI\LilyNESApp.cpp" />
     <ClCompile Include="GUI\wxCPUStatePanel.cpp" />
-    <ClCompile Include="GUI\wxDisassemblerPanel.cpp" />
     <ClCompile Include="GUI\wxMainFrame.cpp" />
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
-    <ClCompile Include="nes\BitwiseUtils.cpp" />
+    <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
-    <ClCompile Include="nes\CPU2A03.cpp" />
-    <ClCompile Include="nes\CPUInstruction.cpp" />
+    <ClCompile Include="nes\CPU\CPU2A03.cpp" />
+    <ClCompile Include="nes\CPU\CPUInstruction.cpp" />
+    <ClCompile Include="nes\mappers\Cartridge.cpp" />
+    <ClCompile Include="nes\mappers\Mapper000.cpp" />
     <ClCompile Include="nes\NES.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
-    <ClCompile Include="nes\TestDevice.cpp" />
+    <ClCompile Include="nes\ROM\INESFile.cpp" />
+    <ClCompile Include="nes\ROM\INESHeader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BitwiseUtils.h" />
+    <ClInclude Include="GUI\Disassembler\wxDisassemblerPanel.h" />
+    <ClInclude Include="GUI\Disassembler\wxLargeUnselectableListBox.h" />
     <ClInclude Include="GUI\LilyNESApp.h" />
     <ClInclude Include="GUI\wxCPUStatePanel.h" />
-    <ClInclude Include="GUI\wxDisassemblerPanel.h" />
     <ClInclude Include="GUI\wxMainFrame.h" />
     <ClInclude Include="GUI\wxNESStateEvent.h" />
     <ClInclude Include="GUI\wxRAMStatePanel.h" />
-    <ClInclude Include="nes\BitwiseUtils.h" />
+    <ClInclude Include="GUI\wxROMInfoFrame.h" />
     <ClInclude Include="nes\Bus.h" />
     <ClInclude Include="nes\BusDevice.h" />
-    <ClInclude Include="nes\CPU2A03.h" />
-    <ClInclude Include="nes\CPUInstruction.h" />
+    <ClInclude Include="nes\CPU\CPU2A03.h" />
+    <ClInclude Include="nes\CPU\CPUInstruction.h" />
+    <ClInclude Include="nes\mappers\Cartridge.h" />
+    <ClInclude Include="nes\mappers\Mapper000.h" />
     <ClInclude Include="nes\NES.h" />
     <ClInclude Include="nes\RAMDevice.h" />
-    <ClInclude Include="nes\TestDevice.h" />
+    <ClInclude Include="nes\ROM\INESFile.h" />
+    <ClInclude Include="nes\ROM\INESHeader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <utility>
 #include <list>
+#include <memory>
 
 // Need to declare bus here to avoid circular dependency
 // between headers

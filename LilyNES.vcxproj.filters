@@ -25,18 +25,36 @@
     <Filter Include="Header Files\GUI">
       <UniqueIdentifier>{8371824a-f197-451d-ab2a-d3e0452ecfe7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\nes\CPU">
+      <UniqueIdentifier>{2808411b-f356-4a97-a96d-ece9d2545aab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\nes\ROM">
+      <UniqueIdentifier>{5ba0ddcd-ec38-431b-90d5-c2899e22ae4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\nes\CPU">
+      <UniqueIdentifier>{9f6a0000-9e9e-4692-a1cb-a455ca7305a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\nes\ROM">
+      <UniqueIdentifier>{9a436348-7c92-465c-b930-6787ada5974e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\nes\mappers">
+      <UniqueIdentifier>{e8c31bd3-184f-4796-8aa3-dff1bcda750d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\nes\mappers">
+      <UniqueIdentifier>{acf8833d-8f70-4286-8767-9aaeafe050d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\Disassembler">
+      <UniqueIdentifier>{6de8e503-d773-4a44-967f-543113676b44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\Disassembler">
+      <UniqueIdentifier>{63c28bfc-7d8c-442b-829f-408b252e74e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="nes\BitwiseUtils.cpp">
-      <Filter>Source Files\nes</Filter>
-    </ClCompile>
     <ClCompile Include="nes\Bus.cpp">
       <Filter>Source Files\nes</Filter>
     </ClCompile>
     <ClCompile Include="nes\BusDevice.cpp">
-      <Filter>Source Files\nes</Filter>
-    </ClCompile>
-    <ClCompile Include="nes\CPU2A03.cpp">
       <Filter>Source Files\nes</Filter>
     </ClCompile>
     <ClCompile Include="nes\RAMDevice.cpp">
@@ -51,33 +69,48 @@
     <ClCompile Include="nes\NES.cpp">
       <Filter>Source Files\nes</Filter>
     </ClCompile>
-    <ClCompile Include="nes\TestDevice.cpp">
-      <Filter>Source Files\nes</Filter>
-    </ClCompile>
     <ClCompile Include="GUI\wxCPUStatePanel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="GUI\wxRAMStatePanel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="nes\CPUInstruction.cpp">
-      <Filter>Source Files\nes</Filter>
+    <ClCompile Include="nes\CPU\CPU2A03.cpp">
+      <Filter>Source Files\nes\CPU</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\wxDisassemblerPanel.cpp">
+    <ClCompile Include="nes\CPU\CPUInstruction.cpp">
+      <Filter>Source Files\nes\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\ROM\INESHeader.cpp">
+      <Filter>Source Files\nes\ROM</Filter>
+    </ClCompile>
+    <ClCompile Include="BitwiseUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\ROM\INESFile.cpp">
+      <Filter>Source Files\nes\ROM</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\wxROMInfoFrame.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\mappers\Cartridge.cpp">
+      <Filter>Source Files\nes\mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\mappers\Mapper000.cpp">
+      <Filter>Source Files\nes\mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Disassembler\wxLargeUnselectableListBox.cpp">
+      <Filter>Source Files\GUI\Disassembler</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Disassembler\wxDisassemblerPanel.cpp">
+      <Filter>Source Files\GUI\Disassembler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
       <Filter>Header Files\nes</Filter>
     </ClInclude>
-    <ClInclude Include="nes\BitwiseUtils.h">
-      <Filter>Header Files\nes</Filter>
-    </ClInclude>
     <ClInclude Include="nes\BusDevice.h">
-      <Filter>Header Files\nes</Filter>
-    </ClInclude>
-    <ClInclude Include="nes\CPU2A03.h">
       <Filter>Header Files\nes</Filter>
     </ClInclude>
     <ClInclude Include="nes\RAMDevice.h">
@@ -92,9 +125,6 @@
     <ClInclude Include="nes\NES.h">
       <Filter>Header Files\nes</Filter>
     </ClInclude>
-    <ClInclude Include="nes\TestDevice.h">
-      <Filter>Header Files\nes</Filter>
-    </ClInclude>
     <ClInclude Include="GUI\wxCPUStatePanel.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -104,11 +134,35 @@
     <ClInclude Include="GUI\wxRAMStatePanel.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="nes\CPUInstruction.h">
-      <Filter>Header Files\nes</Filter>
+    <ClInclude Include="nes\CPU\CPU2A03.h">
+      <Filter>Header Files\nes\CPU</Filter>
     </ClInclude>
-    <ClInclude Include="GUI\wxDisassemblerPanel.h">
+    <ClInclude Include="nes\CPU\CPUInstruction.h">
+      <Filter>Header Files\nes\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\ROM\INESHeader.h">
+      <Filter>Header Files\nes\ROM</Filter>
+    </ClInclude>
+    <ClInclude Include="BitwiseUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\ROM\INESFile.h">
+      <Filter>Header Files\nes\ROM</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxROMInfoFrame.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\mappers\Cartridge.h">
+      <Filter>Header Files\nes\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\mappers\Mapper000.h">
+      <Filter>Header Files\nes\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Disassembler\wxLargeUnselectableListBox.h">
+      <Filter>Header Files\GUI\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Disassembler\wxDisassemblerPanel.h">
+      <Filter>Header Files\GUI\Disassembler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,9 +1,12 @@
 #pragma once
 
+#include <exception>
+
 #include "Bus.h"
-#include "CPU2A03.h"
+#include "CPU/CPU2A03.h"
 #include "RAMDevice.h"
-#include "TestDevice.h"
+#include "ROM/INESFile.h"
+#include "mappers/Cartridge.h"
 
 struct NESState {
 	CPUState cpuState;
@@ -14,10 +17,14 @@ class NES
 {
 public:
 	NES();
+	~NES();
 
 	// Don't allow copies of NES emulator
 	NES(const NES&) = delete;
 	NES& operator=(const NES&) = delete;
+
+	void ConnectCartridge(const INESFile& romFile);
+	void DisconnectCartridge();
 
 	void SoftReset();
 	void HardReset();
@@ -33,5 +40,6 @@ private:
 	Bus m_cpuBus;
 	RAMDevice m_RAM;
 	CPU2A03 m_cpu;
+	Cartridge* m_cartridge;
 };
 

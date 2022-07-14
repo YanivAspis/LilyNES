@@ -36,6 +36,18 @@ namespace BitwiseUtils {
 		target ^= (0x1 << bit);
 	}
 
+	// clear all bits up to upperBit (exclusive)
+	uint8_t ClearLowerBits8(uint8_t target, int upperBit) {
+		assert(upperBit >= 1 && upperBit <= 8);
+		return target & (0xFF ^ ((0x1 << upperBit) - 1));
+	}
+
+	// clear all bits from lowerBit (inclusive)
+	uint8_t ClearUpperBits8(uint8_t target, int lowerBit) {
+		assert(lowerBit >= 0 && lowerBit <= 7);
+		return target & ((0x1 << lowerBit) - 1);
+	}
+
 	uint8_t Add8Bit(uint8_t num1, uint8_t num2) {
 		return (num1 + num2) & 0xFF;
 	}

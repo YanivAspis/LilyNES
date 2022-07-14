@@ -1,8 +1,10 @@
 #include "wxDisassemblerPanel.h"
+#include "../../BitwiseUtils.h"
 #include <sstream>
 #include <cstdint>
 #include <iomanip>
 
+using namespace BitwiseUtils;
 
 std::map<InstructionMnemonic, std::string> Disassembler::s_mnemonicToString = {
 	{INSTR_ADC, "ADC"},
@@ -131,6 +133,30 @@ std::string DisassemblerLineData::ToString() {
 	return result.str();
 }
 
+uint16_t DisassemblerLineData::GetAddress() const {
+	return m_beginAddress;
+}
+
+int DisassemblerLineData::GetLength() const {
+	return m_length;
+}
+
+InstructionMnemonic DisassemblerLineData::GetMnemonic() const {
+	return m_mnemonic;
+}
+
+AddressingMode DisassemblerLineData::GetAddressingMode() const {
+	return m_addressingMode;
+}
+
+uint8_t DisassemblerLineData::GetDataLow() const {
+	return m_dataLow;
+}
+
+uint8_t DisassemblerLineData::GetDataHigh() const {
+	return m_dataHigh;
+}
+
 std::string DisassemblerLineData::ImpliedToString()
 {
 	return "";
@@ -165,7 +191,18 @@ std::string DisassemblerLineData::AbsoluteToString()
 std::string DisassemblerLineData::RelativeToString()
 {
 	std::stringstream result;
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow;
+	uint16_t resultAddress = Add16Bit(m_beginAddress, m_length);
+	// handle signed values and convert to 16-bit
+	uint16_t unsigned_relative_address = 0;
+	if (TestBit8(m_dataLow, 7)) {
+		unsigned_relative_address = CombineBytes(m_dataLow, 0xFF);
+	}
+	else {
+		unsigned_relative_address = m_dataLow;
+	}
+	resultAddress = Add16Bit(resultAddress, unsigned_relative_address);
+
+	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << " [$" << std::setw(4) << (unsigned int)resultAddress << "]";
 	return result.str();
 }
 
@@ -219,10 +256,10 @@ std::string DisassemblerLineData::IndirectIndexedYToString()
 }
 
 
-void Disassembler::Initialize(std::array<uint8_t, RAM_PHYSICAL_SIZE> programContent, uint16_t beginAddress, uint16_t endAddress, uint16_t currAddress) {
+void Disassembler::Initialize(std::vector<uint8_t> programContent, uint16_t beginAddress, uint16_t endAddress, uint16_t currAddress) {
 	std::queue<uint8_t> restOfProgramContent;
-	for (uint16_t address = beginAddress; address <= endAddress; address++) {
-		restOfProgramContent.push(programContent[address]);
+	for (size_t address = beginAddress; address < beginAddress + programContent.size(); address++) {
+		restOfProgramContent.push(programContent[address - 0x8000]);
 	}
 	uint16_t address = beginAddress;
 	uint16_t lastAddress = beginAddress;
@@ -234,7 +271,25 @@ void Disassembler::Initialize(std::array<uint8_t, RAM_PHYSICAL_SIZE> programCont
 		lastAddress = address;
 		currIndex++;
 	}
+	if (programContent.size() <= 16 * 1024) {
+		std::vector<DisassemblerLineData> programMirror;
+		for (DisassemblerLineData lineData : m_programData) {
+			programMirror.push_back(DisassemblerLineData(lineData.GetAddress() + 0x4000, lineData.GetLength(), lineData.GetMnemonic(), 
+				lineData.GetAddressingMode(), lineData.GetDataLow(), lineData.GetDataHigh()));
+		}
+		for (DisassemblerLineData lineData : programMirror) {
+			m_programData.push_back(lineData);
+			m_addressToIndex[lineData.GetAddress()] = currIndex;
+			currIndex++;
+		}
+	}
 	m_currAddress = currAddress;
+}
+
+void Disassembler::Clear() {
+	m_programData.clear();
+	m_addressToIndex.clear();
+	m_currAddress = 0;
 }
 
 void Disassembler::SetNextAddress(uint16_t newAddress) {
@@ -242,9 +297,6 @@ void Disassembler::SetNextAddress(uint16_t newAddress) {
 }
 
 bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& currAddress, DisassemblerLineData& lineData) {
-	if (currAddress == 0x7FF) {
-		currAddress = currAddress;
-	}
 	if (restOfProgramContent.size() == 0) {
 		return false;
 	}
@@ -289,9 +341,6 @@ std::vector<std::string> Disassembler::GetProgramLines() {
 
 wxDEFINE_EVENT(EVT_DISASSEMBLER_INITIALIZE, wxNESStateEvent<DisassemblerInitializeInfo>);
 wxDEFINE_EVENT(EVT_DISASSEMBLER_NEXT_ADDRESS, wxNESStateEvent<uint16_t>);
-wxBEGIN_EVENT_TABLE(wxDisassemblerPanel, wxPanel)
-	EVT_SIZE(wxDisassemblerPanel::OnResize)
-wxEND_EVENT_TABLE()
 
 wxDisassemblerPanel::wxDisassemblerPanel(wxWindow* parent) : wxPanel(parent, wxID_ANY) {
 	Bind(EVT_DISASSEMBLER_INITIALIZE, &wxDisassemblerPanel::OnInitialize, this);
@@ -300,7 +349,7 @@ wxDisassemblerPanel::wxDisassemblerPanel(wxWindow* parent) : wxPanel(parent, wxI
 	m_isInitialized = false;
 
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-	m_programListBox = new wxListBox(this, wxID_ANY);
+	m_programListBox = new wxLargeUnselectableListBox(this, wxID_ANY);
 
 	sizer->Add(m_programListBox, 1, wxEXPAND);
 	this->SetSizer(sizer);
@@ -313,21 +362,23 @@ bool wxDisassemblerPanel::IsInitialized() const {
 
 void wxDisassemblerPanel::OnInitialize(wxNESStateEvent<DisassemblerInitializeInfo>& evt) {
 	m_disassembler.Initialize(evt.GetState().programContent, evt.GetState().beginAddress, evt.GetState().endAddress, evt.GetState().currAddress);
+	wxArrayString lines;
 	for (auto const& line : m_disassembler.GetProgramLines()) {
-		m_programListBox->AppendString(line);
+		lines.push_back(wxString(line));
 	}
+	m_programListBox->SetItems(lines);
 	m_isInitialized = true;
 }
 
-void wxDisassemblerPanel::OnNextAddress(wxNESStateEvent<uint16_t>& evt) {
-	m_disassembler.SetNextAddress(evt.GetState());
-	m_programListBox->SetSelection(m_disassembler.GetCurrentAddressIndex());
+void wxDisassemblerPanel::Clear() {
+	m_disassembler.Clear();
+	m_programListBox->Clear();
+	m_isInitialized = false;
 }
 
-void wxDisassemblerPanel::OnResize(wxSizeEvent& evt) {
-	int newHeight = evt.GetSize().GetHeight();
-	int newWidth = evt.GetSize().GetWidth();
-	int fontSize = std::min(newHeight / 20, newWidth / 20);
-	m_programListBox->SetFont(wxFont(wxFontInfo(fontSize)));
-	evt.Skip();
+void wxDisassemblerPanel::OnNextAddress(wxNESStateEvent<uint16_t>& evt) {
+	if (evt.GetState() >= 0x8000 && evt.GetState() <= 0xFFFF) {
+		m_disassembler.SetNextAddress(evt.GetState());
+		m_programListBox->SelectItem(m_disassembler.GetCurrentAddressIndex());
+	}
 }

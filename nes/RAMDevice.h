@@ -17,11 +17,11 @@ class RAMDevice : public BusDevice {
 public:
 	RAMDevice();
 
-	void SoftReset();
-	void HardReset();
+	void SoftReset() override;
+	void HardReset() override;
 
-	uint8_t Read(uint16_t address);
-	void Write(uint16_t address, uint8_t data);
+	uint8_t Read(uint16_t address) override;
+	void Write(uint16_t address, uint8_t data)  override;
 
 	RAMState GetState() const;
 	void LoadState(RAMState& state);

@@ -6,7 +6,7 @@
  */
 
 #include "RAMDevice.h"
-#include "BitwiseUtils.h"
+#include "../BitwiseUtils.h"
 
 
 RAMState::RAMState() {
@@ -24,7 +24,6 @@ void RAMDevice::SoftReset() {}
 void RAMDevice::HardReset() {
 	// TODO: Initialise RAM randomly on reset for Final Fantasy
 	m_RAMContent.fill(0);
-	m_RAMContent[0x7FF] = 0x6;
 }
 
 uint8_t RAMDevice::Read(uint16_t address) {

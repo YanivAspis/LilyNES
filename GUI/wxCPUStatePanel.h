@@ -2,7 +2,7 @@
 #include <wx/wx.h>
 #include <wx/grid.h>
 #include "wxNESStateEvent.h"
-#include "../nes/CPU2A03.h"
+#include "../nes/CPU/CPU2A03.h"
 
 wxDECLARE_EVENT(EVT_CPU_STATE_GUI_UPDATE, wxNESStateEvent<CPUState>);
 
