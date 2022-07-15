@@ -55,7 +55,6 @@ public:
 	std::vector<std::string> GetProgramLines();
 
 	static std::map<InstructionMnemonic, std::string> s_mnemonicToString;
-	static std::map<AddressingMode, int> s_addressingModeToLength;
 
 private:
 	// Returns true if there's more data to read, false if done

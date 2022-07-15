@@ -3,6 +3,7 @@
 
 using namespace BitwiseUtils;
 
+
 std::array<CPUInstruction, OPCODE_TABLE_SIZE> CPU2A03::s_opCodeTable = {
 	CPUInstruction((uint8_t)0x00, INSTR_BRK, MODE_IMPLIED, 7),
 	CPUInstruction((uint8_t)0x01, INSTR_ORA, MODE_INDEXED_INDIRECT_X, 6),
@@ -287,51 +288,67 @@ std::array<InstructionMnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> CPU2A03
 	INSTR_STA
 };
 
+std::map<AddressingMode, int> CPUInstruction::s_addressingModeToLength = {
+	{MODE_IMPLIED, 1},
+	{MODE_ACCUMULATOR, 1},
+	{MODE_IMMEDIATE, 2},
+	{MODE_ZERO_PAGE, 2},
+	{MODE_ABSOLUTE, 3},
+	{MODE_RELATIVE, 2},
+	{MODE_INDIRECT, 3},
+	{MODE_ZERO_PAGE_INDEXED_X, 2},
+	{MODE_ZERO_PAGE_INDEXED_Y, 2},
+	{MODE_ABSOLUTE_INDEXED_X, 3},
+	{MODE_ABSOLUTE_INDEXED_Y, 3},
+	{MODE_INDEXED_INDIRECT_X, 2},
+	{MODE_INDIRECT_INDEXED_Y, 2}
+};
 
 
-int CPU2A03::Implied(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPUInstruction::GetInstructionLength() {
+	return CPUInstruction::s_addressingModeToLength[addressMode];
+}
+
+
+
+int CPU2A03::Implied(uint16_t& targetAddress, bool& accumulatorMode) {
 	targetAddress = 0;
-	value = 0;
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::Accumulator(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::Accumulator(uint16_t& targetAddress, bool& accumulatorMode) {
 	targetAddress = 0;
-	value = m_regA;
 	accumulatorMode = true;
 	return 0;
 }
 
-int CPU2A03::Immediate(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
-	targetAddress = 0;
-	value = m_cpuBus->Read(m_regPC);
+int CPU2A03::Immediate(uint16_t& targetAddress, bool& accumulatorMode) {
+	targetAddress = m_regPC;
 	Inc16Bit(m_regPC);
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::ZeroPage(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::ZeroPage(uint16_t& targetAddress, bool& accumulatorMode) {
 	targetAddress = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::Absolute(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::Absolute(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t addressLow = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 	uint8_t addressHigh = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
 	targetAddress = CombineBytes(addressLow, addressHigh);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::Relative(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::Relative(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t relative_address = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
@@ -345,13 +362,12 @@ int CPU2A03::Relative(uint8_t& value, uint16_t& targetAddress, bool& accumulator
 	}
 
 	targetAddress = Add16Bit(m_regPC, unsigned_relative_address);
-	value = 0;
 	accumulatorMode = false;
 
 	return 0;
 }
 
-int CPU2A03::Indirect(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::Indirect(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t indirectAddressLow = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 	uint8_t indirectAddressHigh = m_cpuBus->Read(m_regPC);
@@ -362,33 +378,30 @@ int CPU2A03::Indirect(uint8_t& value, uint16_t& targetAddress, bool& accumulator
 	uint8_t effectiveAddressHigh = m_cpuBus->Read(CombineBytes(Add8Bit(indirectAddressLow, 1), indirectAddressHigh));
 
 	targetAddress = CombineBytes(effectiveAddressLow, effectiveAddressHigh);
-	value = 0;
 	accumulatorMode = false;
 
 	return 0;
 }
 
-int CPU2A03::ZeroPageIndexedX(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::ZeroPageIndexedX(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t baseAddress = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
 	targetAddress = Add8Bit(baseAddress, m_regX);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::ZeroPageIndexedY(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::ZeroPageIndexedY(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t baseAddress = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
 	targetAddress = Add8Bit(baseAddress, m_regY);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::AbsoluteIndexedX(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::AbsoluteIndexedX(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t addressLow = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 	uint8_t addressHigh = m_cpuBus->Read(m_regPC);
@@ -396,7 +409,6 @@ int CPU2A03::AbsoluteIndexedX(uint8_t& value, uint16_t& targetAddress, bool& acc
 
 	uint16_t baseAddress = CombineBytes(addressLow, addressHigh);
 	targetAddress = Add16Bit(baseAddress, m_regX);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 
 	// add cycle upon page cross
@@ -408,7 +420,7 @@ int CPU2A03::AbsoluteIndexedX(uint8_t& value, uint16_t& targetAddress, bool& acc
 	}
 }
 
-int CPU2A03::AbsoluteIndexedY(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::AbsoluteIndexedY(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t addressLow = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 	uint8_t addressHigh = m_cpuBus->Read(m_regPC);
@@ -416,7 +428,6 @@ int CPU2A03::AbsoluteIndexedY(uint8_t& value, uint16_t& targetAddress, bool& acc
 
 	uint16_t baseAddress = CombineBytes(addressLow, addressHigh);
 	targetAddress = Add16Bit(baseAddress, m_regY);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 
 	// add cycle upon page cross
@@ -428,7 +439,7 @@ int CPU2A03::AbsoluteIndexedY(uint8_t& value, uint16_t& targetAddress, bool& acc
 	}
 }
 
-int CPU2A03::IndexedIndirectX(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::IndexedIndirectX(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t indirectBaseAddress = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
@@ -438,12 +449,11 @@ int CPU2A03::IndexedIndirectX(uint8_t& value, uint16_t& targetAddress, bool& acc
 	uint8_t effectiveAddressHigh = m_cpuBus->Read(indirectAddressHigh);
 
 	targetAddress = CombineBytes(effectiveAddressLow, effectiveAddressHigh);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 	return 0;
 }
 
-int CPU2A03::IndirectIndexedY(uint8_t& value, uint16_t& targetAddress, bool& accumulatorMode) {
+int CPU2A03::IndirectIndexedY(uint16_t& targetAddress, bool& accumulatorMode) {
 	uint8_t indirectBaseAddress = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
@@ -452,7 +462,6 @@ int CPU2A03::IndirectIndexedY(uint8_t& value, uint16_t& targetAddress, bool& acc
 	uint16_t baseAddress = CombineBytes(baseAddressLow, baseAddressHigh);
 
 	targetAddress = Add16Bit(baseAddress, m_regY);
-	value = m_cpuBus->Read(targetAddress);
 	accumulatorMode = false;
 
 	// add cycle upon page cross
@@ -466,7 +475,8 @@ int CPU2A03::IndirectIndexedY(uint8_t& value, uint16_t& targetAddress, bool& acc
 
 
 
-int CPU2A03::Adc(uint8_t value, uint16_t targetAddress, bool accumulatorMode) {
+int CPU2A03::Adc(uint16_t targetAddress, bool accumulatorMode) {
+	uint8_t value = m_cpuBus->Read(targetAddress);
 	if (m_decimalAllowed && this->m_regP.flags.D) {
 		return this->AdcDecimalMode(value);
 	}
@@ -475,15 +485,22 @@ int CPU2A03::Adc(uint8_t value, uint16_t targetAddress, bool accumulatorMode) {
 	}
 }
 
-int CPU2A03::And(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::And(uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regA &= value;
+	m_regA &= m_cpuBus->Read(targetAddress);
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Asl(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Asl(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value;
+	if (accumulatorMode) {
+		value = m_regA;
+	}
+	else {
+		value = m_cpuBus->Read(targetAddress);
+	}
 	m_regP.flags.C = TestBit8(value, 7);
 	value = ShiftLeft8(value, 1);
 	this->UpdateZNFlags(value);
@@ -496,160 +513,163 @@ int CPU2A03::Asl(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Bcc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bcc(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(!m_regP.flags.C, targetAddress);
 }
 
-int CPU2A03::Bcs(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bcs(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(m_regP.flags.C, targetAddress);
 }
 
-int CPU2A03::Beq(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Beq(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(m_regP.flags.Z, targetAddress);
 }
 
-int CPU2A03::Bit(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bit(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value = m_cpuBus->Read(targetAddress);
 	m_regP.flags.Z = (m_regA & value) == 0;
 	m_regP.flags.V = TestBit8(value, 6);
 	m_regP.flags.N = TestBit8(value, 7);
 	return 0;
 }
 
-int CPU2A03::Bmi(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bmi(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(m_regP.flags.N, targetAddress);
 }
 
-int CPU2A03::Bne(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bne(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(!m_regP.flags.Z, targetAddress);
 }
 
-int CPU2A03::Bpl(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bpl(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(!m_regP.flags.N, targetAddress);
 }
 
-int CPU2A03::Brk(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Brk(uint16_t targetAddress, bool accumulatorMode)
 {
 	// For some reason, Brk increases PC once before handling the interrupt. 
-	// This means RTI will return to two bytes after BRK, rather than one as you would expect.
+	// This means RTI will return to two bytes after BRK, rather than one, as you would expect.
 	Inc16Bit(m_regPC);
 	HandleInterrupt(true);
 	return 0;
 }
 
-int CPU2A03::Bvc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bvc(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(!m_regP.flags.V, targetAddress);
 }
 
-int CPU2A03::Bvs(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Bvs(uint16_t targetAddress, bool accumulatorMode)
 {
 	return this->Branch(m_regP.flags.V, targetAddress);
 }
 
-int CPU2A03::Clc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Clc(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.C = 0;
 	return 0;
 }
 
-int CPU2A03::Cld(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Cld(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.D = 0;
 	return 0;
 }
 
-int CPU2A03::Cli(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Cli(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.I = 0;
 	return 0;
 }
 
-int CPU2A03::Clv(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Clv(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.V = 0;
 	return 0;
 }
 
-int CPU2A03::Cmp(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Cmp(uint16_t targetAddress, bool accumulatorMode)
 {
-	return this->CompareRegister(m_regA, value);
+	return this->CompareRegister(m_regA, m_cpuBus->Read(targetAddress));
 }
 
-int CPU2A03::Cpx(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Cpx(uint16_t targetAddress, bool accumulatorMode)
 {
-	return this->CompareRegister(m_regX, value);
+	return this->CompareRegister(m_regX, m_cpuBus->Read(targetAddress));
 }
 
-int CPU2A03::Cpy(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Cpy(uint16_t targetAddress, bool accumulatorMode)
 {
-	return this->CompareRegister(m_regY, value);
+	return this->CompareRegister(m_regY, m_cpuBus->Read(targetAddress));
 }
 
-int CPU2A03::Dec(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Dec(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value = m_cpuBus->Read(targetAddress);
 	Dec8Bit(value);
 	m_cpuBus->Write(targetAddress, value);
 	this->UpdateZNFlags(value);
 	return 0;
 }
 
-int CPU2A03::Dex(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Dex(uint16_t targetAddress, bool accumulatorMode)
 {
 	Dec8Bit(m_regX);
 	this->UpdateZNFlags(m_regX);
 	return 0;
 }
 
-int CPU2A03::Dey(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Dey(uint16_t targetAddress, bool accumulatorMode)
 {
 	Dec8Bit(m_regY);
 	this->UpdateZNFlags(m_regY);
 	return 0;
 }
 
-int CPU2A03::Eor(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Eor(uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regA ^= value;
+	m_regA ^= m_cpuBus->Read(targetAddress);
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Inc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Inc(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value = m_cpuBus->Read(targetAddress);	
 	Inc8Bit(value);
 	m_cpuBus->Write(targetAddress, value);
 	this->UpdateZNFlags(value);
 	return 0;
 }
 
-int CPU2A03::Inx(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Inx(uint16_t targetAddress, bool accumulatorMode)
 {
 	Inc8Bit(m_regX);
 	this->UpdateZNFlags(m_regX);
 	return 0;
 }
 
-int CPU2A03::Iny(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Iny(uint16_t targetAddress, bool accumulatorMode)
 {
 	Inc8Bit(m_regY);
 	this->UpdateZNFlags(m_regY);
 	return 0;
 }
 
-int CPU2A03::Jmp(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Jmp(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regPC = targetAddress;
 	return 0;
 }
 
-int CPU2A03::Jsr(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Jsr(uint16_t targetAddress, bool accumulatorMode)
 {
 	// The last address of the JSR instruction is stored on the stack, so we must decrement PC first
 	Dec16Bit(m_regPC);
@@ -659,29 +679,36 @@ int CPU2A03::Jsr(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Lda(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Lda(uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regA = value;
+	m_regA = m_cpuBus->Read(targetAddress);
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Ldx(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Ldx(uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regX = value;
+	m_regX = m_cpuBus->Read(targetAddress);
 	this->UpdateZNFlags(m_regX);
 	return 0;
 }
 
-int CPU2A03::Ldy(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Ldy(uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regY = value;
+	m_regY = m_cpuBus->Read(targetAddress);
 	this->UpdateZNFlags(m_regY);
 	return 0;
 }
 
-int CPU2A03::Lsr(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Lsr(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value;
+	if (accumulatorMode) {
+		value = m_regA;
+	}
+	else {
+		value = m_cpuBus->Read(targetAddress);
+	}
 	m_regP.flags.C = TestBit8(value, 0);
 	value = ShiftRight8(value, 1);
 	this->UpdateZNFlags(value);
@@ -694,25 +721,25 @@ int CPU2A03::Lsr(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Nop(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Nop(uint16_t targetAddress, bool accumulatorMode)
 {
 	return 0;
 }
 
-int CPU2A03::Ora(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Ora(uint16_t targetAddress, bool accumulatorMode)
 {
-	m_regA |= value;
+	m_regA |= m_cpuBus->Read(targetAddress);
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Pha(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Pha(uint16_t targetAddress, bool accumulatorMode)
 {
 	this->PushToStack(m_regA);
 	return 0;
 }
 
-int CPU2A03::Php(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Php(uint16_t targetAddress, bool accumulatorMode)
 {
 	// B and Unused should be set when pushed into stack
 	CPUStatusRegister pToPush = m_regP;
@@ -722,14 +749,14 @@ int CPU2A03::Php(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Pla(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Pla(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regA = this->PullFromStack();
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Plp(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Plp(uint16_t targetAddress, bool accumulatorMode)
 {
 	// B and Unused flags are ignored when pulled
 	CPUStatusRegister pPulled;
@@ -740,8 +767,16 @@ int CPU2A03::Plp(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Rol(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Rol(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value;
+	if (accumulatorMode) {
+		value = m_regA;
+	}
+	else {
+		value = m_cpuBus->Read(targetAddress);
+	}
+
 	bool newCarry = TestBit8(value, 7);
 	value = ShiftLeft8(value, 1);
 	if (m_regP.flags.C) {
@@ -749,6 +784,7 @@ int CPU2A03::Rol(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	}
 	m_regP.flags.C = newCarry;
 	this->UpdateZNFlags(value);
+
 	if (accumulatorMode) {
 		m_regA = value;
 	}
@@ -758,8 +794,15 @@ int CPU2A03::Rol(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Ror(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Ror(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value;
+	if (accumulatorMode) {
+		value = m_regA;
+	}
+	else {
+		value = m_cpuBus->Read(targetAddress);
+	}
 	bool newCarry = TestBit8(value, 0);
 	value = ShiftRight8(value, 1);
 	if (m_regP.flags.C) {
@@ -776,7 +819,7 @@ int CPU2A03::Ror(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Rti(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Rti(uint16_t targetAddress, bool accumulatorMode)
 {
 	// B and Unused flags are ignored when pulled from stack
 	m_regP.value = this->PullFromStack();
@@ -788,7 +831,7 @@ int CPU2A03::Rti(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Rts(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Rts(uint16_t targetAddress, bool accumulatorMode)
 {
 	uint8_t pcLow = this->PullFromStack();
 	uint8_t pcHigh = this->PullFromStack();
@@ -798,8 +841,9 @@ int CPU2A03::Rts(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	return 0;
 }
 
-int CPU2A03::Sbc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Sbc(uint16_t targetAddress, bool accumulatorMode)
 {
+	uint8_t value = m_cpuBus->Read(targetAddress);
 	if (m_decimalAllowed && this->m_regP.flags.D) {
 		return this->SbcDecimalMode(value);
 	}
@@ -808,84 +852,84 @@ int CPU2A03::Sbc(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
 	}
 }
 
-int CPU2A03::Sec(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Sec(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.C = 1;
 	return 0;
 }
 
-int CPU2A03::Sed(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Sed(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.D = 1;
 	return 0;
 }
 
-int CPU2A03::Sei(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Sei(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regP.flags.I = 1;
 	return 0;
 }
 
-int CPU2A03::Sta(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Sta(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_cpuBus->Write(targetAddress, m_regA);
 	return 0;
 }
 
-int CPU2A03::Stx(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Stx(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_cpuBus->Write(targetAddress, m_regX);
 	return 0;
 }
 
-int CPU2A03::Sty(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Sty(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_cpuBus->Write(targetAddress, m_regY);
 	return 0;
 }
 
-int CPU2A03::Tax(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Tax(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regX = m_regA;
 	this->UpdateZNFlags(m_regX);
 	return 0;
 }
 
-int CPU2A03::Tay(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Tay(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regY = m_regA;
 	this->UpdateZNFlags(m_regY);
 	return 0;
 }
 
-int CPU2A03::Tsx(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Tsx(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regX = m_regS;
 	this->UpdateZNFlags(m_regX);
 	return 0;
 }
 
-int CPU2A03::Txa(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Txa(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regA = m_regX;
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Txs(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Txs(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regS = m_regX;
 	return 0;
 }
 
-int CPU2A03::Tya(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Tya(uint16_t targetAddress, bool accumulatorMode)
 {
 	m_regA = m_regY;
 	this->UpdateZNFlags(m_regA);
 	return 0;
 }
 
-int CPU2A03::Illegal(uint8_t value, uint16_t targetAddress, bool accumulatorMode)
+int CPU2A03::Illegal(uint16_t targetAddress, bool accumulatorMode)
 {
 	throw IllegalInstructionException();
 }

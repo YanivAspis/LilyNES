@@ -52,47 +52,7 @@ struct InstructionLine {
     void setInstructionBytes(uint8_t opCodeByte, uint8_t firstArgByte, uint8_t secondArgByte) {
         instructionBytes.clear();
         instructionBytes.push_back(opCodeByte);
-        unsigned int bytesToRead = 0;
-        switch (CPU2A03::s_opCodeTable[opCodeByte].addressMode) {
-        case MODE_IMPLIED:
-            bytesToRead = 0;
-            break;
-        case MODE_ACCUMULATOR:
-            bytesToRead = 0;
-            break;
-        case MODE_IMMEDIATE:
-            bytesToRead = 1;
-        case MODE_ZERO_PAGE:
-            bytesToRead = 1;
-            break;
-        case MODE_ABSOLUTE:
-            bytesToRead = 2;
-            break;
-        case MODE_RELATIVE:
-            bytesToRead = 1;
-            break;
-        case MODE_INDIRECT:
-            bytesToRead = 2;
-            break;
-        case MODE_ZERO_PAGE_INDEXED_X:
-            bytesToRead = 1;
-            break;
-        case MODE_ZERO_PAGE_INDEXED_Y:
-            bytesToRead = 1;
-            break;
-        case MODE_ABSOLUTE_INDEXED_X:
-            bytesToRead = 2;
-            break;
-        case MODE_ABSOLUTE_INDEXED_Y:
-            bytesToRead = 2;
-            break;
-        case MODE_INDEXED_INDIRECT_X:
-            bytesToRead = 1;
-            break;
-        case MODE_INDIRECT_INDEXED_Y:
-            bytesToRead = 1;
-            break;
-        }
+        unsigned int bytesToRead = CPU2A03::s_opCodeTable[opCodeByte].GetInstructionLength() - 1;
         if (bytesToRead >= 1) {
             instructionBytes.push_back(firstArgByte);
         }
@@ -218,7 +178,7 @@ wxThread::ExitCode wxMainFrame::Entry()
             case REQUEST_NEXT_INSTRUCTION:
                 {
                     wxCriticalSectionLocker lock(m_currNESState_cs);
-                    cycles_to_run = m_currNESState.cpuState.cyclesRemaining + 1;
+                    cycles_to_run = m_currNESState.cpuState.cyclesRemaining;
                 }
                 break;
         }

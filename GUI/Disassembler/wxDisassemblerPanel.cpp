@@ -66,22 +66,6 @@ std::map<InstructionMnemonic, std::string> Disassembler::s_mnemonicToString = {
 	{INSTR_ILLEGAL, "ILLEGAL"}
 };
 
-std::map<AddressingMode, int> Disassembler::s_addressingModeToLength = {
-	{MODE_IMPLIED, 1},
-	{MODE_ACCUMULATOR, 1},
-	{MODE_IMMEDIATE, 2},
-	{MODE_ZERO_PAGE, 2},
-	{MODE_ABSOLUTE, 3},
-	{MODE_RELATIVE, 2},
-	{MODE_INDIRECT, 3},
-	{MODE_ZERO_PAGE_INDEXED_X, 2},
-	{MODE_ZERO_PAGE_INDEXED_Y, 2},
-	{MODE_ABSOLUTE_INDEXED_X, 3},
-	{MODE_ABSOLUTE_INDEXED_Y, 3},
-	{MODE_INDEXED_INDIRECT_X, 2},
-	{MODE_INDIRECT_INDEXED_Y, 2}
-};
-
 
 std::string DisassemblerLineData::ToString() {
 	std::stringstream result;
@@ -304,7 +288,7 @@ bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, ui
 	uint8_t opCode = restOfProgramContent.front();
 	restOfProgramContent.pop();
 	CPUInstruction lineInstruction = CPU2A03::s_opCodeTable[opCode];
-	int instructionLength = s_addressingModeToLength[lineInstruction.addressMode];
+	int instructionLength = lineInstruction.GetInstructionLength();
 	if (restOfProgramContent.size() < (size_t)instructionLength - 1) {
 		return false;
 	}

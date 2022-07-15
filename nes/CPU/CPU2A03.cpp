@@ -199,11 +199,10 @@ void CPU2A03::Clock()
 	CPUInstruction instruction = s_opCodeTable[opCode];
 	int baseCycles = instruction.baseCycleCount;
 
-	// read value/target for the instruction to act upon
-	uint8_t value;
+	// read target address for the instruction to act upon
 	uint16_t targetAddress;
 	bool accumulatorMode;
-	int addrModeAdditionalCycles = m_addressModeFunctions[instruction.addressMode](*this, value, targetAddress, accumulatorMode);
+	int addrModeAdditionalCycles = m_addressModeFunctions[instruction.addressMode](*this, targetAddress, accumulatorMode);
 
 	// Fix addressing mode additional cycles for those instructions that don't actually have any
 	for (InstructionMnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
@@ -214,7 +213,7 @@ void CPU2A03::Clock()
 	}
 
 	// actually execute the instruction
-	int executionAdditionalCycles = m_executeFunctions[instruction.mnemonic](*this, value, targetAddress, accumulatorMode);
+	int executionAdditionalCycles = m_executeFunctions[instruction.mnemonic](*this, targetAddress, accumulatorMode);
 
 	// set amount of cycles to wait until next instruction
 	m_cyclesRemaining = baseCycles + addrModeAdditionalCycles + executionAdditionalCycles;

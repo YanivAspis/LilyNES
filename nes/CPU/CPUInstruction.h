@@ -81,14 +81,19 @@ enum AddressingMode {
 	MODE_INDIRECT_INDEXED_Y
 };
 
-
 struct CPUInstruction {
+public:
 	CPUInstruction(uint8_t opCode, InstructionMnemonic mnemonic, AddressingMode addressMode, int baseCycleCount) :
 		opCode(opCode), mnemonic(mnemonic), addressMode(addressMode), baseCycleCount(baseCycleCount) {}
 	uint8_t opCode;
 	InstructionMnemonic mnemonic;
 	AddressingMode addressMode;
 	int baseCycleCount;
+
+	int GetInstructionLength();
+
+private:
+	static std::map<AddressingMode, int> s_addressingModeToLength;
 };
 
 class IllegalInstructionException : public std::exception {
