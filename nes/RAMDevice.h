@@ -21,7 +21,9 @@ public:
 	void HardReset() override;
 
 	uint8_t Read(uint16_t address) override;
-	void Write(uint16_t address, uint8_t data)  override;
+	void Write(uint16_t address, uint8_t data) override;
+
+	uint8_t Probe(uint16_t address) override;
 
 	RAMState GetState() const;
 	void LoadState(RAMState& state);

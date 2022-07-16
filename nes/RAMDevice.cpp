@@ -34,6 +34,10 @@ void RAMDevice::Write(uint16_t address, uint8_t data) {
 	m_RAMContent[BitwiseUtils::ClearUpperBits16(address - RAM_ADDRESS_START, 11)] = data;
 }
 
+uint8_t RAMDevice::Probe(uint16_t address) {
+	return this->Read(address);
+}
+
 RAMState RAMDevice::GetState() const {
 	RAMState state;
 	state.content = m_RAMContent;

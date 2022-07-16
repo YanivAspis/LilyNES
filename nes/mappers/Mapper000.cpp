@@ -30,6 +30,10 @@ void Mapper000::Write(uint16_t address, uint8_t data) {
 	}
 }
 
+uint8_t Mapper000::Probe(uint16_t address) {
+	return this->Read(address);
+}
+
 
 uint8_t Mapper000::PPURead(uint16_t address) {
 	// Mirror to Pattern Table range

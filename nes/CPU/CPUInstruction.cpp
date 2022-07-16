@@ -349,19 +349,10 @@ int CPU2A03::Absolute(uint16_t& targetAddress, bool& accumulatorMode) {
 }
 
 int CPU2A03::Relative(uint16_t& targetAddress, bool& accumulatorMode) {
-	uint8_t relative_address = m_cpuBus->Read(m_regPC);
+	uint8_t relativeAddress = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 
-	// handle signed values and convert to 16-bit
-	uint16_t unsigned_relative_address = 0;
-	if (TestBit8(relative_address, 7)) {
-		unsigned_relative_address = CombineBytes(relative_address, 0xFF);
-	}
-	else {
-		unsigned_relative_address = relative_address;
-	}
-
-	targetAddress = Add16Bit(m_regPC, unsigned_relative_address);
+	targetAddress = AddRelativeAddress(m_regPC, relativeAddress);
 	accumulatorMode = false;
 
 	return 0;
@@ -931,7 +922,10 @@ int CPU2A03::Tya(uint16_t targetAddress, bool accumulatorMode)
 
 int CPU2A03::Illegal(uint16_t targetAddress, bool accumulatorMode)
 {
-	throw IllegalInstructionException();
+	uint16_t address = m_regPC;
+	Dec16Bit(address);
+	uint8_t opCode = m_cpuBus->Probe(address);
+	throw IllegalInstructionException(address, opCode);
 }
 
 

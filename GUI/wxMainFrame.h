@@ -10,7 +10,7 @@
 
 wxDECLARE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
-class wxDisassemblerPanel;
+
 class wxROMInfoFrame;
 
 enum KeyPressRequestType {

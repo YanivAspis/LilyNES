@@ -142,6 +142,20 @@ namespace BitwiseUtils {
 		return (word & 0xFF00) >> 8;
 	}
 
+	uint16_t AddRelativeAddress(uint16_t baseAddress, uint8_t signedRelativeAddress) {
+		uint16_t unsignedRelativeAddress;
+
+		// Handle sign
+		if (TestBit8(signedRelativeAddress, 7)) {
+			unsignedRelativeAddress = CombineBytes(signedRelativeAddress, 0xFF);
+		}
+		else {
+			unsignedRelativeAddress = signedRelativeAddress;
+		}
+
+		return Add16Bit(baseAddress, unsignedRelativeAddress);
+	}
+
 	bool IsUpperByteTheSame(uint16_t word1, uint16_t word2) {
 		return ExtractHighByte(word1) == ExtractHighByte(word2);
 	}

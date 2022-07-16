@@ -7,6 +7,7 @@
 #include "wxNESStateEvent.h"
 #include "../BitwiseUtils.h"
 #include "../nes/ROM/INESFile.h"
+#include "../nes/CPU/CPUInstruction.h"
 
 
 
@@ -150,7 +151,7 @@ void wxMainFrame::StartEmulation()
 wxThread::ExitCode wxMainFrame::Entry()
 {   
     try {
-        m_nes.ConnectCartridge(*m_loadedROM);
+        m_nes.LoadROM(*m_loadedROM);
     }
     catch (UnsupportedMapperException ex) {
         wxMessageBox(ex.what());
@@ -158,7 +159,6 @@ wxThread::ExitCode wxMainFrame::Entry()
     }
    
     m_nes.HardReset();
-    //this->LoadProgram();
     KeyPressRequestType keyPressRequest = REQUEST_NONE;
     {
         wxCriticalSectionLocker lock(m_currNESState_cs);
@@ -295,10 +295,9 @@ void wxMainFrame::OnROMInformation(wxCommandEvent& evt)
 
 void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
     this->StopEmulation(true);
-    m_nes.DisconnectCartridge();
 
     INESFile romFile("D:/Projects/ROMs/test/nestest.nes");
-    m_nes.ConnectCartridge(romFile);
+    m_nes.LoadROM(romFile);
     m_nes.HardReset();
 
     NESState state = m_nes.GetState();
@@ -308,6 +307,7 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
     int num_cpu_cycles = 0;
     std::list<InstructionLine> lines;
     InstructionLine currInstruction;
+
 
     try {
         while (true) {
@@ -323,14 +323,12 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
             m_nes.Clock();
             state = m_nes.GetState();
             if (state.cpuState.instructionFirstCycle) {
-                currInstruction.setInstructionBytes(state.cpuState.opCodeByte, state.cpuState.firstArgByte, state.cpuState.secondArgByte);
+                currInstruction.instructionBytes = m_nes.ProbeCurrentCPUInstruction();
                 lines.push_back(currInstruction);
             }
         }
     }
-    catch (IllegalInstructionException ex) {
-
-    }
+    catch (IllegalInstructionException ex) {}
 
     std::ofstream outputFile;
     outputFile.open("D:/Projects/cpuTest.txt", std::ios::out | std::ios::trunc);

@@ -1,8 +1,10 @@
-#include "wxDisassemblerPanel.h"
-#include "../../BitwiseUtils.h"
 #include <sstream>
 #include <cstdint>
 #include <iomanip>
+
+#include "wxDisassemblerPanel.h"
+#include "../../BitwiseUtils.h"
+#include "../../nes/CPU/CPU2A03.h"
 
 using namespace BitwiseUtils;
 
@@ -176,16 +178,7 @@ std::string DisassemblerLineData::RelativeToString()
 {
 	std::stringstream result;
 	uint16_t resultAddress = Add16Bit(m_beginAddress, m_length);
-	// handle signed values and convert to 16-bit
-	uint16_t unsigned_relative_address = 0;
-	if (TestBit8(m_dataLow, 7)) {
-		unsigned_relative_address = CombineBytes(m_dataLow, 0xFF);
-	}
-	else {
-		unsigned_relative_address = m_dataLow;
-	}
-	resultAddress = Add16Bit(resultAddress, unsigned_relative_address);
-
+	resultAddress = AddRelativeAddress(resultAddress, m_dataLow);
 	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << " [$" << std::setw(4) << (unsigned int)resultAddress << "]";
 	return result.str();
 }

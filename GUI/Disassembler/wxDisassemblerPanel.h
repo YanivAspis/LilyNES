@@ -2,12 +2,10 @@
 #include <cstdint>
 #include <queue>
 #include <wx/wx.h>
-#include "../wxMainFrame.h"
 #include "../wxNESStateEvent.h"
 #include "../../nes/NES.h"
 #include "../../nes/CPU/CPUInstruction.h"
 #include "wxLargeUnselectableListBox.h"
-class wxMainFrame;
 
 class DisassemblerLineData {
 public:
@@ -91,8 +89,6 @@ public:
 	void OnNextAddress(wxNESStateEvent<uint16_t>& evt);
 
 private:
-	wxMainFrame* m_mainFrame;
-
 	Disassembler m_disassembler;
 	bool m_isInitialized;
 

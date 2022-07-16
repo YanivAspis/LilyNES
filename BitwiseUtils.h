@@ -32,6 +32,7 @@ uint16_t CombineBytes(uint8_t lowByte, uint8_t highByte);
 uint8_t ExtractLowByte(uint16_t word);
 uint8_t ExtractHighByte(uint16_t word);
 
+uint16_t AddRelativeAddress(uint16_t baseAddress, uint8_t signedRelativeAddress);
 bool IsUpperByteTheSame(uint16_t word1, uint16_t word2);
 
 }

@@ -42,9 +42,6 @@ CPUState::CPUState() {
 
 	instructionFirstCycle = false;
 	currInstructionAddress = 0;
-	opCodeByte = 0;
-	firstArgByte = 0;
-	secondArgByte = 0;
 }
 
 
@@ -68,9 +65,6 @@ CPU2A03::CPU2A03(bool decimalAllowed) {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
-	m_opCodeByte = 0;
-	m_firstArgByte = 0;
-	m_secondArgByte= 0;
 
 	this->PopulateFunctionMaps();
 }
@@ -101,9 +95,6 @@ void CPU2A03::SoftReset() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
-	m_opCodeByte = 0;
-	m_firstArgByte = 0;
-	m_secondArgByte = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -124,9 +115,6 @@ void CPU2A03::HardReset() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
-	m_opCodeByte = 0;
-	m_firstArgByte = 0;
-	m_secondArgByte = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -146,9 +134,6 @@ CPUState CPU2A03::GetState() const {
 
 	state.instructionFirstCycle = m_instructionFirstCycle;
 	state.currInstructionAddress = m_currInstructionAddress;
-	state.opCodeByte = m_opCodeByte;
-	state.firstArgByte = m_firstArgByte;
-	state.secondArgByte = m_secondArgByte;
 
 	return state;
 }
@@ -167,9 +152,6 @@ void CPU2A03::LoadState(CPUState& state) {
 
 	m_instructionFirstCycle = state.instructionFirstCycle;
 	m_currInstructionAddress = state.currInstructionAddress;
-	m_opCodeByte = state.opCodeByte;
-	m_firstArgByte = state.firstArgByte;
-	m_secondArgByte = state.secondArgByte;
 }
 
 void CPU2A03::Clock()
@@ -189,9 +171,6 @@ void CPU2A03::Clock()
 
 	m_instructionFirstCycle = true;
 	m_currInstructionAddress = m_regPC;
-	m_opCodeByte = this->m_cpuBus->Read(m_regPC);
-	m_firstArgByte = this->m_cpuBus->Read(Add16Bit(m_regPC, 1));
-	m_secondArgByte = this->m_cpuBus->Read(Add16Bit(m_regPC, 2));
 	
 	// No interrupt, perform next instruction
 	uint8_t opCode = this->m_cpuBus->Read(m_regPC);
@@ -227,10 +206,17 @@ void CPU2A03::RaiseNMI() {
 	m_nmiRaised = true;
 }
 
+std::vector<uint8_t> CPU2A03::GetCurrentInstructionBytes() {
+	uint8_t currOpCode = m_cpuBus->Probe(m_currInstructionAddress);
+	std::vector<uint8_t> instructionBytes = { currOpCode };
+	for (int i = 1; i < s_opCodeTable[currOpCode].GetInstructionLength(); i++) {
+		instructionBytes.push_back(m_cpuBus->Probe(Add16Bit(m_currInstructionAddress, i)));
+	}
+	return instructionBytes;
+}
+
 uint16_t CPU2A03::FetchInitialPC() {
 	uint8_t lowByte = m_cpuBus->Read(ADDR_RESET_VECTOR_LOW);
 	uint8_t highByte = m_cpuBus->Read(ADDR_RESET_VECTOR_HIGH);
-	//uint8_t lowByte = 0x00;
-	//uint8_t highByte = 0xC0;
 	return CombineBytes(lowByte, highByte);
 }

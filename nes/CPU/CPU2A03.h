@@ -92,6 +92,8 @@ public:
 	void RaiseIRQ();
 	void RaiseNMI();
 
+	std::vector<uint8_t> GetCurrentInstructionBytes();
+
 
 	static std::array<CPUInstruction, OPCODE_TABLE_SIZE> s_opCodeTable;
 	static std::array<InstructionMnemonic, NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES> s_mnemonicsWithoutAdditionalCycles;
@@ -209,13 +211,10 @@ private:
 	int m_irqPending;
 	bool m_nmiRaised;
 
-	// True if this is the first cycle for the current instruction. Needed for the disassembler
+	// True if this is the first cycle for the current instruction. Needed for debugging
 	bool m_instructionFirstCycle;
-	// Address of current instruction. Needed for disassembler
+	// Address of current instruction. Needed for debugging
 	uint16_t m_currInstructionAddress;
-	uint8_t m_opCodeByte;
-	uint8_t m_firstArgByte;
-	uint8_t m_secondArgByte;
 
 
 	std::map<InstructionMnemonic, std::function<int(CPU2A03&, uint16_t, bool)> > m_executeFunctions;

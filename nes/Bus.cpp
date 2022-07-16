@@ -61,6 +61,17 @@ void Bus::Write(uint16_t address, uint8_t data) {
 	return;
 }
 
+uint8_t Bus::Probe(uint16_t address) {
+	for (BusDevice* device : m_devices) {
+		if (device->IsInAddressRanges(address)) {
+			return device->Probe(address);;
+		}
+	}
+
+	// Address not claimed by any device
+	return 0;
+}
+
 void Bus::ConnectDevice(BusDevice* device) {
 	assert(!DoAddressesCollide(device));
 	device->ConnectToBus(this);
