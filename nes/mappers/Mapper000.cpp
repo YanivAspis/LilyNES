@@ -1,5 +1,6 @@
 #include "Mapper000.h"
-#include "../../BitwiseUtils.h"
+#include "../../utils/BitwiseUtils.h"
+
 using namespace BitwiseUtils;
 
 Mapper000::Mapper000(const INESFile& romFile) 

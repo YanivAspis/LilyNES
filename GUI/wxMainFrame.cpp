@@ -5,24 +5,12 @@
 
 #include "wxMainFrame.h"
 #include "wxNESStateEvent.h"
-#include "../BitwiseUtils.h"
+#include "../utils/BitwiseUtils.h"
+#include "../utils/NESUtils.h"
 #include "../nes/ROM/INESFile.h"
 #include "../nes/CPU/CPUInstruction.h"
 
-
-
-
-std::string HexNumToString(uint8_t num) {
-    std::stringstream result;
-    result << "0x" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)num;
-    return result.str();
-}
-
-std::string HexNumToString(uint16_t num) {
-    std::stringstream result;
-    result << "0x" << std::uppercase << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)num;
-    return result.str();
-}
+using namespace NESUtils;
 
 struct InstructionLine {
     InstructionLine() {
@@ -64,16 +52,16 @@ struct InstructionLine {
 
     std::string ToString() const {
         std::stringstream result;
-        result << HexNumToString(pc) << "\t";
+        result << HexUint16ToString(pc) << "\t";
         for (uint8_t byte : instructionBytes) {
-            result << HexNumToString(byte) << " ";
+            result << HexUint8ToString(byte) << " ";
         }
-        result << "\t" << "A: " << HexNumToString(A);
-        result << "  " << "X: " << HexNumToString(X);
-        result << "  " << "Y: " << HexNumToString(Y);
-        result << "  " << "P: " << HexNumToString(P);
-        result << "  " << "SP: " << HexNumToString(SP);
-        result << "  " << "Addr2: " << HexNumToString(ram0002value);
+        result << "\t" << "A: " << HexUint8ToString(A);
+        result << "  " << "X: " << HexUint8ToString(X);
+        result << "  " << "Y: " << HexUint8ToString(Y);
+        result << "  " << "P: " << HexUint8ToString(P);
+        result << "  " << "SP: " << HexUint8ToString(SP);
+        result << "  " << "Addr2: " << HexUint8ToString(ram0002value);
         result << "  " << "Cycles: " << num_cpu_cycles;
 
         return result.str();

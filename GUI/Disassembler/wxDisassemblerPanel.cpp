@@ -1,12 +1,12 @@
-#include <sstream>
 #include <cstdint>
-#include <iomanip>
 
 #include "wxDisassemblerPanel.h"
-#include "../../BitwiseUtils.h"
+#include "../../utils/BitwiseUtils.h"
+#include "../../utils/NESUtils.h"
 #include "../../nes/CPU/CPU2A03.h"
 
 using namespace BitwiseUtils;
+using namespace NESUtils;
 
 std::map<InstructionMnemonic, std::string> Disassembler::s_mnemonicToString = {
 	{INSTR_ADC, "ADC"},
@@ -70,53 +70,53 @@ std::map<InstructionMnemonic, std::string> Disassembler::s_mnemonicToString = {
 
 
 std::string DisassemblerLineData::ToString() {
-	std::stringstream result;
-	result << "0x" << std::uppercase << std::setfill('0') << std::setw(4) << std::hex << (unsigned int)m_beginAddress << ": ";
-	result << Disassembler::s_mnemonicToString[m_mnemonic];
+	std::string result;
+	result += HexUint16ToString(m_beginAddress) + ": ";
+	result += Disassembler::s_mnemonicToString[m_mnemonic];
 
 	switch (m_addressingMode) {
 		case MODE_IMPLIED:
-			result << this->ImpliedToString();
+			result += this->ImpliedToString();
 			break;
 		case MODE_ACCUMULATOR:
-			result << this->AccumulatorToString();
+			result += this->AccumulatorToString();
 			break;
 		case MODE_IMMEDIATE:
-			result << this->ImmediateToString();
+			result += this->ImmediateToString();
 			break;
 		case MODE_ZERO_PAGE:
-			result << this->ZeroPageToString();
+			result += this->ZeroPageToString();
 			break;
 		case MODE_ABSOLUTE:
-			result << this->AbsoluteToString();
+			result += this->AbsoluteToString();
 			break;
 		case MODE_RELATIVE:
-			result << this->RelativeToString();
+			result += this->RelativeToString();
 			break;
 		case MODE_INDIRECT:
-			result << this->IndirectToString();
+			result += this->IndirectToString();
 			break;
 		case MODE_ZERO_PAGE_INDEXED_X:
-			result << this->ZeroPageIndexedXToString();
+			result += this->ZeroPageIndexedXToString();
 			break;
 		case MODE_ZERO_PAGE_INDEXED_Y:
-			result << this->ZeroPageIndexedYToString();
+			result += this->ZeroPageIndexedYToString();
 			break;
 		case MODE_ABSOLUTE_INDEXED_X:
-			result << this->AbsoluteIndexedXToString();
+			result += this->AbsoluteIndexedXToString();
 			break;
 		case MODE_ABSOLUTE_INDEXED_Y:
-			result << this->AbsoluteIndexedYToString();
+			result += this->AbsoluteIndexedYToString();
 			break;
 		case MODE_INDEXED_INDIRECT_X:
-			result << this->IndexedIndirectXToString();
+			result += this->IndexedIndirectXToString();
 			break;
 		case MODE_INDIRECT_INDEXED_Y:
-			result << this->IndirectIndexedYToString();
+			result += this->IndirectIndexedYToString();
 			break;
 	}
 
-	return result.str();
+	return result;
 }
 
 uint16_t DisassemblerLineData::GetAddress() const {
@@ -155,81 +155,59 @@ std::string DisassemblerLineData::AccumulatorToString()
 
 std::string DisassemblerLineData::ImmediateToString()
 {
-	std::stringstream result;
-	result << " #$" << std::uppercase << std::setfill('0') << std::setw(2) << std::hex << (unsigned int)m_dataLow;
-	return result.str();
+	return " #$" + HexUint8ToString(m_dataLow);
 }
 
 std::string DisassemblerLineData::ZeroPageToString()
 {
-	std::stringstream result;
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow;
-	return result.str();
+	return " $" + HexUint8ToString(m_dataLow);
 }
 
 std::string DisassemblerLineData::AbsoluteToString()
 {
-	std::stringstream result;
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataHigh << std::setw(2) << (unsigned int)m_dataLow;
-	return result.str();
+	return " $" + HexUint16ToString(CombineBytes(m_dataLow, m_dataHigh));
 }
 
 std::string DisassemblerLineData::RelativeToString()
 {
-	std::stringstream result;
 	uint16_t resultAddress = Add16Bit(m_beginAddress, m_length);
 	resultAddress = AddRelativeAddress(resultAddress, m_dataLow);
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << " [$" << std::setw(4) << (unsigned int)resultAddress << "]";
-	return result.str();
+	return " $" + HexUint8ToString(m_dataLow) + " [$" + HexUint16ToString(resultAddress) + "]";
 }
 
 std::string DisassemblerLineData::IndirectToString()
 {
-	std::stringstream result;
-	result << " ($" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataHigh << std::setw(2) << (unsigned int)m_dataLow << ")";
-	return result.str();
+	return " ($" + HexUint16ToString(CombineBytes(m_dataLow, m_dataHigh)) + ")";
 }
 
 std::string DisassemblerLineData::ZeroPageIndexedXToString()
 {
-	std::stringstream result;
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << ",X";
-	return result.str();
+	return " $" + HexUint8ToString(m_dataLow) + ",X";
 }
 
 std::string DisassemblerLineData::ZeroPageIndexedYToString()
 {
-	std::stringstream result;
-	result << " $" << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << ",Y";
-	return result.str();
+	return " $" + HexUint8ToString(m_dataLow) + ",Y";
 }
 
 std::string DisassemblerLineData::AbsoluteIndexedXToString()
 {
-	std::stringstream result;
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataHigh << std::setw(2) << (unsigned int)m_dataLow << ",X";
-	return result.str();
+	return " $" + HexUint16ToString(CombineBytes(m_dataLow, m_dataHigh)) + ",X";
 }
 
 std::string DisassemblerLineData::AbsoluteIndexedYToString()
 {
-	std::stringstream result;
-	result << " $" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataHigh << std::setw(2) << (unsigned int)m_dataLow << ",Y";
-	return result.str();
+	return " $" + HexUint16ToString(CombineBytes(m_dataLow, m_dataHigh)) + ",Y";
 }
 
 std::string DisassemblerLineData::IndexedIndirectXToString()
 {
-	std::stringstream result;
-	result << " ($" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << ",X)";
-	return result.str();
+	return " ($" + HexUint8ToString(m_dataLow) + ",X)";
 }
 
 std::string DisassemblerLineData::IndirectIndexedYToString()
 {
-	std::stringstream result;
-	result << " ($" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)m_dataLow << "),Y";
-	return result.str();
+	return " ($" + HexUint8ToString(m_dataLow) + "),Y";
 }
 
 

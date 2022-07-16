@@ -95,10 +95,11 @@ void NES::RunUntilNextCycle() {
 }
 
 void NES::RunUntilNextInstruction() {
-	unsigned int cyclesToRun = this->GetState().cpuState.cyclesRemaining;
-	while (cyclesToRun > 0) {
+	while (m_cpu.GetState().cyclesRemaining > 1) {
 		this->Clock();
-		cyclesToRun--;
+	}
+	while (m_cpu.GetState().cyclesRemaining == 1) {
+		this->Clock();
 	}
 }
 

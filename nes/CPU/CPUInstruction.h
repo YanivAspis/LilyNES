@@ -1,10 +1,11 @@
 #pragma once
 
-#include <sstream>
 #include <cstdint>
-#include <iomanip>
 #include <exception>
 #include "CPU2A03.h"
+#include "../../utils/NESUtils.h"
+
+using namespace NESUtils;
 
 
 enum InstructionMnemonic {
@@ -101,9 +102,7 @@ private:
 class IllegalInstructionException : public std::exception {
 public:
 	IllegalInstructionException(uint16_t instructionAddress, uint8_t opCode) {
-		std::stringstream result;
-		result << "Illegal instruction detected.  Address: 0x" << std::uppercase << std::hex << std::setfill('0') << std::setw(4) << (unsigned int)instructionAddress << "  OpCode: 0x" << std::uppercase << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)opCode;
-		m_message = result.str();
+		m_message = "Illegal instruction detected.  Address: " + HexUint16ToString(instructionAddress) + "  OpCode: " + HexUint8ToString(opCode);
 	}
 
 	const char* what() const throw () {

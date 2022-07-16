@@ -1,5 +1,5 @@
 #include "INESHeader.h"
-#include "../../BitwiseUtils.h"
+#include "../../utils/BitwiseUtils.h"
 
 using namespace BitwiseUtils;
 

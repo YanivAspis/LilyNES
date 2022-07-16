@@ -49,6 +49,12 @@
     <Filter Include="Source Files\GUI\Disassembler">
       <UniqueIdentifier>{63c28bfc-7d8c-442b-829f-408b252e74e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{1c00bc2a-557d-43c5-880e-31d4275783c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{b7189f26-15e7-44a1-b6dc-6f750ed91223}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nes\Bus.cpp">
@@ -84,9 +90,6 @@
     <ClCompile Include="nes\ROM\INESHeader.cpp">
       <Filter>Source Files\nes\ROM</Filter>
     </ClCompile>
-    <ClCompile Include="BitwiseUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="nes\ROM\INESFile.cpp">
       <Filter>Source Files\nes\ROM</Filter>
     </ClCompile>
@@ -104,6 +107,12 @@
     </ClCompile>
     <ClCompile Include="GUI\Disassembler\wxDisassemblerPanel.cpp">
       <Filter>Source Files\GUI\Disassembler</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\BitwiseUtils.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\NESUtils.cpp">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,9 +152,6 @@
     <ClInclude Include="nes\ROM\INESHeader.h">
       <Filter>Header Files\nes\ROM</Filter>
     </ClInclude>
-    <ClInclude Include="BitwiseUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="nes\ROM\INESFile.h">
       <Filter>Header Files\nes\ROM</Filter>
     </ClInclude>
@@ -163,6 +169,12 @@
     </ClInclude>
     <ClInclude Include="GUI\Disassembler\wxDisassemblerPanel.h">
       <Filter>Header Files\GUI\Disassembler</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\BitwiseUtils.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\NESUtils.h">
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

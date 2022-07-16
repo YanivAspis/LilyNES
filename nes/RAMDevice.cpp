@@ -6,7 +6,7 @@
  */
 
 #include "RAMDevice.h"
-#include "../BitwiseUtils.h"
+#include "../utils/BitwiseUtils.h"
 
 
 RAMState::RAMState() {

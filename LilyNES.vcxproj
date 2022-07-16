@@ -147,7 +147,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BitwiseUtils.cpp" />
     <ClCompile Include="GUI\Disassembler\wxDisassemblerPanel.cpp" />
     <ClCompile Include="GUI\Disassembler\wxLargeUnselectableListBox.cpp" />
     <ClCompile Include="GUI\LilyNESApp.cpp" />
@@ -165,9 +164,10 @@
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />
+    <ClCompile Include="utils\BitwiseUtils.cpp" />
+    <ClCompile Include="utils\NESUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BitwiseUtils.h" />
     <ClInclude Include="GUI\Disassembler\wxDisassemblerPanel.h" />
     <ClInclude Include="GUI\Disassembler\wxLargeUnselectableListBox.h" />
     <ClInclude Include="GUI\LilyNESApp.h" />
@@ -186,6 +186,8 @@
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />
     <ClInclude Include="nes\ROM\INESHeader.h" />
+    <ClInclude Include="utils\BitwiseUtils.h" />
+    <ClInclude Include="utils\NESUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

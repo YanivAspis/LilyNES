@@ -5,9 +5,10 @@
  *      Author: yaniv
  */
 
-#include "CPU2A03.h"
-#include "../../BitwiseUtils.h"
 #include <assert.h>
+
+#include "CPU2A03.h"
+#include "../../utils/BitwiseUtils.h"
 
 using namespace BitwiseUtils;
 
