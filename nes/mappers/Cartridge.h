@@ -1,11 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <sstream>
-#include <iomanip>
 
 #include "../ROM/INESFile.h"
 #include "../BusDevice.h"
+#include "../../utils/NESUtils.h"
+
+using namespace NESUtils;
 
 constexpr uint16_t PRG_RAM_START_ADDRESS = 0x6000;
 constexpr uint16_t PRG_RAM_END_ADDRESS = 0x7999;
@@ -17,9 +18,8 @@ class UnsupportedMapperException : public std::exception {
 public:
 	UnsupportedMapperException(uint8_t mapperID) 
 	{
-		std::ostringstream s;
-		s << "Unsupported mapper: " << std::setfill('0') << std::setw(3) << (unsigned int)mapperID;
-		m_exceptMessage = s.str();
+		std::string mapperStr = DecUint8ToString(mapperID);
+		m_exceptMessage = "Unsupported mapper: " + mapperStr;
 	}
 
 	const char* what() const throw () {

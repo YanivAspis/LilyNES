@@ -228,11 +228,11 @@ void Disassembler::Initialize(std::vector<uint8_t> programContent, uint16_t begi
 	}
 	if (programContent.size() <= 16 * 1024) {
 		std::vector<DisassemblerLineData> programMirror;
-		for (DisassemblerLineData lineData : m_programData) {
+		for (const DisassemblerLineData& lineData : m_programData) {
 			programMirror.push_back(DisassemblerLineData(lineData.GetAddress() + 0x4000, lineData.GetLength(), lineData.GetMnemonic(), 
 				lineData.GetAddressingMode(), lineData.GetDataLow(), lineData.GetDataHigh()));
 		}
-		for (DisassemblerLineData lineData : programMirror) {
+		for (const DisassemblerLineData& lineData : programMirror) {
 			m_programData.push_back(lineData);
 			m_addressToIndex[lineData.GetAddress()] = currIndex;
 			currIndex++;

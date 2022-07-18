@@ -51,20 +51,19 @@ struct InstructionLine {
     }
 
     std::string ToString() const {
-        std::stringstream result;
-        result << HexUint16ToString(pc) << "\t";
+        std::string result = HexUint16ToString(pc) + "\t";
         for (uint8_t byte : instructionBytes) {
-            result << HexUint8ToString(byte) << " ";
+            result += HexUint8ToString(byte) + " ";
         }
-        result << "\t" << "A: " << HexUint8ToString(A);
-        result << "  " << "X: " << HexUint8ToString(X);
-        result << "  " << "Y: " << HexUint8ToString(Y);
-        result << "  " << "P: " << HexUint8ToString(P);
-        result << "  " << "SP: " << HexUint8ToString(SP);
-        result << "  " << "Addr2: " << HexUint8ToString(ram0002value);
-        result << "  " << "Cycles: " << num_cpu_cycles;
+        result += "\tA: " + HexUint8ToString(A);
+        result += "  X: " + HexUint8ToString(X);
+        result += "  Y: " + HexUint8ToString(Y);
+        result += "  P: " + HexUint8ToString(P);
+        result += "  SP: " + HexUint8ToString(SP);
+        result += "  Addr2: " + HexUint8ToString(ram0002value);
+        result += "  Cycles: " + std::to_string(num_cpu_cycles);
 
-        return result.str();
+        return result;
     }
 };
 
@@ -82,7 +81,6 @@ enum MenuOptions {
 };
 
 
-wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 wxBEGIN_EVENT_TABLE(wxMainFrame, wxFrame)
     EVT_CLOSE(wxMainFrame::OnClose)
     EVT_MENU(wxID_OPEN_ROM, wxMainFrame::OnLoadROM)
@@ -118,79 +116,44 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     topSizer->Fit(this);
 
     m_ROMInfoFrame = nullptr;
+    m_emulationThread = nullptr;
 }
 
 
 void wxMainFrame::StartEmulation()
 {
-    if (CreateThread(wxTHREAD_DETACHED) != wxTHREAD_NO_ERROR)
-    {
-        wxLogError("Failed to create emulation thread.");
+    if (m_emulationThread != nullptr) {
+        wxLogError("Emulation already running!");
         return;
     }
-    if (GetThread()->Run() != wxTHREAD_NO_ERROR)
-    {
-        wxLogError("Failed to run emulation thread.");
-        return;
-    }
-}
 
-
-wxThread::ExitCode wxMainFrame::Entry()
-{   
+    m_emulationThread = new wxEmulationThread(this);
+    m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     try {
-        m_nes.LoadROM(*m_loadedROM);
+        m_emulationThread->LoadROM(*m_loadedROM);
     }
     catch (UnsupportedMapperException ex) {
         wxMessageBox(ex.what());
-        return wxThread::ExitCode(1);
+        delete m_emulationThread;
+        m_emulationThread = nullptr;
+        return;
     }
-   
-    m_nes.HardReset();
-    KeyPressRequestType keyPressRequest = REQUEST_NONE;
-    {
-        wxCriticalSectionLocker lock(m_currNESState_cs);
-        m_currNESState = m_nes.GetState();
+    if (m_emulationThread->Create() != wxTHREAD_NO_ERROR) {
+        wxLogError("Error while creating emulation thread");
+        delete m_emulationThread;
+        m_emulationThread = nullptr;
+        return;
     }
-    wxQueueEvent(this, new wxThreadEvent(EVT_NES_STATE_THREAD_UPDATE));
-    while (!GetThread()->TestDestroy())
-    {
-        m_keypressMessageQueue.ReceiveTimeout(100, keyPressRequest);
-        int cycles_to_run = 0;
-        switch (keyPressRequest) {
-            case REQUEST_NONE:
-                continue;
-            case REQUEST_NEXT_CYCLE:
-                cycles_to_run = 1;
-                break;
-            case REQUEST_NEXT_INSTRUCTION:
-                {
-                    wxCriticalSectionLocker lock(m_currNESState_cs);
-                    cycles_to_run = m_currNESState.cpuState.cyclesRemaining;
-                }
-                break;
-        }
-        keyPressRequest = REQUEST_NONE;
-        try {
-            while (cycles_to_run > 0) {
-                m_nes.Clock();
-                cycles_to_run--;
-            }
-            {
-                wxCriticalSectionLocker lock(m_currNESState_cs);
-                m_currNESState = m_nes.GetState();
-            }
-            wxQueueEvent(this, new wxThreadEvent(EVT_NES_STATE_THREAD_UPDATE));
-            //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        }
-        catch (IllegalInstructionException ex) {
-            wxMessageBox("Illegal instruction detected. Killing emulation.");
-            return wxThread::ExitCode(1);
-        }
+    if (m_emulationThread->Run() != wxTHREAD_NO_ERROR) {
+        wxLogError("Failed to run emulation thread.");
+        delete m_emulationThread;
+        m_emulationThread = nullptr;
+        return;
     }
-    return wxThread::ExitCode(0);
 }
 
+
+/*
 void wxMainFrame::LoadProgram() {
     // Snake program
     //std::string program_str = "20 06 06 20 38 06 20 0d 06 20 2a 06 60 a9 02 85 02 a9 04 85 03 a9 11 85 10 a9 10 85 12 a9 0f 85 14 a9 04 85 11 85 13 85 15 60 a5 fe 85 00 a5 fe 29 03 18 69 02 85 01 60 20 4d 06 20 8d 06 20 c3 06 20 19 07 20 20 07 20 2d 07 4c 38 06 a5 ff c9 77 f0 0d c9 64 f0 14 c9 73 f0 1b c9 61 f0 22 60 a9 04 24 02 d0 26 a9 01 85 02 60 a9 08 24 02 d0 1b a9 02 85 02 60 a9 01 24 02 d0 10 a9 04 85 02 60 a9 02 24 02 d0 05 a9 08 85 02 60 60 20 94 06 20 a8 06 60 a5 00 c5 10 d0 0d a5 01 c5 11 d0 07 e6 03 e6 03 20 2a 06 60 a2 02 b5 10 c5 10 d0 06 b5 11 c5 11 f0 09 e8 e8 e4 03 f0 06 4c aa 06 4c 35 07 60 a6 03 ca 8a b5 10 95 12 ca 10 f9 a5 02 4a b0 09 4a b0 19 4a b0 1f 4a b0 2f a5 10 38 e9 20 85 10 90 01 60 c6 11 a9 01 c5 11 f0 28 60 e6 10 a9 1f 24 10 f0 1f 60 a5 10 18 69 20 85 10 b0 01 60 e6 11 a9 06 c5 11 f0 0c 60 c6 10 a5 10 29 1f c9 1f f0 01 60 4c 35 07 a0 00 a5 fe 91 00 60 a6 03 a9 00 81 10 a2 00 a9 01 81 10 60 a2 00 ea ea ca d0 fb 60";
@@ -224,14 +187,10 @@ void wxMainFrame::LoadProgram() {
         state.ramState.content[Add16Bit(pc,i)] = program_hex[i];
     }
     m_nes.LoadState(state);
-}
+}*/
 
 void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
-    NESState state;
-    {
-        wxCriticalSectionLocker lock(m_currNESState_cs);
-        state = m_currNESState;
-    }
+    NESState state = m_emulationThread->GetCurrentNESState();
     wxNESStateEvent<CPUState> cpuPostEvt(EVT_CPU_STATE_GUI_UPDATE);
     cpuPostEvt.SetState(state.cpuState);
     wxPostEvent(m_cpuStatePanel, cpuPostEvt);
@@ -328,21 +287,22 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
 }
 
 void wxMainFrame::RunUntilNextCycle() {
-    m_keypressMessageQueue.Post(REQUEST_NEXT_CYCLE);
+    m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_CYCLE);
 }
 
 void wxMainFrame::RunUntilNextInstruction() {
-    m_keypressMessageQueue.Post(REQUEST_NEXT_INSTRUCTION);
+    m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_INSTRUCTION);
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {
-    if (GetThread() && GetThread()->IsRunning()) {
-        GetThread()->Delete();
-    }
-    if (wait) {
-        while (GetThread() && GetThread()->IsRunning()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->Delete();
+        if (wait) {
+            while (m_emulationThread && m_emulationThread->IsRunning()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
         }
+        m_emulationThread = nullptr;
     }
 }
 

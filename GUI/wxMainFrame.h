@@ -7,10 +7,9 @@
 #include "wxRAMStatePanel.h"
 #include "Disassembler/wxDisassemblerPanel.h"
 #include "wxROMInfoFrame.h"
+#include "wxEmulationThread.h"
 
-wxDECLARE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
-
-
+class wxEmulationThread;
 class wxROMInfoFrame;
 
 enum KeyPressRequestType {
@@ -19,7 +18,7 @@ enum KeyPressRequestType {
 	REQUEST_NEXT_INSTRUCTION
 };
 
-class wxMainFrame : public wxFrame, public wxThreadHelper
+class wxMainFrame : public wxFrame
 {
 public:
 	wxMainFrame();
@@ -36,9 +35,9 @@ public:
 	std::shared_ptr<INESFile> GetLoadedROM() const;
 
 private:
-	wxThread::ExitCode Entry();
-	void LoadProgram();
 	void StopEmulation(bool wait);
+
+	wxEmulationThread* m_emulationThread;
 
 	wxMenuBar* m_mainMenuBar;
 	wxMenu* m_fileMenu;
