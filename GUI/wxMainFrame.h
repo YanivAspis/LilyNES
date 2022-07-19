@@ -38,6 +38,7 @@ private:
 	void StopEmulation(bool wait);
 
 	wxEmulationThread* m_emulationThread;
+	wxSemaphore m_emulationThreadExitNotice;
 
 	wxMenuBar* m_mainMenuBar;
 	wxMenu* m_fileMenu;

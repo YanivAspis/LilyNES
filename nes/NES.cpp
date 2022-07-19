@@ -72,24 +72,6 @@ void NES::Clock()
 }
 
 
-
-void NES::StartEmulation() {
-
-}
-
-void NES::PauseEmulation() {
-
-}
-
-void NES::ResumeEmulation() {
-
-}
-
-void NES::StopEmulation() {
-
-}
-
-
 void NES::RunUntilNextCycle() {
 	this->Clock();
 }

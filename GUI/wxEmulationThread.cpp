@@ -3,11 +3,11 @@
 
 wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
-wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame) {
+wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice) {
 	m_continuousRunInitialized = false;
 	m_runningMode = EMULATION_RUNNING_PAUSED;
-	m_userRequest = EMULATION_USER_REQUEST_NONE;
 	m_mainFrame = mainFrame;
+	m_exitNotice = exitNotice;
 }
 
 void* wxEmulationThread::Entry(){
@@ -35,6 +35,10 @@ void* wxEmulationThread::Entry(){
 	return wxThread::ExitCode(0);
 }
 
+void wxEmulationThread::OnExit() {
+	m_exitNotice->Post();
+}
+
 void wxEmulationThread::LoadROM(const INESFile& romFile) {
 	m_nes.LoadROM(romFile);
 }
@@ -58,7 +62,7 @@ void wxEmulationThread::SetRunningMode(const EMULATION_RUNNING_MODE& runningMode
 void wxEmulationThread::SetUserRequest(const EMULATION_USER_REQUEST& userRequest) {
 	{
 		wxCriticalSectionLocker enter(m_userRequestCritSection);
-		m_userRequest = userRequest;
+		m_userRequestQueue.Post(userRequest);
 	}
 }
 
@@ -83,30 +87,24 @@ void wxEmulationThread::PostNESUpdate() {
 }
 
 EMULATION_USER_REQUEST wxEmulationThread::GetUserRequest() {
-	EMULATION_USER_REQUEST request;
+	EMULATION_USER_REQUEST request = EMULATION_USER_REQUEST_NONE;
 	{
 		wxCriticalSectionLocker enter(m_userRequestCritSection);
-		request = m_userRequest;
-		m_userRequest = EMULATION_USER_REQUEST_NONE;
+		m_userRequestQueue.ReceiveTimeout(100, request);
 	}
 	return request;
 }
 
 void wxEmulationThread::RunUntilNextCycle() {
-	m_nes.Clock();
+	m_nes.RunUntilNextCycle();
 }
 
 void wxEmulationThread::RunUntilNextInstruction() {
-	while (m_nes.ProbeCPUState().cyclesRemaining > 1) {
-		m_nes.Clock();
-	}
-	while (m_nes.ProbeCPUState().cyclesRemaining == 1) {
-		m_nes.Clock();
-	}
+	m_nes.RunUntilNextInstruction();
 }
 
 void wxEmulationThread::RunUntilNextFrame() {
-
+	m_nes.RunUntilNextFrame();
 }
 
 void wxEmulationThread::EmulationWait() {
@@ -133,7 +131,6 @@ void wxEmulationThread::DoUserRequestRun() {
 		this->RunUntilNextFrame();
 		break;
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 void wxEmulationThread::DoContinuousRun() {

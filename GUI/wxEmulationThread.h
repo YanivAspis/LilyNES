@@ -30,10 +30,10 @@ wxDECLARE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
 class wxEmulationThread : public wxThread {
 public:
-	wxEmulationThread(wxMainFrame* mainFrame);
+	wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice);
 	virtual void* Entry() wxOVERRIDE;
+	virtual void OnExit() wxOVERRIDE;
 	void LoadROM(const INESFile& romFile);
-	//virtual void OnExit() wxOVERRIDE;
 
 	EMULATION_RUNNING_MODE GetRunningMode();
 	void SetRunningMode(const EMULATION_RUNNING_MODE& runningMode);
@@ -61,11 +61,12 @@ private:
 
 	EMULATION_RUNNING_MODE m_runningMode;
 	wxCriticalSection m_runningModeCritSection;
-	EMULATION_USER_REQUEST m_userRequest;
+	wxMessageQueue<EMULATION_USER_REQUEST> m_userRequestQueue;
 	wxCriticalSection m_userRequestCritSection;
 	NESState m_currentNESState;
 	wxCriticalSection m_currentStateCritSection;
 
 	bool m_continuousRunInitialized;
 	wxMainFrame* m_mainFrame;
+	wxSemaphore* m_exitNotice;
 };

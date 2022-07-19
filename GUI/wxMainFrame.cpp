@@ -117,6 +117,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
 
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
+    //m_emulationThreadExitNotice = new wxSemaphore();
 }
 
 
@@ -127,27 +128,24 @@ void wxMainFrame::StartEmulation()
         return;
     }
 
-    m_emulationThread = new wxEmulationThread(this);
+    m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice);
     m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     try {
         m_emulationThread->LoadROM(*m_loadedROM);
     }
     catch (UnsupportedMapperException ex) {
+        m_emulationThread->Delete();
         wxMessageBox(ex.what());
-        delete m_emulationThread;
-        m_emulationThread = nullptr;
         return;
     }
     if (m_emulationThread->Create() != wxTHREAD_NO_ERROR) {
+        m_emulationThread->Delete();
         wxLogError("Error while creating emulation thread");
-        delete m_emulationThread;
-        m_emulationThread = nullptr;
         return;
     }
     if (m_emulationThread->Run() != wxTHREAD_NO_ERROR) {
+        m_emulationThread->Delete();
         wxLogError("Failed to run emulation thread.");
-        delete m_emulationThread;
-        m_emulationThread = nullptr;
         return;
     }
 }
@@ -190,6 +188,7 @@ void wxMainFrame::LoadProgram() {
 }*/
 
 void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
+    // Perhaps not thread safe, in case event is sent right before emulation ends
     NESState state = m_emulationThread->GetCurrentNESState();
     wxNESStateEvent<CPUState> cpuPostEvt(EVT_CPU_STATE_GUI_UPDATE);
     cpuPostEvt.SetState(state.cpuState);
@@ -287,20 +286,24 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
 }
 
 void wxMainFrame::RunUntilNextCycle() {
-    m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_CYCLE);
+    // Perhaps not thread safe
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_CYCLE);
+    }
 }
 
 void wxMainFrame::RunUntilNextInstruction() {
-    m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_INSTRUCTION);
+    // Perhaps not thread safen
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_INSTRUCTION);
+    }
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {
     if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
         m_emulationThread->Delete();
         if (wait) {
-            while (m_emulationThread && m_emulationThread->IsRunning()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
+            m_emulationThreadExitNotice.Wait();
         }
         m_emulationThread = nullptr;
     }

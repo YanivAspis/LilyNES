@@ -34,11 +34,6 @@ public:
 
 	void Clock();
 
-	void StartEmulation();
-	void PauseEmulation();
-	void ResumeEmulation();
-	void StopEmulation();
-
 	void RunUntilNextCycle();
 	void RunUntilNextInstruction();
 	void RunUntilNextFrame();
