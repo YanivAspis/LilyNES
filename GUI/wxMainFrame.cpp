@@ -11,67 +11,6 @@
 #include "../nes/CPU/CPUInstruction.h"
 
 using namespace NESUtils;
-
-struct InstructionLine {
-    InstructionLine() {
-        pc = 0;
-        A = 0;
-        X = 0;
-        Y = 0;
-        P = 0;
-        SP = 0;
-        ram0002value = 0;
-        num_cpu_cycles = 0;
-    }
-
-    uint16_t pc;
-
-    uint8_t A;
-    uint8_t X;
-    uint8_t Y;
-    uint8_t P;
-    uint8_t SP;
-
-    uint8_t ram0002value;
-
-    std::vector<uint8_t> instructionBytes;
-
-    unsigned int num_cpu_cycles;
-
-    void setInstructionBytes(uint8_t opCodeByte, uint8_t firstArgByte, uint8_t secondArgByte) {
-        instructionBytes.clear();
-        instructionBytes.push_back(opCodeByte);
-        unsigned int bytesToRead = CPU2A03::s_opCodeTable[opCodeByte].GetInstructionLength() - 1;
-        if (bytesToRead >= 1) {
-            instructionBytes.push_back(firstArgByte);
-        }
-        if (bytesToRead == 2) {
-            instructionBytes.push_back(secondArgByte);
-        }
-    }
-
-    std::string ToString() const {
-        std::string result = HexUint16ToString(pc) + "\t";
-        for (uint8_t byte : instructionBytes) {
-            result += HexUint8ToString(byte) + " ";
-        }
-        result += "\tA: " + HexUint8ToString(A);
-        result += "  X: " + HexUint8ToString(X);
-        result += "  Y: " + HexUint8ToString(Y);
-        result += "  P: " + HexUint8ToString(P);
-        result += "  SP: " + HexUint8ToString(SP);
-        result += "  Addr2: " + HexUint8ToString(ram0002value);
-        result += "  Cycles: " + std::to_string(num_cpu_cycles);
-
-        return result;
-    }
-};
-
-
-
-
-
-
 using namespace BitwiseUtils;
 
 enum MenuOptions {
@@ -117,7 +56,6 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
 
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
-    //m_emulationThreadExitNotice = new wxSemaphore();
 }
 
 
@@ -240,48 +178,7 @@ void wxMainFrame::OnROMInformation(wxCommandEvent& evt)
 }
 
 void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
-    this->StopEmulation(true);
-
-    INESFile romFile("D:/Projects/ROMs/test/nestest.nes");
-    m_nes.LoadROM(romFile);
-    m_nes.HardReset();
-
-    NESState state = m_nes.GetState();
-    state.cpuState.regPC = 0xC000;
-    m_nes.LoadState(state);
-
-    int num_cpu_cycles = 0;
-    std::list<InstructionLine> lines;
-    InstructionLine currInstruction;
-
-
-    try {
-        while (true) {
-            currInstruction.pc = state.cpuState.regPC;
-            currInstruction.A = state.cpuState.regA;
-            currInstruction.X = state.cpuState.regX;
-            currInstruction.Y = state.cpuState.regY;
-            currInstruction.P = state.cpuState.regP.value;
-            currInstruction.SP = state.cpuState.regS;
-            currInstruction.ram0002value = state.ramState.content[0x0002];
-            num_cpu_cycles++;
-            currInstruction.num_cpu_cycles = num_cpu_cycles;
-            m_nes.Clock();
-            state = m_nes.GetState();
-            if (state.cpuState.instructionFirstCycle) {
-                currInstruction.instructionBytes = m_nes.ProbeCurrentCPUInstruction();
-                lines.push_back(currInstruction);
-            }
-        }
-    }
-    catch (IllegalInstructionException ex) {}
-
-    std::ofstream outputFile;
-    outputFile.open("D:/Projects/cpuTest.txt", std::ios::out | std::ios::trunc);
-    for (InstructionLine& line : lines) {
-        outputFile << line.ToString() << "\n";
-    }
-    outputFile.close();
+    RunCPUTest("D:\\Projects\\ROMs\\test\\nestest.nes", "D:\\Projects\\cpuTest.txt");
     wxMessageBox("Done!");
 }
 
