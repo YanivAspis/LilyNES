@@ -162,6 +162,7 @@
     <ClCompile Include="nes\mappers\Cartridge.cpp" />
     <ClCompile Include="nes\mappers\Mapper000.cpp" />
     <ClCompile Include="nes\NES.cpp" />
+    <ClCompile Include="nes\PPU\PPU2C02.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="nes\mappers\Cartridge.h" />
     <ClInclude Include="nes\mappers\Mapper000.h" />
     <ClInclude Include="nes\NES.h" />
+    <ClInclude Include="nes\PPU\PPU2C02.h" />
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />
     <ClInclude Include="nes\ROM\INESHeader.h" />

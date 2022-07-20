@@ -1,7 +1,7 @@
 #pragma once
 #include "wx/wx.h"
 #include "wx/msgqueue.h"
-#include "../nes/NES.h"
+//#include "../nes/NES.h"
 #include "../nes/ROM/INESFile.h"
 #include "wxCPUStatePanel.h"
 #include "wxRAMStatePanel.h"
@@ -49,8 +49,6 @@ private:
 	wxDisassemblerPanel* m_disassemblerPanel;
 	wxROMInfoFrame* m_ROMInfoFrame;
 
-	NES m_nes;
-	NESState m_currNESState;
 	std::shared_ptr<INESFile> m_loadedROM;
 
 	wxCriticalSection m_currNESState_cs;

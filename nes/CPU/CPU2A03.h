@@ -59,9 +59,7 @@ struct CPUState {
 
 	bool instructionFirstCycle;
 	uint16_t currInstructionAddress;
-	uint8_t opCodeByte;
-	uint8_t firstArgByte;
-	uint8_t secondArgByte;
+	unsigned int cycleCount;
 
 	CPUState();
 };
@@ -215,6 +213,8 @@ private:
 	bool m_instructionFirstCycle;
 	// Address of current instruction. Needed for debugging
 	uint16_t m_currInstructionAddress;
+	// Cycle count, needed for debugging
+	unsigned int m_cycleCount;
 
 
 	std::map<InstructionMnemonic, std::function<int(CPU2A03&, uint16_t, bool)> > m_executeFunctions;

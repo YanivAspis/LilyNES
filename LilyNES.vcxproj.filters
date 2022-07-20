@@ -55,6 +55,12 @@
     <Filter Include="Header Files\utils">
       <UniqueIdentifier>{b7189f26-15e7-44a1-b6dc-6f750ed91223}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\nes\PPU">
+      <UniqueIdentifier>{d555e65d-9469-425a-8229-82d5edcc2941}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\nes\PPU">
+      <UniqueIdentifier>{dfc92cdf-e7f8-4b79-8f3e-fe55ce6ac50f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nes\Bus.cpp">
@@ -116,6 +122,9 @@
     </ClCompile>
     <ClCompile Include="GUI\wxEmulationThread.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\PPU\PPU2C02.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="GUI\wxEmulationThread.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\PPU2C02.h">
+      <Filter>Header Files\nes\PPU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

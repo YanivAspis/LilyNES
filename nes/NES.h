@@ -5,14 +5,18 @@
 #include "Bus.h"
 #include "CPU/CPU2A03.h"
 #include "RAMDevice.h"
+#include "PPU/PPU2C02.h"
 #include "ROM/INESFile.h"
 #include "mappers/Cartridge.h"
+
 
 struct NESState {
 	CPUState cpuState;
 	RAMState ramState;
 	CartridgeState cartridgeState;
+	PPUState ppuState;
 };
+
 
 class NES
 {
@@ -59,6 +63,9 @@ private:
 	Bus m_cpuBus;
 	RAMDevice m_RAM;
 	CPU2A03 m_cpu;
+	PPU2C02 m_ppu;
 	Cartridge* m_cartridge;
+
+	unsigned int m_cycleCount;
 };
 

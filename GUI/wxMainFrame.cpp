@@ -67,7 +67,8 @@ void wxMainFrame::StartEmulation()
     }
 
     m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice);
-    m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+    m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
     try {
         m_emulationThread->LoadROM(*m_loadedROM);
     }

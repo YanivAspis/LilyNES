@@ -12,9 +12,13 @@ wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNo
 
 void* wxEmulationThread::Entry(){
 	this->Setup();
+	this->PostNESUpdate();
 	while (!this->TestDestroy()) {
-		this->PostNESUpdate();
 		try {
+			/*
+			if (m_nes.ProbeCPUState().irqPending > 0) {
+				this->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+			}*/
 			switch (this->GetRunningMode()) {
 			case EMULATION_RUNNING_PAUSED:
 				this->DoPause();
@@ -56,6 +60,9 @@ void wxEmulationThread::SetRunningMode(const EMULATION_RUNNING_MODE& runningMode
 	{
 		wxCriticalSectionLocker enter(m_runningModeCritSection);
 		m_runningMode = runningMode;
+	}
+	if (m_runningMode == EMULATION_RUNNING_USER_CONTROLLED) {
+		this->PostNESUpdate();
 	}
 }
 
@@ -123,12 +130,15 @@ void wxEmulationThread::DoUserRequestRun() {
 		break;
 	case EMULATION_USER_REQUEST_NEXT_CYCLE:
 		this->RunUntilNextCycle();
+		this->PostNESUpdate();
 		break;
 	case EMULATION_USER_REQUEST_NEXT_INSTRUCTION:
 		this->RunUntilNextInstruction();
+		this->PostNESUpdate();
 		break;
 	case EMULATION_USER_REQUEST_NEXT_FRAME:
 		this->RunUntilNextFrame();
+		this->PostNESUpdate();
 		break;
 	}
 }
@@ -138,8 +148,10 @@ void wxEmulationThread::DoContinuousRun() {
 		m_sleepTargetTime = std::chrono::steady_clock::now();
 		m_continuousRunInitialized = true;
 	}
-	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
-	this->RunUntilNextFrame();
+	//m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
+	//this->RunUntilNextFrame();
+	m_sleepTargetTime += std::chrono::nanoseconds(3000);
+	this->RunUntilNextCycle();
 	this->EmulationWait();
 }
 

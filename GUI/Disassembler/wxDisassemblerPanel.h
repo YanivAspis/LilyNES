@@ -3,7 +3,7 @@
 #include <queue>
 #include <wx/wx.h>
 #include "../wxNESStateEvent.h"
-#include "../../nes/NES.h"
+//#include "../../nes/NES.h"
 #include "../../nes/CPU/CPUInstruction.h"
 #include "wxLargeUnselectableListBox.h"
 

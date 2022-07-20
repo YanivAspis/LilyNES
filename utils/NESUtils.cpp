@@ -29,10 +29,11 @@ namespace NESUtils {
 	// The code below is for handling the nestest.nes ROM for testing the CPU implementation
 
 	NESTestInstructionLine::NESTestInstructionLine() {
-		this->SetValues(0, 0, 0, 0, 0, 0, 0, 0);
+		this->SetRegisters(0, 0, 0, 0, 0, 0, 0);
+		this->SetCycles(0, 0, 0);
 	}
 
-	void NESTestInstructionLine::SetValues(uint16_t PC, uint8_t A, uint8_t X, uint8_t Y, uint8_t P, uint8_t SP, uint8_t ram0002value, unsigned int numCPUCycles) {
+	void NESTestInstructionLine::SetRegisters(uint16_t PC, uint8_t A, uint8_t X, uint8_t Y, uint8_t P, uint8_t SP, uint8_t ram0002value) {
 		m_PC = PC;
 		m_A = A;
 		m_X = X;
@@ -40,6 +41,11 @@ namespace NESUtils {
 		m_P = P;
 		m_SP = SP;
 		m_ram0002value = ram0002value;
+	}
+
+	void NESTestInstructionLine::SetCycles(unsigned int scanline, unsigned int dot, unsigned int numCPUCycles) {
+		m_scanline = scanline;
+		m_dot = dot;
 		m_numCPUCycles = numCPUCycles;
 	}
 
@@ -58,6 +64,7 @@ namespace NESUtils {
 		result += "  P: " + HexUint8ToString(m_P);
 		result += "  SP: " + HexUint8ToString(m_SP);
 		result += "  Addr2: " + HexUint8ToString(m_ram0002value);
+		result += " (" + std::to_string(m_scanline) + "," + std::to_string(m_dot) + ")";
 		result += "  Cycles: " + std::to_string(m_numCPUCycles);
 
 		return result;
@@ -73,20 +80,17 @@ namespace NESUtils {
 		state.cpuState.regPC = 0xC000;
 		nes.LoadState(state);
 
-		int numCPUCycles = 0;
 		std::list<NESTestInstructionLine> lines;
 		NESTestInstructionLine currInstruction;
 
 		try {
 			while (true) {
-				numCPUCycles++;
-				currInstruction.SetValues(state.cpuState.regPC, state.cpuState.regA, state.cpuState.regX, state.cpuState.regY, state.cpuState.regP.value, state.cpuState.regS, state.ramState.content[0x0002], numCPUCycles);
-				nes.Clock();
+				currInstruction.SetRegisters(state.cpuState.regPC, state.cpuState.regA, state.cpuState.regX, state.cpuState.regY, state.cpuState.regP.value, state.cpuState.regS, state.ramState.content[0x0002]);
+				nes.RunUntilNextInstruction();
 				state = nes.GetState();
-				if (state.cpuState.instructionFirstCycle) {
-					currInstruction.SetInstructionBytes(nes.ProbeCurrentCPUInstruction());
-					lines.push_back(currInstruction);
-				}
+				currInstruction.SetCycles(state.ppuState.scanline, state.ppuState.dot, state.cpuState.cycleCount);
+				currInstruction.SetInstructionBytes(nes.ProbeCurrentCPUInstruction());
+				lines.push_back(currInstruction);
 			}
 		}
 		catch (IllegalInstructionException ex) {}

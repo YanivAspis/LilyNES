@@ -4,10 +4,12 @@
 #include "mappers/Mapper000.h"
 
 
-NES::NES(): m_cpu(false) {
+NES::NES(): m_cpu(false), m_ppu(&m_cpu) {
 	m_cpuBus.ConnectDevice(&m_RAM);
+	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpu.ConnectToBus(&m_cpuBus);
 	m_cartridge = nullptr;
+	m_cycleCount = 0;
 }
 
 NES::~NES() {
@@ -38,12 +40,14 @@ void NES::SoftReset()
 {
 	m_cpuBus.SoftReset();
 	m_cpu.SoftReset();
+	m_cycleCount = 0;
 }
 
 void NES::HardReset()
 {
 	m_cpuBus.HardReset();
 	m_cpu.HardReset();
+	m_cycleCount = 0;
 }
 
 NESState NES::GetState() const
@@ -51,6 +55,7 @@ NESState NES::GetState() const
 	NESState state;
 	state.cpuState = m_cpu.GetState();
 	state.ramState = m_RAM.GetState();
+	state.ppuState = m_ppu.GetState();
 	if (m_cartridge != nullptr) {
 		state.cartridgeState = m_cartridge->GetState();
 	}
@@ -61,6 +66,7 @@ void NES::LoadState(NESState& state)
 {
 	m_cpu.LoadState(state.cpuState);
 	m_RAM.LoadState(state.ramState);
+	m_ppu.LoadState(state.ppuState);
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
 	}
@@ -68,7 +74,12 @@ void NES::LoadState(NESState& state)
 
 void NES::Clock()
 {
-	m_cpu.Clock();
+	// CPU runs every 3 PPU cycles. Running when mod 3 = 2 matches nestest log
+	if (m_cycleCount % 3 == 2) {
+		m_cpu.Clock();
+	}
+	m_ppu.Clock();
+	m_cycleCount++;
 }
 
 
@@ -86,7 +97,10 @@ void NES::RunUntilNextInstruction() {
 }
 
 void NES::RunUntilNextFrame() {
-
+	unsigned int currFrame = m_ppu.GetFrameCount();
+	while (currFrame == m_ppu.GetFrameCount()) {
+		this->Clock();
+	}
 }
 
 void NES::UpdateDisplay() {

@@ -43,6 +43,7 @@ CPUState::CPUState() {
 
 	instructionFirstCycle = false;
 	currInstructionAddress = 0;
+	cycleCount = 0;
 }
 
 
@@ -66,6 +67,7 @@ CPU2A03::CPU2A03(bool decimalAllowed) {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
+	m_cycleCount = 0;
 
 	this->PopulateFunctionMaps();
 }
@@ -96,6 +98,7 @@ void CPU2A03::SoftReset() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
+	m_cycleCount = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -116,6 +119,7 @@ void CPU2A03::HardReset() {
 
 	m_instructionFirstCycle = false;
 	m_currInstructionAddress = 0;
+	m_cycleCount = 0;
 
 	m_regPC = this->FetchInitialPC();
 }
@@ -135,6 +139,7 @@ CPUState CPU2A03::GetState() const {
 
 	state.instructionFirstCycle = m_instructionFirstCycle;
 	state.currInstructionAddress = m_currInstructionAddress;
+	state.cycleCount = m_cycleCount;
 
 	return state;
 }
@@ -153,12 +158,14 @@ void CPU2A03::LoadState(CPUState& state) {
 
 	m_instructionFirstCycle = state.instructionFirstCycle;
 	m_currInstructionAddress = state.currInstructionAddress;
+	m_cycleCount = state.cycleCount;
 }
 
 void CPU2A03::Clock()
 {
 	// Still performing previous instruction
 	m_cyclesRemaining--;
+	m_cycleCount++;
 	if (m_cyclesRemaining > 0) {
 		m_instructionFirstCycle = false;
 		return;
