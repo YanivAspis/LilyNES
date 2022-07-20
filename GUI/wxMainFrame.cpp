@@ -178,7 +178,19 @@ void wxMainFrame::OnROMInformation(wxCommandEvent& evt)
 }
 
 void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
-    RunCPUTest("D:\\Projects\\ROMs\\test\\nestest.nes", "D:\\Projects\\cpuTest.txt");
+    wxFileDialog openROMDialog(this, "Open nestest ROM file...", "", "", "NES files (*.nes)|*.nes", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openROMDialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+    std::string romPath = openROMDialog.GetPath().ToStdString();
+
+    wxFileDialog saveLogDialog(this, "Select location to save log...", "", "", "TXT files (*.txt)|*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (saveLogDialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+    std::string outputPath = saveLogDialog.GetPath().ToStdString();
+
+    RunCPUTest(romPath, outputPath);
     wxMessageBox("Done!");
 }
 
