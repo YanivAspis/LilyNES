@@ -15,35 +15,35 @@
 namespace BitwiseUtils {
 
 
-	uint8_t TestBit8(uint8_t num, int bit) {
+	uint8_t TestBit8(uint8_t num, unsigned int bit) {
 		assert(bit >= 0 && bit <= 7);
 		num >>= bit;
 		return num & 0x1;
 	}
 
-	void SetBit8(uint8_t& target, int bit) {
+	void SetBit8(uint8_t& target, unsigned int bit) {
 		assert(bit >= 0 && bit <= 7);
 		target |= (0x1 << bit);
 	}
 
-	void ClearBit8(uint8_t& target, int bit) {
+	void ClearBit8(uint8_t& target, unsigned int bit) {
 		assert(bit >= 0 && bit <= 7);
 		target &= ~(0x1 << bit);
 	}
 
-	void ToggleBit8(uint8_t& target, int bit) {
+	void ToggleBit8(uint8_t& target, unsigned int bit) {
 		assert(bit >= 0 && bit <= 7);
 		target ^= (0x1 << bit);
 	}
 
 	// clear all bits up to upperBit (exclusive)
-	uint8_t ClearLowerBits8(uint8_t target, int upperBit) {
+	uint8_t ClearLowerBits8(uint8_t target, unsigned int upperBit) {
 		assert(upperBit >= 1 && upperBit <= 8);
 		return target & (0xFF ^ ((0x1 << upperBit) - 1));
 	}
 
 	// clear all bits from lowerBit (inclusive)
-	uint8_t ClearUpperBits8(uint8_t target, int lowerBit) {
+	uint8_t ClearUpperBits8(uint8_t target, unsigned int lowerBit) {
 		assert(lowerBit >= 0 && lowerBit <= 7);
 		return target & ((0x1 << lowerBit) - 1);
 	}
@@ -52,12 +52,12 @@ namespace BitwiseUtils {
 		return (num1 + num2) & 0xFF;
 	}
 
-	uint8_t ShiftRight8(uint8_t num, int numBits) {
+	uint8_t ShiftRight8(uint8_t num, unsigned int numBits) {
 		assert(numBits >= 0 && numBits <= 8);
 		return (num >> numBits) & 0xFF;
 	}
 
-	uint8_t ShiftLeft8(uint8_t num, int numBits) {
+	uint8_t ShiftLeft8(uint8_t num, unsigned int numBits) {
 		assert(numBits >= 0 && numBits <= 8);
 		return (num << numBits) & 0xFF;
 	}
@@ -73,35 +73,35 @@ namespace BitwiseUtils {
 	}
 
 
-	uint8_t TestBit16(uint16_t num, int bit) {
+	uint8_t TestBit16(uint16_t num, unsigned int bit) {
 		assert(bit >= 0 && bit <= 15);
 		num >>= bit;
 		return num & 0x1;
 	}
 
-	void SetBit16(uint16_t& target, int bit) {
+	void SetBit16(uint16_t& target, unsigned int bit) {
 		assert(bit >= 0 && bit <= 15);
 		target |= (0x1 << bit);
 	}
 
-	void ClearBit16(uint16_t& target, int bit) {
+	void ClearBit16(uint16_t& target, unsigned int bit) {
 		assert(bit >= 0 && bit <= 15);
 		target &= ~(0x1 << bit);
 	}
 
 	// clear all bits up to upperBit (exclusive)
-	uint16_t ClearLowerBits16(uint16_t target, int upperBit) {
+	uint16_t ClearLowerBits16(uint16_t target, unsigned int upperBit) {
 		assert(upperBit >= 1 && upperBit <= 16);
 		return target & (0xFFFF ^ ((0x1 << upperBit) - 1));
 	}
 
 	// clear all bits from lowerBit (inclusive)
-	uint16_t ClearUpperBits16(uint16_t target, int lowerBit) {
+	uint16_t ClearUpperBits16(uint16_t target, unsigned int lowerBit) {
 		assert(lowerBit >= 0 && lowerBit <= 15);
-		return target & ((0x1 << lowerBit)-1);
+		return target & ((0x1 << lowerBit) - 1);
 	}
 
-	void ToggleBit16(uint16_t& target, int bit) {
+	void ToggleBit16(uint16_t& target, unsigned int bit) {
 		assert(bit >= 0 && bit <= 15);
 		target ^= (0x1 << bit);
 	}
@@ -110,12 +110,12 @@ namespace BitwiseUtils {
 		return (num1 + num2) & 0xFFFF;
 	}
 
-	uint16_t ShiftRight16(uint16_t num, int numBits) {
+	uint16_t ShiftRight16(uint16_t num, unsigned int numBits) {
 		assert(numBits >= 0 && numBits <= 16);
 		return (num >> numBits) & 0xFFFF;
 	}
 
-	uint16_t ShiftLeft16(uint16_t num, int numBits) {
+	uint16_t ShiftLeft16(uint16_t num, unsigned int numBits) {
 		assert(numBits >= 0 && numBits <= 16);
 		return (num << numBits) & 0xFFFF;
 	}

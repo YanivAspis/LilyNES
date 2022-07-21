@@ -9,6 +9,12 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 	m_scanline = 0;
 	m_dot = 0;
 	m_cpu = cpu;
+
+	m_latchValue = 0;
+	m_PPUCTRL.value = 0;
+	m_PPUMASK.value = 0;
+	m_PPUSTATUS.value = 0;
+
 	ResetNESPicture(m_picture);
 
 	// TODO: Used for generating static. Remove when we do actual rendering
@@ -19,6 +25,12 @@ void PPU2C02::SoftReset() {
 	m_frameCount = 0;
 	m_scanline = 0;
 	m_dot = 0;
+
+	m_latchValue = 0; // I think this is the NES behaviour on reset
+	m_PPUCTRL.SoftReset();
+	m_PPUMASK.SoftReset();
+	m_PPUSTATUS.SoftReset();
+
 	ResetNESPicture(m_picture);
 }
 
@@ -26,15 +38,25 @@ void PPU2C02::HardReset() {
 	m_frameCount = 0;
 	m_scanline = 0;
 	m_dot = 0;
+
+	m_latchValue = 0;
+	m_PPUCTRL.HardReset();
+	m_PPUMASK.HardReset();
+	m_PPUSTATUS.HardReset();
+
 	ResetNESPicture(m_picture);
 }
 
 uint8_t PPU2C02::Read(uint16_t address) {
-	return 0;
+	// This handles mirroring by squashing 0x2000 - 0x3FFF into 0x0 - 0x7
+	uint8_t regSelect = ClearUpperBits16(address, 3);
+	return m_registerReadFuncs[regSelect](*this);
 }
 
 void PPU2C02::Write(uint16_t address, uint8_t data) {
-
+	// This handles mirroring by squashing 0x2000 - 0x3FFF into 0x0 - 0x7
+	uint8_t regSelect = ClearUpperBits16(address, 3);
+	m_registerWriteFuncs[regSelect](*this, data);
 }
 
 uint8_t PPU2C02::Probe(uint16_t address) {

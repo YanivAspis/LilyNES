@@ -166,6 +166,7 @@
     <ClCompile Include="nes\NES.cpp" />
     <ClCompile Include="nes\PPU\NESPicture.cpp" />
     <ClCompile Include="nes\PPU\PPU2C02.cpp" />
+    <ClCompile Include="nes\PPU\PPURegisters.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />

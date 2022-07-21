@@ -80,6 +80,8 @@ void NES::Clock()
 	}
 	m_ppu.Clock();
 	m_cycleCount++;
+	//m_cpuBus.Write(0x2009, 0xFF);
+	//m_cpuBus.Read(0x2002);
 }
 
 
