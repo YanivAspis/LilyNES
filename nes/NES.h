@@ -2,12 +2,14 @@
 
 #include <exception>
 
+#include "../Environment.h"
 #include "Bus.h"
 #include "CPU/CPU2A03.h"
 #include "RAMDevice.h"
 #include "PPU/PPU2C02.h"
 #include "ROM/INESFile.h"
 #include "mappers/Cartridge.h"
+
 
 
 struct NESState {
@@ -21,7 +23,7 @@ struct NESState {
 class NES
 {
 public:
-	NES();
+	NES(Environment* environment = nullptr);
 	~NES();
 
 	// Don't allow copies of NES emulator
@@ -41,10 +43,6 @@ public:
 	void RunUntilNextCycle();
 	void RunUntilNextInstruction();
 	void RunUntilNextFrame();
-
-	// TODO: Add arguments for these
-	void UpdateDisplay();
-	void RequestControllerInput();
 
 	// Functions for debugging
 	uint8_t ProbeCPUBus(uint16_t address);

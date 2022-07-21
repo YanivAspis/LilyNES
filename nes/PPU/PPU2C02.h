@@ -1,8 +1,10 @@
 #pragma once
 
+#include "../../Environment.h"
 #include "../../utils/BitwiseUtils.h"
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
+#include "NESPicture.h"
 
 using namespace BitwiseUtils;
 
@@ -13,6 +15,10 @@ constexpr uint16_t PPU_ADDRESS_RANGE_END = 0x3FFF;
 constexpr unsigned int PPU_NUM_SCANLINES = 262;
 constexpr unsigned int PPU_NUM_DOTS_PER_SCANLINE = 341;
 constexpr unsigned int PPU_PRERENDER_LINE = 261;
+constexpr unsigned int PPU_VISIBLE_SCANLINES_BEGIN = 0;
+constexpr unsigned int PPU_VISIBLE_SCANLINES_END = NES_PICTURE_HEIGHT; // Also post-render scanline
+constexpr unsigned int PPU_VISIBLE_DOT_BEGIN = 1;
+constexpr unsigned int PPU_VISIBLE_DOT_END = NES_PICTURE_WIDTH + 1;
 
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
@@ -25,7 +31,7 @@ struct PPUState {
 
 class PPU2C02 : public BusDevice {
 public:
-	PPU2C02(CPU2A03* cpu);
+	PPU2C02(Environment* environment, CPU2A03* cpu);
 
 	void SoftReset() override;
 	void HardReset() override;
@@ -44,6 +50,10 @@ public:
 
 private:
 	void IncrementDotScanline();
+
+	Environment* m_environment;
+
+	NESPicture m_picture;
 
 	unsigned int m_frameCount;
 	unsigned int m_scanline;

@@ -147,10 +147,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Environment.cpp" />
     <ClCompile Include="GUI\Disassembler\wxDisassemblerPanel.cpp" />
     <ClCompile Include="GUI\Disassembler\wxLargeUnselectableListBox.cpp" />
     <ClCompile Include="GUI\LilyNESApp.cpp" />
     <ClCompile Include="GUI\wxCPUStatePanel.cpp" />
+    <ClCompile Include="GUI\wxDisplayPanel.cpp" />
     <ClCompile Include="GUI\wxEmulationThread.cpp" />
     <ClCompile Include="GUI\wxMainFrame.cpp" />
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
@@ -162,6 +164,7 @@
     <ClCompile Include="nes\mappers\Cartridge.cpp" />
     <ClCompile Include="nes\mappers\Mapper000.cpp" />
     <ClCompile Include="nes\NES.cpp" />
+    <ClCompile Include="nes\PPU\NESPicture.cpp" />
     <ClCompile Include="nes\PPU\PPU2C02.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
@@ -170,10 +173,12 @@
     <ClCompile Include="utils\NESUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Environment.h" />
     <ClInclude Include="GUI\Disassembler\wxDisassemblerPanel.h" />
     <ClInclude Include="GUI\Disassembler\wxLargeUnselectableListBox.h" />
     <ClInclude Include="GUI\LilyNESApp.h" />
     <ClInclude Include="GUI\wxCPUStatePanel.h" />
+    <ClInclude Include="GUI\wxDisplayPanel.h" />
     <ClInclude Include="GUI\wxEmulationThread.h" />
     <ClInclude Include="GUI\wxMainFrame.h" />
     <ClInclude Include="GUI\wxNESStateEvent.h" />
@@ -186,6 +191,7 @@
     <ClInclude Include="nes\mappers\Cartridge.h" />
     <ClInclude Include="nes\mappers\Mapper000.h" />
     <ClInclude Include="nes\NES.h" />
+    <ClInclude Include="nes\PPU\NESPicture.h" />
     <ClInclude Include="nes\PPU\PPU2C02.h" />
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />

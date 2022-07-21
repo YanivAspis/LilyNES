@@ -45,15 +45,18 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     this->SetMenuBar(m_mainMenuBar);
 
     wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_displayPanel = new wxDisplayPanel(this);
     m_disassemblerPanel = new wxDisassemblerPanel(this);
     m_cpuStatePanel = new wxCPUStatePanel(this);
     m_ramStatePanel = new wxRAMStatePanel(this);
+    topSizer->Add(m_displayPanel, 1, wxSHAPED);
     topSizer->Add(m_disassemblerPanel, 1, wxEXPAND);
     topSizer->Add(m_cpuStatePanel, 1, wxEXPAND);
     topSizer->Add(m_ramStatePanel, 1, wxEXPAND);
     this->SetSizer(topSizer);
     topSizer->Fit(this);
 
+    m_environment.SetDisplayPanel(m_displayPanel);
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
 }
@@ -66,7 +69,7 @@ void wxMainFrame::StartEmulation()
         return;
     }
 
-    m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice);
+    m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice, &m_environment);
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
     try {
@@ -198,6 +201,7 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
 void wxMainFrame::RunUntilNextCycle() {
     // Perhaps not thread safe
     if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_CYCLE);
     }
 }
@@ -205,7 +209,22 @@ void wxMainFrame::RunUntilNextCycle() {
 void wxMainFrame::RunUntilNextInstruction() {
     // Perhaps not thread safen
     if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_INSTRUCTION);
+    }
+}
+
+void wxMainFrame::RunUntilNextFrame() {
+    // Perhaps not thread safen
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_FRAME);
+    }
+}
+void wxMainFrame::RunContinuously() {
+    // Perhaps not thread safen
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
     }
 }
 

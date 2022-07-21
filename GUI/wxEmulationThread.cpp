@@ -3,7 +3,7 @@
 
 wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
-wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice) {
+wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment) {
 	m_continuousRunInitialized = false;
 	m_runningMode = EMULATION_RUNNING_PAUSED;
 	m_mainFrame = mainFrame;
@@ -67,10 +67,7 @@ void wxEmulationThread::SetRunningMode(const EMULATION_RUNNING_MODE& runningMode
 }
 
 void wxEmulationThread::SetUserRequest(const EMULATION_USER_REQUEST& userRequest) {
-	{
-		wxCriticalSectionLocker enter(m_userRequestCritSection);
-		m_userRequestQueue.Post(userRequest);
-	}
+	m_userRequestQueue.Post(userRequest);
 }
 
 NESState wxEmulationThread::GetCurrentNESState() {
@@ -95,10 +92,7 @@ void wxEmulationThread::PostNESUpdate() {
 
 EMULATION_USER_REQUEST wxEmulationThread::GetUserRequest() {
 	EMULATION_USER_REQUEST request = EMULATION_USER_REQUEST_NONE;
-	{
-		wxCriticalSectionLocker enter(m_userRequestCritSection);
-		m_userRequestQueue.ReceiveTimeout(100, request);
-	}
+	m_userRequestQueue.ReceiveTimeout(USER_REQUEST_WAIT_TIME_MILLLISECONDS, request);
 	return request;
 }
 
@@ -148,10 +142,10 @@ void wxEmulationThread::DoContinuousRun() {
 		m_sleepTargetTime = std::chrono::steady_clock::now();
 		m_continuousRunInitialized = true;
 	}
-	//m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
-	//this->RunUntilNextFrame();
-	m_sleepTargetTime += std::chrono::nanoseconds(3000);
-	this->RunUntilNextCycle();
+	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
+	this->RunUntilNextFrame();
+	//m_sleepTargetTime += std::chrono::nanoseconds(3000);
+	//this->RunUntilNextCycle();
 	this->EmulationWait();
 }
 

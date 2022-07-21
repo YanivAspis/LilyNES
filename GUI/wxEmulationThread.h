@@ -4,11 +4,14 @@
 #include <chrono>
 
 #include "wx/thread.h"
-#include "../nes/NES.h"
 #include "wxMainFrame.h"
+#include "../Environment.h"
+#include "../nes/NES.h"
+
 
 
 constexpr unsigned int FRAME_INTERVAL_NANOSECONDS = 16666667;
+constexpr unsigned int USER_REQUEST_WAIT_TIME_MILLLISECONDS = 100;
 
 enum EMULATION_RUNNING_MODE {
 	EMULATION_RUNNING_PAUSED,
@@ -30,7 +33,7 @@ wxDECLARE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
 class wxEmulationThread : public wxThread {
 public:
-	wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice);
+	wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment);
 	virtual void* Entry() wxOVERRIDE;
 	virtual void OnExit() wxOVERRIDE;
 	void LoadROM(const INESFile& romFile);
@@ -62,7 +65,6 @@ private:
 	EMULATION_RUNNING_MODE m_runningMode;
 	wxCriticalSection m_runningModeCritSection;
 	wxMessageQueue<EMULATION_USER_REQUEST> m_userRequestQueue;
-	wxCriticalSection m_userRequestCritSection;
 	NESState m_currentNESState;
 	wxCriticalSection m_currentStateCritSection;
 

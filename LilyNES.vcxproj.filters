@@ -126,6 +126,15 @@
     <ClCompile Include="nes\PPU\PPU2C02.cpp">
       <Filter>Source Files\nes\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\wxDisplayPanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\PPU\NESPicture.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -193,6 +202,15 @@
     </ClInclude>
     <ClInclude Include="nes\PPU\PPU2C02.h">
       <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\NESPicture.h">
+      <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxDisplayPanel.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

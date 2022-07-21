@@ -4,7 +4,7 @@
 #include "mappers/Mapper000.h"
 
 
-NES::NES(): m_cpu(false), m_ppu(&m_cpu) {
+NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpu.ConnectToBus(&m_cpuBus);
@@ -102,16 +102,6 @@ void NES::RunUntilNextFrame() {
 		this->Clock();
 	}
 }
-
-void NES::UpdateDisplay() {
-
-}
-
-void NES::RequestControllerInput() {
-
-}
-
-
 
 uint8_t NES::ProbeCPUBus(uint16_t address) {
 	return m_cpuBus.Probe(address);

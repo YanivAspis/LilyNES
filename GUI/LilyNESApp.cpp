@@ -15,10 +15,17 @@ bool LilyNESApp::OnInit() {
 
 void LilyNESApp::OnKeyPress(wxKeyEvent& evt) {
 	int keyCode = evt.GetKeyCode();
-	if (keyCode == 'M') {
+	switch (keyCode) {
+	case 'N':
 		m_mainFrame->RunUntilNextCycle();
-	}
-	else if (keyCode == 'N') {
+		break;
+	case 'M':
 		m_mainFrame->RunUntilNextInstruction();
+		break;
+	case 'H':
+		m_mainFrame->RunUntilNextFrame();
+		break;
+	case 'J':
+		m_mainFrame->RunContinuously();
 	}
 }
