@@ -35,6 +35,7 @@ public:
 	void RunUntilNextInstruction();
 	void RunUntilNextFrame();
 	void RunContinuously();
+	void ToggleRefreshRate();
 
 	std::shared_ptr<INESFile> GetLoadedROM() const;
 

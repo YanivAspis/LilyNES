@@ -10,6 +10,7 @@ wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id) {
 	m_widthScaleFactor = 0;
 	m_heightScaleFactor = 0;
 	m_frameCount = 0;
+	m_displayRefreshRate = false;
 	ResetNESPicture(m_picture);
 }
 
@@ -33,7 +34,24 @@ void wxDisplayPanel::Render(wxPaintEvent& evt) {
 	delete image;
 	image = nullptr;
 
-	m_frameCount++;
+	if (m_displayRefreshRate) {
+		m_frameCount++;
+		std::chrono::duration<long long, std::nano> runtime = m_clock.now() - m_startTime;
+		double seconds = runtime.count() / 1000000000.0;
+		double refreshRate = m_frameCount / seconds;
+		
+		int width = this->GetClientSize().GetWidth();
+		dc.SetFont(wxFont(wxFontInfo(width / 20)));
+		dc.SetBackgroundMode(wxTRANSPARENT);
+		dc.SetTextForeground(*wxBLACK);
+		dc.DrawText(wxString::Format("%.2f", refreshRate), wxPoint(0, 0));
+		dc.DrawText(wxString::Format("%.2f", refreshRate), wxPoint(0, 2));
+		dc.DrawText(wxString::Format("%.2f", refreshRate), wxPoint(2, 0));
+		dc.DrawText(wxString::Format("%.2f", refreshRate), wxPoint(2, 2));
+		dc.SetTextForeground(*wxYELLOW);
+		dc.DrawText(wxString::Format("%.2f", refreshRate), wxPoint(1, 1));
+	}
+
 	evt.Skip();
 }
 
@@ -63,4 +81,11 @@ void wxDisplayPanel::SetImage(const NESPicture& picture) {
 NESPicture wxDisplayPanel::GetImage() {
 	wxCriticalSectionLocker enter(m_pictureCritSection);
 	return m_picture;
+}
+
+void wxDisplayPanel::ToggleRefreshRate() {
+	m_displayRefreshRate = !m_displayRefreshRate;
+	m_frameCount = 0;
+	m_startTime = m_clock.now();
+	this->Refresh();
 }

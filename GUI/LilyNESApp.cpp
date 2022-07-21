@@ -27,5 +27,9 @@ void LilyNESApp::OnKeyPress(wxKeyEvent& evt) {
 		break;
 	case 'J':
 		m_mainFrame->RunContinuously();
+		break;
+	case 'Y':
+		m_mainFrame->ToggleRefreshRate();
+		break;
 	}
 }

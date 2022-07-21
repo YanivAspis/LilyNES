@@ -228,6 +228,10 @@ void wxMainFrame::RunContinuously() {
     }
 }
 
+void wxMainFrame::ToggleRefreshRate() {
+    m_displayPanel->ToggleRefreshRate();
+}
+
 void wxMainFrame::StopEmulation(bool wait = false) {
     if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
         m_emulationThread->Delete();
