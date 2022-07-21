@@ -11,6 +11,7 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 	m_cpu = cpu;
 
 	m_latchValue = 0;
+	m_latchCounter = 0;
 	m_PPUCTRL.value = 0;
 	m_PPUMASK.value = 0;
 	m_PPUSTATUS.value = 0;
@@ -26,7 +27,8 @@ void PPU2C02::SoftReset() {
 	m_scanline = 0;
 	m_dot = 0;
 
-	m_latchValue = 0; // I think this is the NES behaviour on reset
+	m_latchValue = 0; // Not sure what the behaviour on RESET should be for the latch value
+	m_latchCounter = 0;
 	m_PPUCTRL.SoftReset();
 	m_PPUMASK.SoftReset();
 	m_PPUSTATUS.SoftReset();
@@ -40,6 +42,7 @@ void PPU2C02::HardReset() {
 	m_dot = 0;
 
 	m_latchValue = 0;
+	m_latchCounter = 0;
 	m_PPUCTRL.HardReset();
 	m_PPUMASK.HardReset();
 	m_PPUSTATUS.HardReset();
@@ -68,6 +71,13 @@ PPUState PPU2C02::GetState() const {
 	state.frameCount = m_frameCount;
 	state.scanline = m_scanline;
 	state.dot = m_dot;
+
+	state.latchValue = m_latchValue;
+	state.latchCounter = m_latchCounter;
+	state.PPUCTRL.value = m_PPUCTRL.value;
+	state.PPUMASK.value = m_PPUMASK.value;
+	state.PPUSTATUS.value = m_PPUSTATUS.value;
+
 	return state;
 }
 
@@ -75,6 +85,12 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_frameCount = state.frameCount;
 	m_scanline = state.scanline;
 	m_dot = state.dot;
+
+	m_latchValue = state.latchValue;
+	m_latchCounter = state.latchCounter;
+	m_PPUCTRL.value = state.PPUCTRL.value;
+	m_PPUMASK.value = state.PPUMASK.value;
+	m_PPUSTATUS.value = state.PPUSTATUS.value;
 }
 
 void PPU2C02::Clock() {
@@ -98,6 +114,7 @@ void PPU2C02::Clock() {
 	if (m_scanline == PPU_NMI_SCANLINE && m_dot == PPU_NMI_DOT) {
 		m_cpu->RaiseNMI();
 	}*/
+	this->DecrementLatchCounter();
 	this->IncrementDotScanline();
 }
 

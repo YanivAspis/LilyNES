@@ -28,7 +28,7 @@ void PPUSTATUSRegister::SoftReset() {
 
 void PPUSTATUSRegister::HardReset() {
 	// Some flags may actually be set during power on NES, but for emulation purposes it's better to set them all to 0
-	value = 0xFF;
+	value = 0;
 }
 
 
@@ -41,13 +41,13 @@ void PPU2C02::PPUCTRLWrite(uint8_t data) {
 	// On first frame, the register ignores reads/writes
 	if (m_frameCount == 0) {
 		// I assume the latch value should still be set
-		m_latchValue = data;
+		this->SetLatchValue(data);
 		return;
 	}
 
 	bool oldNMIEnabled = m_PPUCTRL.flags.NMIEnabled;
 	m_PPUCTRL.value = data;
-	m_latchValue = data;
+	this->SetLatchValue(data);
 
 	// Generate NMI if VBLANK is set in PPUStatus and NMI changes to enabled
 	if (m_PPUSTATUS.flags.VBlank && !oldNMIEnabled && m_PPUCTRL.flags.NMIEnabled) {
@@ -64,13 +64,13 @@ void PPU2C02::PPUMASKWrite(uint8_t data) {
 	// On first frame, the register ignores reads/writes
 	if (m_frameCount == 0) {
 		// I assume the latch value should still be set
-		m_latchValue = data;
+		this->SetLatchValue(data);
 		return;
 	}
 
 	// Disabling rendering outside VBLANK can corrupt OAM. TODO: Decide if that should be implemented
 	m_PPUMASK.value = data;
-	m_latchValue = data;
+	this->SetLatchValue(data);
 }
 
 uint8_t PPU2C02::PPUSTATUSRead() {
@@ -85,14 +85,14 @@ uint8_t PPU2C02::PPUSTATUSRead() {
 	// Clear VBlank, TODO: Clear PPUADDR and PPUSCROLL address latch
 	// TODO: VBlank race condition. Reading PPUStatus approximately when it is set suppresses NMI for this frame
 	m_PPUSTATUS.flags.VBlank = 0;
-	m_latchValue = valueToReturn;
+	this->SetLatchValue(valueToReturn);
 
 	return valueToReturn;
 }
 
 void PPU2C02::PPUSTATUSWrite(uint8_t data) {
 	// Cannot write to PPUSTATUS, but still write to latch
-	m_latchValue = data;
+	this->SetLatchValue(data);
 }
 
 uint8_t PPU2C02::OAMADDRRead() {
@@ -133,4 +133,18 @@ uint8_t PPU2C02::PPUDATARead() {
 
 void PPU2C02::PPUDATAWrite(uint8_t data) {
 
+}
+
+void PPU2C02::SetLatchValue(uint8_t latchValue) {
+	m_latchValue = latchValue;
+	m_latchCounter = PPU_LATCH_DECAY_CYCLES;
+}
+
+void PPU2C02::DecrementLatchCounter() {
+	if (m_latchCounter == 0) {
+		m_latchValue = 0;
+	}
+	else {
+		m_latchCounter--;
+	}
 }

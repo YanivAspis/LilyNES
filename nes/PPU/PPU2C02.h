@@ -20,6 +20,8 @@ constexpr unsigned int PPU_VISIBLE_SCANLINES_END = NES_PICTURE_HEIGHT; // Also p
 constexpr unsigned int PPU_VISIBLE_DOT_BEGIN = 1;
 constexpr unsigned int PPU_VISIBLE_DOT_END = NES_PICTURE_WIDTH + 1;
 
+constexpr unsigned int PPU_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_DOTS_PER_SCANLINE;
+
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
 
@@ -86,6 +88,12 @@ struct PPUState {
 	unsigned int frameCount;
 	unsigned int scanline;
 	unsigned int dot;
+
+	uint8_t latchValue;
+	unsigned int latchCounter;
+	PPUCTRLRegister PPUCTRL;
+	PPUMASKRegister PPUMASK;
+	PPUSTATUSRegister PPUSTATUS;
 };
 
 class PPU2C02 : public BusDevice {
@@ -134,6 +142,9 @@ private:
 	uint8_t PPUDATARead();
 	void PPUDATAWrite(uint8_t data);
 
+	void SetLatchValue(uint8_t latchValue);
+	void DecrementLatchCounter();
+
 
 	void IncrementDotScanline();
 
@@ -148,8 +159,10 @@ private:
 	CPU2A03* m_cpu;
 
 	// "Open Bus behaviour": PPU has an internal latch that gets filled during CPU reads/writes. Reading from write-only registers should return this
-	// TODO: Add decay behaviour
 	uint8_t m_latchValue;
+	// Counter until latch value "decays" to 0
+	unsigned int m_latchCounter;  
+
 	PPUCTRLRegister m_PPUCTRL;
 	PPUMASKRegister m_PPUMASK;
 	PPUSTATUSRegister m_PPUSTATUS;
