@@ -21,9 +21,9 @@ void PPUMASKRegister::HardReset() {
 // Reset behaviour of PPUSTATUS is complicated on NES. I'm simplifying it here
 void PPUSTATUSRegister::SoftReset() {
 	// VBlank should not change on soft reset
-	flags.Unused = 0;
-	flags.SpriteOverflow = 0;
-	flags.Sprite0Hit = 0;
+	flags.unused = 0;
+	flags.spriteOverflow = 0;
+	flags.sprite0Hit = 0;
 }
 
 void PPUSTATUSRegister::HardReset() {
@@ -45,12 +45,16 @@ void PPU2C02::PPUCTRLWrite(uint8_t data) {
 		return;
 	}
 
-	bool oldNMIEnabled = m_PPUCTRL.flags.NMIEnabled;
+	//bool oldNMIEnabled = m_PPUCTRL.flags.NMIEnabled;
 	m_PPUCTRL.value = data;
+	// Set nametable values in loopy T register
+	m_TRAMAddress.scrollFlags.nametableX = m_PPUCTRL.flags.nametableX;
+	m_TRAMAddress.scrollFlags.nametableY = m_PPUCTRL.flags.nametableY;
 	this->SetLatchValue(data);
 
-	// Generate NMI if VBLANK is set in PPUStatus and NMI changes to enabled
-	if (m_PPUSTATUS.flags.VBlank && !oldNMIEnabled && m_PPUCTRL.flags.NMIEnabled) {
+	// Generate NMI if VBLANK is set in PPUStatus and NMI is set to enabled
+	// This can cause several NMIs to be generated in a single frame. Some games do that
+	if (m_PPUSTATUS.flags.VBlank && m_PPUCTRL.flags.NMIEnabled) {
 		m_cpu->RaiseNMI();
 	}
 }
@@ -82,9 +86,10 @@ uint8_t PPU2C02::PPUSTATUSRead() {
 	// Set latch values in unused bits
 	valueToReturn |= ClearUpperBits8(m_latchValue, 5);
 
-	// Clear VBlank, TODO: Clear PPUADDR and PPUSCROLL address latch
+	// Clear VBlank, and for some reason, the loopy write toggle
 	// TODO: VBlank race condition. Reading PPUStatus approximately when it is set suppresses NMI for this frame
 	m_PPUSTATUS.flags.VBlank = 0;
+	m_loopyWriteToggle = false;
 	this->SetLatchValue(valueToReturn);
 
 	return valueToReturn;
@@ -112,19 +117,47 @@ void PPU2C02::OAMDATAWrite(uint8_t data) {
 }
 
 uint8_t PPU2C02::PPUSCROLLRead() {
-	return 0;
+	// Write only register, so return latch value
+	return m_latchValue;
 }
 
 void PPU2C02::PPUSCROLLWrite(uint8_t data) {
-
+	if (m_loopyWriteToggle) {
+		// Second write - Y scroll position
+		m_TRAMAddress.scrollFlags.coarseY = ShiftRight8(ClearLowerBits8(data, 3), 3);
+		m_TRAMAddress.scrollFlags.fineY = ClearUpperBits8(data, 3);
+		m_loopyWriteToggle = false;
+	}
+	else {
+		// First write - X scroll position
+		m_TRAMAddress.scrollFlags.coarseX = ShiftRight8(ClearLowerBits8(data, 3), 3);
+		m_fineX = ClearUpperBits8(data, 3);
+		m_loopyWriteToggle = true;
+	}
 }
 
 uint8_t PPU2C02::PPUADDRRead() {
-	return 0;
+	// Write only register, so return latch value
+	return m_latchValue;
 }
 
 void PPU2C02::PPUADDRWrite(uint8_t data) {
-
+	// TODO: Bus conflict when writing to this register during raster effects?
+	if (m_loopyWriteToggle) {
+		// Second write - LSB written to T, T copied to V
+		m_TRAMAddress.address = ClearLowerBits16(m_TRAMAddress.address, 8);
+		m_TRAMAddress.address |= (uint16_t)data;
+		m_VRAMAddress.address = m_TRAMAddress.address;
+		m_loopyWriteToggle = false;
+	}
+	else {
+		// First write - MSB written to T
+		m_TRAMAddress.address = ClearUpperBits16(m_TRAMAddress.address, 8);
+		// Top two bits unused - they should be 0 in MSB of T
+		data = ClearUpperBits8(data, 6);
+		m_TRAMAddress.address |= ShiftLeft16((uint16_t)data, 8);
+		m_loopyWriteToggle = true;
+	}
 }
 
 uint8_t PPU2C02::PPUDATARead() {

@@ -16,6 +16,11 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 	m_PPUMASK.value = 0;
 	m_PPUSTATUS.value = 0;
 
+	m_TRAMAddress.address = 0;
+	m_VRAMAddress.address = 0;
+	m_fineX = 0;
+	m_loopyWriteToggle = false;
+
 	ResetNESPicture(m_picture);
 
 	// TODO: Used for generating static. Remove when we do actual rendering
@@ -33,6 +38,10 @@ void PPU2C02::SoftReset() {
 	m_PPUMASK.SoftReset();
 	m_PPUSTATUS.SoftReset();
 
+	// On soft reset, t register and fine x are cleared but not v register
+	m_TRAMAddress.address = 0;
+	m_fineX = 0;
+
 	ResetNESPicture(m_picture);
 }
 
@@ -46,6 +55,11 @@ void PPU2C02::HardReset() {
 	m_PPUCTRL.HardReset();
 	m_PPUMASK.HardReset();
 	m_PPUSTATUS.HardReset();
+
+	m_TRAMAddress.address = 0;
+	m_VRAMAddress.address = 0;
+	m_fineX = 0;
+	m_loopyWriteToggle = false;
 
 	ResetNESPicture(m_picture);
 }
@@ -78,6 +92,11 @@ PPUState PPU2C02::GetState() const {
 	state.PPUMASK.value = m_PPUMASK.value;
 	state.PPUSTATUS.value = m_PPUSTATUS.value;
 
+	state.TRAMAddress.address = m_TRAMAddress.address;
+	state.VRAMAddress.address = m_VRAMAddress.address;
+	state.fineX = m_fineX;
+	state.loopyWriteToggle = m_loopyWriteToggle;
+
 	return state;
 }
 
@@ -91,6 +110,11 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_PPUCTRL.value = state.PPUCTRL.value;
 	m_PPUMASK.value = state.PPUMASK.value;
 	m_PPUSTATUS.value = state.PPUSTATUS.value;
+
+	m_TRAMAddress.address = state.TRAMAddress.address;
+	m_VRAMAddress.address = state.VRAMAddress.address;
+	m_fineX = state.fineX;
+	m_loopyWriteToggle = state.loopyWriteToggle;
 }
 
 void PPU2C02::Clock() {

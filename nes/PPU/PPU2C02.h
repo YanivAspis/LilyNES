@@ -28,12 +28,12 @@ constexpr unsigned int PPU_NMI_DOT = 1;
 
 
 struct PPUCTRLFlags {
-	uint8_t NametableX : 1;
-	uint8_t NametableY : 1;
-	uint8_t IncrementMode : 1;             
-	uint8_t SpritePatternTable : 1;       // Sprite pattern table select (ignored in 8x16 mode)
-	uint8_t BackgroundPatternTable : 1;   // Background pattern table select
-	uint8_t SpriteSize : 1;               // Sprite size (8x8 or 8x16)
+	uint8_t nametableX : 1;
+	uint8_t nametableY : 1;
+	uint8_t incrementMode : 1;             
+	uint8_t spritePatternTable : 1;       // Sprite pattern table select (ignored in 8x16 mode)
+	uint8_t backgroundPatternTable : 1;   // Background pattern table select
+	uint8_t spriteSize : 1;               // Sprite size (8x8 or 8x16)
 	uint8_t PPUMaster : 1;                // PPU master/slave - Not sure what this is meant to do. I will ignore this
 	uint8_t NMIEnabled : 1;               // Generate NMI at vertical blank (apparently not only at the start, but any time in vertical blank if this is set)
 };
@@ -48,14 +48,14 @@ union PPUCTRLRegister {
 
 
 struct PPUMASKFlags {
-	uint8_t GreyscaleMode : 1;           // Renders only in greyscale colours
-	uint8_t ShowLeftmostBackground : 1;  // Show background on leftmost 8 pixels of screen
-	uint8_t ShowLeftmostSprites : 1;     // Show sprites on leftmost 8 pixels of sscreen
-	uint8_t RenderBackground : 1;        // Render background
-	uint8_t RenderSprites : 1;           // Render sprites
-	uint8_t EmphasizeRed : 1;            // Has to do with composite video signals - I'll ignore this
-	uint8_t EmphasizeGreen : 1;          // Has to do with composite video signals - I'll ignore this
-	uint8_t Emphasizeblue : 1;           // Has to do with composite video signals - I'll ignore this
+	uint8_t greyscaleMode : 1;           // Renders only in greyscale colours
+	uint8_t showLeftmostBackground : 1;  // Show background on leftmost 8 pixels of screen
+	uint8_t showLeftmostSprites : 1;     // Show sprites on leftmost 8 pixels of sscreen
+	uint8_t renderBackground : 1;        // Render background
+	uint8_t renderSprites : 1;           // Render sprites
+	uint8_t emphasizeRed : 1;            // Has to do with composite video signals - I'll ignore this
+	uint8_t emphasizeGreen : 1;          // Has to do with composite video signals - I'll ignore this
+	uint8_t emphasizeblue : 1;           // Has to do with composite video signals - I'll ignore this
 };
 
 union PPUMASKRegister {
@@ -68,9 +68,9 @@ union PPUMASKRegister {
 
 
 struct PPUSTATUSFlags {
-	uint8_t Unused : 5;          // Should have open bus behaviour
-	uint8_t SpriteOverflow : 1;  // Set to 1 if more than 8 sprites on scanline (buggy on NES though)
-	uint8_t Sprite0Hit : 1;      // Set to 1 when an opaque pixel of sprite 0 is rendered on an opaque pixel of background
+	uint8_t unused : 5;          // Should have open bus behaviour
+	uint8_t spriteOverflow : 1;  // Set to 1 if more than 8 sprites on scanline (buggy on NES though)
+	uint8_t sprite0Hit : 1;      // Set to 1 when an opaque pixel of sprite 0 is rendered on an opaque pixel of background
 	uint8_t VBlank : 1;          // Set to 1 when entering VBlank (sort of). Cleared when read
 };
 
@@ -80,6 +80,20 @@ union PPUSTATUSRegister {
 
 	void SoftReset();
 	void HardReset();
+};
+
+struct LoopyScrollFlags {
+	uint16_t coarseX : 5;
+	uint16_t coarseY : 5;
+	uint16_t nametableX : 1;
+	uint16_t nametableY : 1;
+	uint16_t fineY : 3;
+	uint16_t unused : 1;
+};
+
+union LoopyRegister {
+	LoopyScrollFlags scrollFlags;
+	uint16_t address;
 };
 
 
@@ -94,6 +108,11 @@ struct PPUState {
 	PPUCTRLRegister PPUCTRL;
 	PPUMASKRegister PPUMASK;
 	PPUSTATUSRegister PPUSTATUS;
+
+	LoopyRegister TRAMAddress;
+	LoopyRegister VRAMAddress;
+	uint8_t fineX;
+	bool loopyWriteToggle;
 };
 
 class PPU2C02 : public BusDevice {
@@ -166,6 +185,11 @@ private:
 	PPUCTRLRegister m_PPUCTRL;
 	PPUMASKRegister m_PPUMASK;
 	PPUSTATUSRegister m_PPUSTATUS;
+
+	LoopyRegister m_TRAMAddress; // aka Loopy t register
+	LoopyRegister m_VRAMAddress; // aka Loopy v register
+	uint8_t m_fineX;             // aka Loopy x register
+	bool m_loopyWriteToggle;     // aka Loopy w register - toggles address/scroll writes (true - second write)
 
 	const std::array<std::function<uint8_t(PPU2C02&)>, 8> m_registerReadFuncs = {
 		&PPU2C02::PPUCTRLRead,
