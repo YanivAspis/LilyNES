@@ -167,6 +167,7 @@
     <ClCompile Include="nes\PPU\NESPicture.cpp" />
     <ClCompile Include="nes\PPU\PPU2C02.cpp" />
     <ClCompile Include="nes\PPU\PPURegisters.cpp" />
+    <ClCompile Include="nes\PPU\PPURendering.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="nes\mappers\Mapper000.h" />
     <ClInclude Include="nes\NES.h" />
     <ClInclude Include="nes\PPU\NESPicture.h" />
+    <ClInclude Include="nes\PPU\PaletteRAMDevice.h" />
     <ClInclude Include="nes\PPU\PPU2C02.h" />
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />

@@ -1,4 +1,5 @@
 #include "PPU2C02.h"
+#include "PaletteRAMDevice.h"
 
 // PPUCTRL set to all 0's on reset
 void PPUCTRLRegister::SoftReset() {
@@ -178,11 +179,63 @@ void PPU2C02::PPUADDRWrite(uint8_t data) {
 }
 
 uint8_t PPU2C02::PPUDATARead() {
-	return 0;
+	// Get VRAM address and mirror to 0x0000 - 0x3FFF
+	 uint16_t address = ClearUpperBits16(m_VRAMAddress.address, 14);
+	 uint8_t valueToReturn = 0;
+
+	 if (m_VRAMAddress.address >= PALETTE_RAM_BEGIN_ADDRESS && m_VRAMAddress <= PALETTE_RAM_END_ADDRESS) {
+		 // In Palette RAM - return value immediately and set internal buffer to nametable data
+		 // "underneath" - basically imagine the nametable mirror was 0x3000 - 0x3FFF (instead of
+		 // 0x3000 - 0x3EFF), and set to internal buffer to what would have been there.
+		 // In practice, that's the content of address - 0x1000
+		 m_PPUDATABuffer = m_ppuBus->Read(address - 0x1000);
+		 uint8_t valueToReturn = m_ppuBus->Read(address);
+		 
+	 }
+	 else {
+		 // All other addresses - return content of internal buffer, set internal buffer to content of address
+		 uint8_t valueToReturn = m_PPUDATABuffer;
+		 m_PPUDATABuffer = m_ppuBus->Read(address);
+	 }
+
+	 // VRAM address is incremented for convenience
+	 this->PPUDATAAddressIncrement();
+	 this->SetLatchValue(valueToReturn);
+	 return valueToReturn;
 }
 
 void PPU2C02::PPUDATAWrite(uint8_t data) {
+	// Get VRAM address and mirror to 0x0000 - 0x3FFF
+	uint16_t address = ClearUpperBits16(m_VRAMAddress.address, 14);
 
+	// Unlike write, there is no buffering of data - it's written immediately
+	m_ppuBus->Write(address, data);
+
+	// VRAM address is incremented for convenience
+	this->PPUDATAAddressIncrement();
+	this->SetLatchValue(data);
+}
+
+void PPU2C02::PPUDATAAddressIncrement() {
+	if (this->IsRendering()) {
+		// If we are rendering, increment both y and coarse x
+		// Most games don't do this since it corrupts graphics data, 
+		// but Zelda II does this on the title screen
+		this->IncrementCoarseX();
+		this->IncrementY();
+	}
+	else {
+		// Outside of renderingm increment address according to the flag in PPUCTRL
+		if (m_PPUCTRL.flags.incrementMode) {
+			m_VRAMAddress.address += PPU_ADDRESS_INCREMENT_MODE_ON;
+		}
+		else {
+			m_VRAMAddress.address += PPU_ADDRESS_INCREMENT_MODE_OFF;
+		}
+		// Deal with overflow? I'm not sure if bit 14 should be cleared here, or kept
+		// But bit 15 obviously should be thrown out
+		ClearBit16(m_VRAMAddress.address, 15);
+	}
 }
 
 void PPU2C02::SetLatchValue(uint8_t latchValue) {

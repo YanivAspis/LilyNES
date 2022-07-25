@@ -12,6 +12,9 @@ using namespace BitwiseUtils;
 constexpr uint16_t PPU_ADDRESS_RANGE_BEGIN = 0x2000;
 constexpr uint16_t PPU_ADDRESS_RANGE_END = 0x3FFF;
 
+constexpr uint16_t PPU_ADDRESS_INCREMENT_MODE_OFF = 1;
+constexpr uint16_t PPU_ADDRESS_INCREMENT_MODE_ON = 0x20;
+
 constexpr unsigned int PPU_NUM_SCANLINES = 262;
 constexpr unsigned int PPU_NUM_DOTS_PER_SCANLINE = 341;
 constexpr unsigned int PPU_PRERENDER_LINE = 261;
@@ -24,6 +27,14 @@ constexpr unsigned int PPU_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_DOTS
 
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
+
+
+// TODO: Move these to NametableDevice.h
+constexpr unsigned int NAMETABLE_NUM_X_TILES = 32;
+constexpr unsigned int NAMETABLE_NUM_Y_TILES = 30;
+constexpr unsigned int NAMETABLE_COARSE_Y_MAX = 31;
+constexpr unsigned int NAMETABLE_TILE_WIDTH = 8;
+constexpr unsigned int NAMETABLE_TILE_HEIGHT = NAMETABLE_TILE_WIDTH;
 
 
 
@@ -108,6 +119,7 @@ struct PPUState {
 	PPUCTRLRegister PPUCTRL;
 	PPUMASKRegister PPUMASK;
 	PPUSTATUSRegister PPUSTATUS;
+	uint8_t PPUDATABuffer;
 
 	LoopyRegister TRAMAddress;
 	LoopyRegister VRAMAddress;
@@ -162,14 +174,18 @@ private:
 
 	uint8_t PPUDATARead();
 	void PPUDATAWrite(uint8_t data);
+	void PPUDATAAddressIncrement();
 
 	void SetLatchValue(uint8_t latchValue);
 	void DecrementLatchCounter();
 
-	void IncrementDotScanline();
-
+	// Rendering functions
 	bool RenderingEnabled() const;
 	bool IsRendering() const;
+
+	void IncrementDotScanline();
+	void IncrementCoarseX(); // Increments coarse X, with wraparound
+	void IncrementY(); // Increments fine Y and coarse Y if needed, with wraparound
 
 	Environment* m_environment;
 
@@ -190,6 +206,7 @@ private:
 	PPUCTRLRegister m_PPUCTRL;
 	PPUMASKRegister m_PPUMASK;
 	PPUSTATUSRegister m_PPUSTATUS;
+	uint8_t m_PPUDATABuffer;
 
 	LoopyRegister m_TRAMAddress; // aka Loopy t register
 	LoopyRegister m_VRAMAddress; // aka Loopy v register

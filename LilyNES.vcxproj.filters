@@ -138,6 +138,9 @@
     <ClCompile Include="nes\PPU\PPURegisters.cpp">
       <Filter>Source Files\nes\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="nes\PPU\PPURendering.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -214,6 +217,9 @@
     </ClInclude>
     <ClInclude Include="Environment.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\PaletteRAMDevice.h">
+      <Filter>Header Files\nes\PPU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

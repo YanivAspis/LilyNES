@@ -16,6 +16,7 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 	m_PPUCTRL.value = 0;
 	m_PPUMASK.value = 0;
 	m_PPUSTATUS.value = 0;
+	m_PPUDATABuffer = 0;
 
 	m_TRAMAddress.address = 0;
 	m_VRAMAddress.address = 0;
@@ -43,6 +44,7 @@ void PPU2C02::SoftReset() {
 	m_PPUCTRL.SoftReset();
 	m_PPUMASK.SoftReset();
 	m_PPUSTATUS.SoftReset();
+	m_PPUDATABuffer = 0;
 
 	// On soft reset, t register and fine x are cleared but not v register
 	m_TRAMAddress.address = 0;
@@ -61,6 +63,7 @@ void PPU2C02::HardReset() {
 	m_PPUCTRL.HardReset();
 	m_PPUMASK.HardReset();
 	m_PPUSTATUS.HardReset();
+	m_PPUDATABuffer = 0;
 
 	m_TRAMAddress.address = 0;
 	m_VRAMAddress.address = 0;
@@ -97,6 +100,7 @@ PPUState PPU2C02::GetState() const {
 	state.PPUCTRL.value = m_PPUCTRL.value;
 	state.PPUMASK.value = m_PPUMASK.value;
 	state.PPUSTATUS.value = m_PPUSTATUS.value;
+	state.PPUDATABuffer = m_PPUDATABuffer;
 
 	state.TRAMAddress.address = m_TRAMAddress.address;
 	state.VRAMAddress.address = m_VRAMAddress.address;
@@ -116,6 +120,7 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_PPUCTRL.value = state.PPUCTRL.value;
 	m_PPUMASK.value = state.PPUMASK.value;
 	m_PPUSTATUS.value = state.PPUSTATUS.value;
+	m_PPUDATABuffer = state.PPUDATABuffer;
 
 	m_TRAMAddress.address = state.TRAMAddress.address;
 	m_VRAMAddress.address = state.VRAMAddress.address;
@@ -157,29 +162,3 @@ unsigned int PPU2C02::GetFrameCount() const {
 	return m_frameCount;
 }
 
-void PPU2C02::IncrementDotScanline() {
-	m_dot++;
-	if (m_dot == PPU_NUM_DOTS_PER_SCANLINE) {
-		m_dot = 0;
-		m_scanline++;
-	}
-	if (m_scanline == PPU_NUM_SCANLINES) {
-		m_scanline = 0;
-		m_frameCount++;
-
-		// Skip (0,0) cycle on odd frames
-		if (m_frameCount % 2 == 1) {
-			m_dot++;
-		}
-	}
-}
-
-bool PPU2C02::RenderingEnabled() const {
-	return m_PPUMASK.flags.renderBackground || m_PPUMASK.flags.renderSprites;
-}
-
-bool PPU2C02::IsRendering() const {
-	return this->RenderingEnabled() &&
-		((m_scanline >= PPU_VISIBLE_SCANLINES_BEGIN && m_scanline < PPU_VISIBLE_SCANLINES_END)
-			|| m_scanline == PPU_PRERENDER_LINE);
-}
