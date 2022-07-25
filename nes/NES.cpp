@@ -78,9 +78,12 @@ void NES::Clock()
 	if (m_cycleCount % 3 == 2) {
 		m_cpu.Clock();
 	}
+
+	
 	m_ppu.Clock();
 	m_cycleCount++;
-	//m_cpuBus.Write(0x2009, 0xFF);
+
+	//m_cpuBus.Write(0x2006, 0x6B);
 	//m_cpuBus.Read(0x2002);
 }
 

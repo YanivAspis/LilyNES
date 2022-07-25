@@ -118,6 +118,7 @@ struct PPUState {
 class PPU2C02 : public BusDevice {
 public:
 	PPU2C02(Environment* environment, CPU2A03* cpu);
+	~PPU2C02();
 
 	void SoftReset() override;
 	void HardReset() override;
@@ -130,6 +131,7 @@ public:
 	PPUState GetState() const;
 	void LoadState(PPUState& state);
 
+	void ConnectToBus(Bus* ppuBus);
 	void Clock();
 
 	unsigned int GetFrameCount() const;
@@ -164,8 +166,10 @@ private:
 	void SetLatchValue(uint8_t latchValue);
 	void DecrementLatchCounter();
 
-
 	void IncrementDotScanline();
+
+	bool RenderingEnabled() const;
+	bool IsRendering() const;
 
 	Environment* m_environment;
 
@@ -176,6 +180,7 @@ private:
 	unsigned int m_dot;
 
 	CPU2A03* m_cpu;
+	Bus* m_ppuBus;
 
 	// "Open Bus behaviour": PPU has an internal latch that gets filled during CPU reads/writes. Reading from write-only registers should return this
 	uint8_t m_latchValue;

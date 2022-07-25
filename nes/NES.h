@@ -59,6 +59,7 @@ private:
 	void DisconnectCartridge();
 
 	Bus m_cpuBus;
+	Bus m_ppuBus;
 	RAMDevice m_RAM;
 	CPU2A03 m_cpu;
 	PPU2C02 m_ppu;

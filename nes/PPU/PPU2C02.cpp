@@ -9,6 +9,7 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 	m_scanline = 0;
 	m_dot = 0;
 	m_cpu = cpu;
+	m_ppuBus = nullptr;
 
 	m_latchValue = 0;
 	m_latchCounter = 0;
@@ -25,6 +26,11 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 
 	// TODO: Used for generating static. Remove when we do actual rendering
 	srand(time(nullptr));
+}
+
+PPU2C02::~PPU2C02() {
+	m_cpu = nullptr;
+	m_ppuBus = nullptr;
 }
 
 void PPU2C02::SoftReset() {
@@ -117,6 +123,11 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_loopyWriteToggle = state.loopyWriteToggle;
 }
 
+void PPU2C02::ConnectToBus(Bus* ppuBus) {
+	assert(m_ppuBus == nullptr);
+	m_ppuBus = ppuBus;
+}
+
 void PPU2C02::Clock() {
 	static std::random_device rd;
 	static std::mt19937 mt(rd());
@@ -161,4 +172,14 @@ void PPU2C02::IncrementDotScanline() {
 			m_dot++;
 		}
 	}
+}
+
+bool PPU2C02::RenderingEnabled() const {
+	return m_PPUMASK.flags.renderBackground || m_PPUMASK.flags.renderSprites;
+}
+
+bool PPU2C02::IsRendering() const {
+	return this->RenderingEnabled() &&
+		((m_scanline >= PPU_VISIBLE_SCANLINES_BEGIN && m_scanline < PPU_VISIBLE_SCANLINES_END)
+			|| m_scanline == PPU_PRERENDER_LINE);
 }

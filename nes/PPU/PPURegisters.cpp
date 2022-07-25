@@ -45,16 +45,16 @@ void PPU2C02::PPUCTRLWrite(uint8_t data) {
 		return;
 	}
 
-	//bool oldNMIEnabled = m_PPUCTRL.flags.NMIEnabled;
+	bool oldNMIEnabled = m_PPUCTRL.flags.NMIEnabled;
 	m_PPUCTRL.value = data;
 	// Set nametable values in loopy T register
 	m_TRAMAddress.scrollFlags.nametableX = m_PPUCTRL.flags.nametableX;
 	m_TRAMAddress.scrollFlags.nametableY = m_PPUCTRL.flags.nametableY;
 	this->SetLatchValue(data);
 
-	// Generate NMI if VBLANK is set in PPUStatus and NMI is set to enabled
+	// Generate NMI if VBLANK is set in PPUStatus and NMI is changed from 0 to 1
 	// This can cause several NMIs to be generated in a single frame. Some games do that
-	if (m_PPUSTATUS.flags.VBlank && m_PPUCTRL.flags.NMIEnabled) {
+	if (m_PPUSTATUS.flags.VBlank && !oldNMIEnabled && m_PPUCTRL.flags.NMIEnabled) {
 		m_cpu->RaiseNMI();
 	}
 }
@@ -122,6 +122,13 @@ uint8_t PPU2C02::PPUSCROLLRead() {
 }
 
 void PPU2C02::PPUSCROLLWrite(uint8_t data) {
+	// On first frame, the register ignores reads/writes
+	if (m_frameCount == 0) {
+		// I assume the latch value should still be set
+		this->SetLatchValue(data);
+		return;
+	}
+
 	if (m_loopyWriteToggle) {
 		// Second write - Y scroll position
 		m_TRAMAddress.scrollFlags.coarseY = ShiftRight8(ClearLowerBits8(data, 3), 3);
@@ -134,6 +141,7 @@ void PPU2C02::PPUSCROLLWrite(uint8_t data) {
 		m_fineX = ClearUpperBits8(data, 3);
 		m_loopyWriteToggle = true;
 	}
+	this->SetLatchValue(data);
 }
 
 uint8_t PPU2C02::PPUADDRRead() {
@@ -142,6 +150,13 @@ uint8_t PPU2C02::PPUADDRRead() {
 }
 
 void PPU2C02::PPUADDRWrite(uint8_t data) {
+	// On first frame, the register ignores reads/writes
+	if (m_frameCount == 0) {
+		// I assume the latch value should still be set
+		this->SetLatchValue(data);
+		return;
+	}
+
 	// TODO: Bus conflict when writing to this register during raster effects?
 	if (m_loopyWriteToggle) {
 		// Second write - LSB written to T, T copied to V
@@ -158,6 +173,8 @@ void PPU2C02::PPUADDRWrite(uint8_t data) {
 		m_TRAMAddress.address |= ShiftLeft16((uint16_t)data, 8);
 		m_loopyWriteToggle = true;
 	}
+
+	this->SetLatchValue(data);
 }
 
 uint8_t PPU2C02::PPUDATARead() {

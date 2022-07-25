@@ -181,7 +181,7 @@ void CPU2A03::Clock()
 	m_currInstructionAddress = m_regPC;
 	
 	// No interrupt, perform next instruction
-	uint8_t opCode = this->m_cpuBus->Read(m_regPC);
+	uint8_t opCode = m_cpuBus->Read(m_regPC);
 	Inc16Bit(m_regPC);
 	CPUInstruction instruction = s_opCodeTable[opCode];
 	int baseCycles = instruction.baseCycleCount;
