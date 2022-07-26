@@ -11,12 +11,13 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 	m_cpu = cpu;
 	m_ppuBus = nullptr;
 
-	m_latchValue = 0;
-	m_latchCounter = 0;
+	m_ioLatchValue = 0;
+	m_ioLatchCounter = 0;
 	m_PPUCTRL.value = 0;
 	m_PPUMASK.value = 0;
 	m_PPUSTATUS.value = 0;
 	m_PPUDATABuffer = 0;
+	m_OAMADDR = 0;
 
 	m_TRAMAddress.address = 0;
 	m_VRAMAddress.address = 0;
@@ -39,12 +40,13 @@ void PPU2C02::SoftReset() {
 	m_scanline = 0;
 	m_dot = 0;
 
-	m_latchValue = 0; // Not sure what the behaviour on RESET should be for the latch value
-	m_latchCounter = 0;
+	m_ioLatchValue = 0; // Not sure what the behaviour on RESET should be for the latch value
+	m_ioLatchCounter = 0;
 	m_PPUCTRL.SoftReset();
 	m_PPUMASK.SoftReset();
 	m_PPUSTATUS.SoftReset();
 	m_PPUDATABuffer = 0;
+	// OAMADDR unchanged on reset
 
 	// On soft reset, t register and fine x are cleared but not v register
 	m_TRAMAddress.address = 0;
@@ -58,12 +60,13 @@ void PPU2C02::HardReset() {
 	m_scanline = 0;
 	m_dot = 0;
 
-	m_latchValue = 0;
-	m_latchCounter = 0;
+	m_ioLatchValue = 0;
+	m_ioLatchCounter = 0;
 	m_PPUCTRL.HardReset();
 	m_PPUMASK.HardReset();
 	m_PPUSTATUS.HardReset();
 	m_PPUDATABuffer = 0;
+	m_OAMADDR = 0;
 
 	m_TRAMAddress.address = 0;
 	m_VRAMAddress.address = 0;
@@ -95,12 +98,13 @@ PPUState PPU2C02::GetState() const {
 	state.scanline = m_scanline;
 	state.dot = m_dot;
 
-	state.latchValue = m_latchValue;
-	state.latchCounter = m_latchCounter;
+	state.ioLatchValue = m_ioLatchValue;
+	state.ioLatchCounter = m_ioLatchCounter;
 	state.PPUCTRL.value = m_PPUCTRL.value;
 	state.PPUMASK.value = m_PPUMASK.value;
 	state.PPUSTATUS.value = m_PPUSTATUS.value;
 	state.PPUDATABuffer = m_PPUDATABuffer;
+	state.OAMADDR = m_OAMADDR;
 
 	state.TRAMAddress.address = m_TRAMAddress.address;
 	state.VRAMAddress.address = m_VRAMAddress.address;
@@ -115,12 +119,13 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_scanline = state.scanline;
 	m_dot = state.dot;
 
-	m_latchValue = state.latchValue;
-	m_latchCounter = state.latchCounter;
+	m_ioLatchValue = state.ioLatchValue;
+	m_ioLatchCounter = state.ioLatchCounter;
 	m_PPUCTRL.value = state.PPUCTRL.value;
 	m_PPUMASK.value = state.PPUMASK.value;
 	m_PPUSTATUS.value = state.PPUSTATUS.value;
 	m_PPUDATABuffer = state.PPUDATABuffer;
+	m_OAMADDR = state.OAMADDR;
 
 	m_TRAMAddress.address = state.TRAMAddress.address;
 	m_VRAMAddress.address = state.VRAMAddress.address;
@@ -154,7 +159,7 @@ void PPU2C02::Clock() {
 	if (m_scanline == PPU_NMI_SCANLINE && m_dot == PPU_NMI_DOT) {
 		m_cpu->RaiseNMI();
 	}*/
-	this->DecrementLatchCounter();
+	this->DecrementIOLatchCounter();
 	this->IncrementDotScanline();
 }
 

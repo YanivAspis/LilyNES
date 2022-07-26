@@ -34,15 +34,15 @@ void PPUSTATUSRegister::HardReset() {
 
 
 uint8_t PPU2C02::PPUCTRLRead() {
-	// Cannot read from PPUCTRL, return latch value instead
-	return m_latchValue;
+	// Cannot read from PPUCTRL, return IO latch value instead
+	return m_ioLatchValue;
 }
 
 void PPU2C02::PPUCTRLWrite(uint8_t data) {
 	// On first frame, the register ignores reads/writes
 	if (m_frameCount == 0) {
-		// I assume the latch value should still be set
-		this->SetLatchValue(data);
+		// I assume the IO latch value should still be set
+		this->SetIOLatchValue(data);
 		return;
 	}
 
@@ -51,7 +51,7 @@ void PPU2C02::PPUCTRLWrite(uint8_t data) {
 	// Set nametable values in loopy T register
 	m_TRAMAddress.scrollFlags.nametableX = m_PPUCTRL.flags.nametableX;
 	m_TRAMAddress.scrollFlags.nametableY = m_PPUCTRL.flags.nametableY;
-	this->SetLatchValue(data);
+	this->SetIOLatchValue(data);
 
 	// Generate NMI if VBLANK is set in PPUStatus and NMI is changed from 0 to 1
 	// This can cause several NMIs to be generated in a single frame. Some games do that
@@ -61,21 +61,21 @@ void PPU2C02::PPUCTRLWrite(uint8_t data) {
 }
 
 uint8_t PPU2C02::PPUMASKRead() {
-	// Cannot read from PPUMASK, return latch value instead
-	return m_latchValue;
+	// Cannot read from PPUMASK, return IO latch value instead
+	return m_ioLatchValue;
 }
 
 void PPU2C02::PPUMASKWrite(uint8_t data) {
 	// On first frame, the register ignores reads/writes
 	if (m_frameCount == 0) {
-		// I assume the latch value should still be set
-		this->SetLatchValue(data);
+		// I assume the IO latch value should still be set
+		this->SetIOLatchValue(data);
 		return;
 	}
 
 	// Disabling rendering outside VBLANK can corrupt OAM. TODO: Decide if that should be implemented
 	m_PPUMASK.value = data;
-	this->SetLatchValue(data);
+	this->SetIOLatchValue(data);
 }
 
 uint8_t PPU2C02::PPUSTATUSRead() {
@@ -84,49 +84,67 @@ uint8_t PPU2C02::PPUSTATUSRead() {
 	// Remove unused bits
 	valueToReturn = ClearLowerBits8(valueToReturn, 5);
 
-	// Set latch values in unused bits
-	valueToReturn |= ClearUpperBits8(m_latchValue, 5);
+	// Set IO latch values in unused bits
+	valueToReturn |= ClearUpperBits8(m_ioLatchValue, 5);
 
 	// Clear VBlank, and for some reason, the loopy write toggle
 	// TODO: VBlank race condition. Reading PPUStatus approximately when it is set suppresses NMI for this frame
 	m_PPUSTATUS.flags.VBlank = 0;
 	m_loopyWriteToggle = false;
-	this->SetLatchValue(valueToReturn);
+	this->SetIOLatchValue(valueToReturn);
 
 	return valueToReturn;
 }
 
 void PPU2C02::PPUSTATUSWrite(uint8_t data) {
-	// Cannot write to PPUSTATUS, but still write to latch
-	this->SetLatchValue(data);
+	// Cannot write to PPUSTATUS, but still write to IO latch
+	this->SetIOLatchValue(data);
 }
 
 uint8_t PPU2C02::OAMADDRRead() {
-	return 0;
+	// Cannot read from OAMADDR, so return IO latch value instead
+	return m_ioLatchValue;
 }
 
 void PPU2C02::OAMADDRWrite(uint8_t data) {
-	
+	// TODO: Writing to OAMADDR is complicated and meant to corrupt OAM data
+	// I'm going to ingore this corrupting behaviour
+	m_OAMADDR = data;
+	this->SetIOLatchValue(data);
 }
 
 uint8_t PPU2C02::OAMDATARead() {
-	return 0;
+	// TODO: Read value from OAM - this is again rather complicated
+	uint8_t valueToReturn = 0;
+	// Do we ever increment OAMADDR after read?
+
+	this->SetIOLatchValue(valueToReturn);
+	return valueToReturn;
 }
 
 void PPU2C02::OAMDATAWrite(uint8_t data) {
+	if (this->IsRendering()) {
+		// Per NESdev wiki's suggestion, I'm going to ignore writes to OAMDATA during rendering
+		return;
+	}
 
+	// TODO: Write data to OAM
+	this->SetIOLatchValue(data);
+
+	// Writes increment OAMADDR
+	Inc8Bit(m_OAMADDR);
 }
 
 uint8_t PPU2C02::PPUSCROLLRead() {
-	// Write only register, so return latch value
-	return m_latchValue;
+	// Write only register, so return IO latch value
+	return m_ioLatchValue;
 }
 
 void PPU2C02::PPUSCROLLWrite(uint8_t data) {
 	// On first frame, the register ignores reads/writes
 	if (m_frameCount == 0) {
-		// I assume the latch value should still be set
-		this->SetLatchValue(data);
+		// I assume the IO latch value should still be set
+		this->SetIOLatchValue(data);
 		return;
 	}
 
@@ -142,19 +160,19 @@ void PPU2C02::PPUSCROLLWrite(uint8_t data) {
 		m_fineX = ClearUpperBits8(data, 3);
 		m_loopyWriteToggle = true;
 	}
-	this->SetLatchValue(data);
+	this->SetIOLatchValue(data);
 }
 
 uint8_t PPU2C02::PPUADDRRead() {
 	// Write only register, so return latch value
-	return m_latchValue;
+	return m_ioLatchValue;
 }
 
 void PPU2C02::PPUADDRWrite(uint8_t data) {
 	// On first frame, the register ignores reads/writes
 	if (m_frameCount == 0) {
-		// I assume the latch value should still be set
-		this->SetLatchValue(data);
+		// I assume the IO latch value should still be set
+		this->SetIOLatchValue(data);
 		return;
 	}
 
@@ -175,7 +193,7 @@ void PPU2C02::PPUADDRWrite(uint8_t data) {
 		m_loopyWriteToggle = true;
 	}
 
-	this->SetLatchValue(data);
+	this->SetIOLatchValue(data);
 }
 
 uint8_t PPU2C02::PPUDATARead() {
@@ -189,23 +207,23 @@ uint8_t PPU2C02::PPUDATARead() {
 		 // 0x3000 - 0x3EFF), and set to internal buffer to what would have been there.
 		 // In practice, that's the content of address - 0x1000
 		 m_PPUDATABuffer = m_ppuBus->Read(address - 0x1000);
-		 uint8_t valueToReturn = m_ppuBus->Read(address);
+		 valueToReturn = m_ppuBus->Read(address);
 		 
 	 }
 	 else {
 		 // All other addresses - return content of internal buffer, set internal buffer to content of address
-		 uint8_t valueToReturn = m_PPUDATABuffer;
+		 valueToReturn = m_PPUDATABuffer;
 		 m_PPUDATABuffer = m_ppuBus->Read(address);
 	 }
 
 	 // VRAM address is incremented for convenience
 	 this->PPUDATAAddressIncrement();
-	 this->SetLatchValue(valueToReturn);
+	 this->SetIOLatchValue(valueToReturn);
 	 return valueToReturn;
 }
 
 void PPU2C02::PPUDATAWrite(uint8_t data) {
-	this->SetLatchValue(data);
+	this->SetIOLatchValue(data);
 
 	// Get VRAM address and mirror to 0x0000 - 0x3FFF
 	uint16_t address = ClearUpperBits16(m_VRAMAddress.address, 14);
@@ -239,16 +257,16 @@ void PPU2C02::PPUDATAAddressIncrement() {
 	}
 }
 
-void PPU2C02::SetLatchValue(uint8_t latchValue) {
-	m_latchValue = latchValue;
-	m_latchCounter = PPU_LATCH_DECAY_CYCLES;
+void PPU2C02::SetIOLatchValue(uint8_t ioLatchValue) {
+	m_ioLatchValue = ioLatchValue;
+	m_ioLatchCounter = PPU_IO_LATCH_DECAY_CYCLES;
 }
 
-void PPU2C02::DecrementLatchCounter() {
-	if (m_latchCounter == 0) {
-		m_latchValue = 0;
+void PPU2C02::DecrementIOLatchCounter() {
+	if (m_ioLatchCounter == 0) {
+		m_ioLatchValue = 0;
 	}
 	else {
-		m_latchCounter--;
+		m_ioLatchCounter--;
 	}
 }

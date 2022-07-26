@@ -15,10 +15,6 @@ void* wxEmulationThread::Entry(){
 	this->PostNESUpdate();
 	while (!this->TestDestroy()) {
 		try {
-			/*
-			if (m_nes.ProbeCPUState().irqPending > 0) {
-				this->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
-			}*/
 			switch (this->GetRunningMode()) {
 			case EMULATION_RUNNING_PAUSED:
 				this->DoPause();

@@ -8,11 +8,13 @@ NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpu.ConnectToBus(&m_cpuBus);
+	m_ppu.ConnectToBus(&m_ppuBus);
 	m_cartridge = nullptr;
 	m_cycleCount = 0;
 }
 
 NES::~NES() {
+	m_ppuBus.DisconnectAllDevices();
 	m_cpuBus.DisconnectAllDevices();
 	if (m_cartridge != nullptr) {
 		delete m_cartridge;
@@ -82,19 +84,6 @@ void NES::Clock()
 	
 	m_ppu.Clock();
 	m_cycleCount++;
-
-	PPUState state = m_ppu.GetState();
-	state.PPUMASK.flags.renderSprites = true;
-	state.VRAMAddress.scrollFlags.nametableX = 1;
-	state.VRAMAddress.scrollFlags.nametableY = 1;
-	state.VRAMAddress.scrollFlags.coarseY = 29;
-	state.VRAMAddress.scrollFlags.fineY = 7;
-	state.VRAMAddress.scrollFlags.coarseX = 31;
-	m_ppu.LoadState(state);
-	m_ppu.PPUDATAAddressIncrement();
-
-	//m_cpuBus.Write(0x2006, 0x6B);
-	//m_cpuBus.Read(0x2002);
 }
 
 

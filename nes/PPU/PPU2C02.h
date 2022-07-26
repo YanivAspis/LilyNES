@@ -12,7 +12,7 @@ using namespace BitwiseUtils;
 constexpr uint16_t PPU_ADDRESS_RANGE_BEGIN = 0x2000;
 constexpr uint16_t PPU_ADDRESS_RANGE_END = 0x3FFF;
 
-constexpr uint16_t PPU_ADDRESS_INCREMENT_MODE_OFF = 1;
+constexpr uint16_t PPU_ADDRESS_INCREMENT_MODE_OFF = 0x1;
 constexpr uint16_t PPU_ADDRESS_INCREMENT_MODE_ON = 0x20;
 
 constexpr unsigned int PPU_NUM_SCANLINES = 262;
@@ -23,7 +23,7 @@ constexpr unsigned int PPU_VISIBLE_SCANLINES_END = NES_PICTURE_HEIGHT; // Also p
 constexpr unsigned int PPU_VISIBLE_DOT_BEGIN = 1;
 constexpr unsigned int PPU_VISIBLE_DOT_END = NES_PICTURE_WIDTH + 1;
 
-constexpr unsigned int PPU_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_DOTS_PER_SCANLINE;
+constexpr unsigned int PPU_IO_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_DOTS_PER_SCANLINE;
 
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
@@ -114,12 +114,13 @@ struct PPUState {
 	unsigned int scanline;
 	unsigned int dot;
 
-	uint8_t latchValue;
-	unsigned int latchCounter;
+	uint8_t ioLatchValue;
+	unsigned int ioLatchCounter;
 	PPUCTRLRegister PPUCTRL;
 	PPUMASKRegister PPUMASK;
 	PPUSTATUSRegister PPUSTATUS;
 	uint8_t PPUDATABuffer;
+	uint8_t OAMADDR;
 
 	LoopyRegister TRAMAddress;
 	LoopyRegister VRAMAddress;
@@ -174,12 +175,11 @@ private:
 
 	uint8_t PPUDATARead();
 	void PPUDATAWrite(uint8_t data);
-public:
 	void PPUDATAAddressIncrement();
-private:
 
-	void SetLatchValue(uint8_t latchValue);
-	void DecrementLatchCounter();
+	void SetIOLatchValue(uint8_t ioLatchValue);
+	void DecrementIOLatchCounter();
+
 
 	// Rendering functions
 	bool RenderingEnabled() const;
@@ -188,6 +188,7 @@ private:
 	void IncrementDotScanline();
 	void IncrementCoarseX(); // Increments coarse X, with wraparound
 	void IncrementY(); // Increments fine Y and coarse Y if needed, with wraparound
+
 
 	Environment* m_environment;
 
@@ -201,14 +202,15 @@ private:
 	Bus* m_ppuBus;
 
 	// "Open Bus behaviour": PPU has an internal latch that gets filled during CPU reads/writes. Reading from write-only registers should return this
-	uint8_t m_latchValue;
+	uint8_t m_ioLatchValue;
 	// Counter until latch value "decays" to 0
-	unsigned int m_latchCounter;  
+	unsigned int m_ioLatchCounter;  
 
 	PPUCTRLRegister m_PPUCTRL;
 	PPUMASKRegister m_PPUMASK;
 	PPUSTATUSRegister m_PPUSTATUS;
 	uint8_t m_PPUDATABuffer;
+	uint8_t m_OAMADDR;
 
 	LoopyRegister m_TRAMAddress; // aka Loopy t register
 	LoopyRegister m_VRAMAddress; // aka Loopy v register
