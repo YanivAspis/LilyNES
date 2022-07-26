@@ -183,7 +183,7 @@ uint8_t PPU2C02::PPUDATARead() {
 	 uint16_t address = ClearUpperBits16(m_VRAMAddress.address, 14);
 	 uint8_t valueToReturn = 0;
 
-	 if (m_VRAMAddress.address >= PALETTE_RAM_BEGIN_ADDRESS && m_VRAMAddress <= PALETTE_RAM_END_ADDRESS) {
+	 if (m_VRAMAddress.address >= PALETTE_RAM_BEGIN_ADDRESS && m_VRAMAddress.address <= PALETTE_RAM_END_ADDRESS) {
 		 // In Palette RAM - return value immediately and set internal buffer to nametable data
 		 // "underneath" - basically imagine the nametable mirror was 0x3000 - 0x3FFF (instead of
 		 // 0x3000 - 0x3EFF), and set to internal buffer to what would have been there.
@@ -205,6 +205,8 @@ uint8_t PPU2C02::PPUDATARead() {
 }
 
 void PPU2C02::PPUDATAWrite(uint8_t data) {
+	this->SetLatchValue(data);
+
 	// Get VRAM address and mirror to 0x0000 - 0x3FFF
 	uint16_t address = ClearUpperBits16(m_VRAMAddress.address, 14);
 
@@ -213,7 +215,6 @@ void PPU2C02::PPUDATAWrite(uint8_t data) {
 
 	// VRAM address is incremented for convenience
 	this->PPUDATAAddressIncrement();
-	this->SetLatchValue(data);
 }
 
 void PPU2C02::PPUDATAAddressIncrement() {
@@ -225,7 +226,7 @@ void PPU2C02::PPUDATAAddressIncrement() {
 		this->IncrementY();
 	}
 	else {
-		// Outside of renderingm increment address according to the flag in PPUCTRL
+		// Outside of rendering increment address according to the flag in PPUCTRL
 		if (m_PPUCTRL.flags.incrementMode) {
 			m_VRAMAddress.address += PPU_ADDRESS_INCREMENT_MODE_ON;
 		}

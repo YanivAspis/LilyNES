@@ -174,7 +174,9 @@ private:
 
 	uint8_t PPUDATARead();
 	void PPUDATAWrite(uint8_t data);
+public:
 	void PPUDATAAddressIncrement();
+private:
 
 	void SetLatchValue(uint8_t latchValue);
 	void DecrementLatchCounter();

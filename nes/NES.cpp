@@ -83,6 +83,16 @@ void NES::Clock()
 	m_ppu.Clock();
 	m_cycleCount++;
 
+	PPUState state = m_ppu.GetState();
+	state.PPUMASK.flags.renderSprites = true;
+	state.VRAMAddress.scrollFlags.nametableX = 1;
+	state.VRAMAddress.scrollFlags.nametableY = 1;
+	state.VRAMAddress.scrollFlags.coarseY = 29;
+	state.VRAMAddress.scrollFlags.fineY = 7;
+	state.VRAMAddress.scrollFlags.coarseX = 31;
+	m_ppu.LoadState(state);
+	m_ppu.PPUDATAAddressIncrement();
+
 	//m_cpuBus.Write(0x2006, 0x6B);
 	//m_cpuBus.Read(0x2002);
 }
