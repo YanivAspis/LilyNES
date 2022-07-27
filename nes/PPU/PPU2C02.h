@@ -27,6 +27,8 @@ constexpr unsigned int PPU_IO_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_D
 
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
+constexpr unsigned int PPU_CLEAR_FLAGS_SCANLINE = PPU_PRERENDER_LINE;
+constexpr unsigned int PPU_CLEAR_FLAGS_DOT = 1;
 
 
 // TODO: Move these to NametableDevice.h
@@ -66,7 +68,7 @@ struct PPUMASKFlags {
 	uint8_t renderSprites : 1;           // Render sprites
 	uint8_t emphasizeRed : 1;            // Has to do with composite video signals - I'll ignore this
 	uint8_t emphasizeGreen : 1;          // Has to do with composite video signals - I'll ignore this
-	uint8_t emphasizeblue : 1;           // Has to do with composite video signals - I'll ignore this
+	uint8_t emphasizeBlue : 1;           // Has to do with composite video signals - I'll ignore this
 };
 
 union PPUMASKRegister {

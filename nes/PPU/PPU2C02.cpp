@@ -155,10 +155,18 @@ void PPU2C02::Clock() {
 		}
 	}
 	
-	/*
+	
 	if (m_scanline == PPU_NMI_SCANLINE && m_dot == PPU_NMI_DOT) {
-		m_cpu->RaiseNMI();
-	}*/
+		m_PPUSTATUS.flags.VBlank = 1;
+		if (m_PPUCTRL.flags.NMIEnabled) {
+			m_cpu->RaiseNMI();
+		}
+	}
+	if (m_scanline == PPU_CLEAR_FLAGS_SCANLINE && m_dot == PPU_CLEAR_FLAGS_DOT) {
+		m_PPUSTATUS.flags.spriteOverflow = 0;
+		m_PPUSTATUS.flags.sprite0Hit = 0;
+		m_PPUSTATUS.flags.VBlank = 0;
+	}
 	this->DecrementIOLatchCounter();
 	this->IncrementDotScanline();
 }

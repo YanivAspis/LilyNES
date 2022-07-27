@@ -63,7 +63,6 @@ void wxLargeUnselectableListBox::SelectItem(size_t index) {
 }
 
 void wxLargeUnselectableListBox::OnPaint(wxPaintEvent& evt) {
-
 	wxBufferedPaintDC dc(this);
 	this->DoPrepareDC(dc);
 	wxSize size = this->GetClientSize();

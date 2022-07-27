@@ -25,6 +25,12 @@ namespace NESUtils {
 		return result.str();
 	}
 
+	std::string IntToString(int num, unsigned int minWidth) {
+		std::stringstream result;
+		result << std::setfill('0') << std::setw(minWidth) << num;
+		return result.str();
+	}
+
 
 	// The code below is for handling the nestest.nes ROM for testing the CPU implementation
 

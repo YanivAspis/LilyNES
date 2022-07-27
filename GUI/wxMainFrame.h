@@ -7,6 +7,7 @@
 #include "Disassembler/wxDisassemblerPanel.h"
 #include "wxROMInfoFrame.h"
 #include "wxDisplayPanel.h"
+#include "wxPPUStatePanel.h"
 #include "wxEmulationThread.h"
 #include "../Environment.h"
 
@@ -55,6 +56,7 @@ private:
 	wxCPUStatePanel* m_cpuStatePanel;
 	wxRAMStatePanel* m_ramStatePanel;
 	wxDisassemblerPanel* m_disassemblerPanel;
+	wxPPUStatePanel* m_ppuStatePanel;
 	wxROMInfoFrame* m_ROMInfoFrame;
 	
 

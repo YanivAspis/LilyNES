@@ -80,8 +80,6 @@ void NES::Clock()
 	if (m_cycleCount % 3 == 2) {
 		m_cpu.Clock();
 	}
-
-	
 	m_ppu.Clock();
 	m_cycleCount++;
 }

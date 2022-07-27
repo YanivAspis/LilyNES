@@ -11,7 +11,7 @@ wxRAMStatePanel::wxRAMStatePanel(wxWindow* parent) : wxPanel(parent, wxID_ANY) {
 	wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
 	m_RAMViewGrid = new wxGrid(this, wxID_ANY);
 	m_RAMViewGrid->CreateGrid(RAM_PHYSICAL_SIZE / 16, 16);
-	topSizer->Add(m_RAMViewGrid, 1, wxEXPAND | wxALL);
+	topSizer->Add(m_RAMViewGrid, 1, wxEXPAND | wxALL | wxFIXED_MINSIZE);
 
 	for (int i = 0; i < 16; i++) {
 		m_RAMViewGrid->SetColLabelValue(i, wxString(wxString::Format(wxT("%X"), i)));
