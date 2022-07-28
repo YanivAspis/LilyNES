@@ -8,6 +8,7 @@
 #include "RAMDevice.h"
 #include "PPU/PPU2C02.h"
 #include "PPU/PaletteRAMDevice.h"
+#include "PPU/PatternTableDevice.h"
 #include "ROM/INESFile.h"
 #include "mappers/Cartridge.h"
 
@@ -18,6 +19,7 @@ struct NESState {
 	RAMState ramState;
 	CartridgeState cartridgeState;
 	PaletteRAMState paletteRAMState;
+	PatternTableState patternTableState;
 	PPUState ppuState;
 };
 
@@ -66,6 +68,7 @@ private:
 	CPU2A03 m_cpu;
 	PPU2C02 m_ppu;
 	PaletteRAMDevice m_paletteRAM;
+	PatternTableDevice m_patternTables;
 	Cartridge* m_cartridge;
 
 	unsigned int m_cycleCount;

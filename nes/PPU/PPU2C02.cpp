@@ -4,7 +4,9 @@
 #include <random>
 
 
-PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM) : BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), m_paletteRAM(paletteRAM) {
+PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM, PatternTableDevice* patternTables) 
+	: BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), 
+	m_paletteRAM(paletteRAM), m_patternTables(patternTables) {
 	m_frameCount = 0;
 	m_scanline = 0;
 	m_dot = 0;
@@ -34,6 +36,7 @@ PPU2C02::~PPU2C02() {
 	m_cpu = nullptr;
 	m_ppuBus = nullptr;
 	m_paletteRAM = nullptr;
+	m_patternTables = nullptr;
 }
 
 void PPU2C02::SoftReset() {

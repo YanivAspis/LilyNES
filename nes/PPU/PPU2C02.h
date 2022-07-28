@@ -5,6 +5,7 @@
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
 #include "PaletteRAMDevice.h"
+#include "PatternTableDevice.h"
 #include "NESPicture.h"
 
 using namespace BitwiseUtils;
@@ -133,7 +134,7 @@ struct PPUState {
 
 class PPU2C02 : public BusDevice {
 public:
-	PPU2C02(Environment* environment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM);
+	PPU2C02(Environment* environment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM, PatternTableDevice* patternTables);
 	~PPU2C02();
 
 	void SoftReset() override;
@@ -204,6 +205,7 @@ private:
 	CPU2A03* m_cpu;
 	Bus* m_ppuBus;
 	PaletteRAMDevice* m_paletteRAM;
+	PatternTableDevice* m_patternTables;
 
 	// "Open Bus behaviour": PPU has an internal latch that gets filled during CPU reads/writes. Reading from write-only registers should return this
 	uint8_t m_ioLatchValue;

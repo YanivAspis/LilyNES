@@ -67,6 +67,8 @@ public:
 	virtual uint8_t PPURead(uint16_t address) = 0;
 	virtual void PPUWrite(uint16_t address, uint8_t data) = 0;
 
+	virtual uint8_t ProbePPU(uint16_t address) = 0;
+
 	virtual MirroringMode GetCurrentMirroringMode() = 0;
 
 	CartridgeState GetState() const;

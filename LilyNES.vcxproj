@@ -156,6 +156,7 @@
     <ClCompile Include="GUI\wxEmulationThread.cpp" />
     <ClCompile Include="GUI\wxMainFrame.cpp" />
     <ClCompile Include="GUI\wxPaletteRAMPanel.cpp" />
+    <ClCompile Include="GUI\wxPatternTablePanel.cpp" />
     <ClCompile Include="GUI\wxPPUStatePanel.cpp" />
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
     <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="nes\PPU\NESPicture.cpp" />
     <ClCompile Include="nes\PPU\Palette.cpp" />
     <ClCompile Include="nes\PPU\PaletteRAMDevice.cpp" />
+    <ClCompile Include="nes\PPU\PatternTableDevice.cpp" />
     <ClCompile Include="nes\PPU\PPU2C02.cpp" />
     <ClCompile Include="nes\PPU\PPURegisters.cpp" />
     <ClCompile Include="nes\PPU\PPURendering.cpp" />
@@ -189,6 +191,7 @@
     <ClInclude Include="GUI\wxMainFrame.h" />
     <ClInclude Include="GUI\wxNESStateEvent.h" />
     <ClInclude Include="GUI\wxPaletteRAMPanel.h" />
+    <ClInclude Include="GUI\wxPatternTablePanel.h" />
     <ClInclude Include="GUI\wxPPUStatePanel.h" />
     <ClInclude Include="GUI\wxRAMStatePanel.h" />
     <ClInclude Include="GUI\wxROMInfoFrame.h" />
@@ -202,6 +205,7 @@
     <ClInclude Include="nes\PPU\NESPicture.h" />
     <ClInclude Include="nes\PPU\Palette.h" />
     <ClInclude Include="nes\PPU\PaletteRAMDevice.h" />
+    <ClInclude Include="nes\PPU\PatternTableDevice.h" />
     <ClInclude Include="nes\PPU\PPU2C02.h" />
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />

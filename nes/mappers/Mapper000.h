@@ -13,6 +13,7 @@ public:
 	void Write(uint16_t address, uint8_t data) override;
 
 	uint8_t Probe(uint16_t address) override;
+	uint8_t ProbePPU(uint16_t address) override;
 
 	uint8_t PPURead(uint16_t address) override;
 	void PPUWrite(uint16_t address, uint8_t data) override;

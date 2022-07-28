@@ -47,6 +47,10 @@ void Mapper000::PPUWrite(uint16_t address, uint8_t data) {
 	return;
 }
 
+uint8_t Mapper000::ProbePPU(uint16_t address) {
+	return this->PPURead(address);
+}
+
 MirroringMode Mapper000::GetCurrentMirroringMode() {
 	return m_mirroringMode;
 }

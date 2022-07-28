@@ -54,6 +54,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_ramStatePanel = new wxRAMStatePanel(this);
     m_ppuStatePanel = new wxPPUStatePanel(this);
     m_paletteRAMPanel = new wxPaletteRAMPanel(this);
+    m_patternTablePanel = new wxPatternTablePanel(this);
 
     topSizer->Add(m_displayPanel, 1, wxSHAPED);
     topSizer->Add(m_disassemblerPanel, 1, wxEXPAND);
@@ -62,6 +63,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
 
     bottomSizer->Add(m_ppuStatePanel, 1, wxEXPAND);
     bottomSizer->Add(m_paletteRAMPanel, 1, wxEXPAND);
+    bottomSizer->Add(m_patternTablePanel, 1, wxEXPAND);
 
     mainSizer->Add(topSizer, 3, wxEXPAND);
     mainSizer->Add(bottomSizer, 2, wxEXPAND);
@@ -83,8 +85,6 @@ void wxMainFrame::StartEmulation()
     }
 
     m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice, &m_environment);
-    m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
-    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
     try {
         m_emulationThread->LoadROM(*m_loadedROM);
     }
@@ -93,6 +93,10 @@ void wxMainFrame::StartEmulation()
         wxMessageBox(ex.what());
         return;
     }
+
+    m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
+
     if (m_emulationThread->Create() != wxTHREAD_NO_ERROR) {
         m_emulationThread->Delete();
         wxLogError("Error while creating emulation thread");
@@ -136,6 +140,13 @@ void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
     wxNESStateEvent<PaletteRAMState> palettePostEvt(EVT_PALETTE_GUI_UPDATE);
     palettePostEvt.SetState(state.paletteRAMState);
     wxPostEvent(m_paletteRAMPanel, palettePostEvt);
+
+    wxNESStateEvent<PatternPaletteState> patternTablePostEvt(EVT_PATTERN_TABLE_UPDATE);
+    PatternPaletteState patternPaletteState;
+    patternPaletteState.paletteRAMState = state.paletteRAMState;
+    patternPaletteState.patternTableState = state.patternTableState;
+    patternTablePostEvt.SetState(patternPaletteState);
+    wxPostEvent(m_patternTablePanel, patternTablePostEvt);
 }
 
 void wxMainFrame::OnClose(wxCloseEvent& evt)
@@ -222,6 +233,7 @@ void wxMainFrame::ToggleRefreshRate() {
 
 void wxMainFrame::SelectNextPalette() {
     m_paletteRAMPanel->SelectNextPalette();
+    m_patternTablePanel->SelectNextPalette();
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {

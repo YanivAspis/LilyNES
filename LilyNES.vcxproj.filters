@@ -153,6 +153,12 @@
     <ClCompile Include="nes\PPU\Palette.cpp">
       <Filter>Source Files\nes\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="nes\PPU\PatternTableDevice.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\wxPatternTablePanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -240,6 +246,12 @@
       <Filter>Header Files\nes\PPU</Filter>
     </ClInclude>
     <ClInclude Include="GUI\wxPaletteRAMPanel.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\PatternTableDevice.h">
+      <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxPatternTablePanel.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,9 +4,10 @@
 #include "mappers/Mapper000.h"
 
 
-NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM) {
+NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM, &m_patternTables) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
+	m_ppuBus.ConnectDevice(&m_patternTables);
 	m_ppuBus.ConnectDevice(&m_paletteRAM);
 	m_cpu.ConnectToBus(&m_cpuBus);
 	m_ppu.ConnectToBus(&m_ppuBus);
@@ -61,6 +62,7 @@ NESState NES::GetState() const
 	state.paletteRAMState = m_paletteRAM.GetState();
 	state.ppuState = m_ppu.GetState();
 	if (m_cartridge != nullptr) {
+		state.patternTableState = m_patternTables.GetState();
 		state.cartridgeState = m_cartridge->GetState();
 	}
 	return state;
@@ -71,6 +73,7 @@ void NES::LoadState(NESState& state)
 	m_cpu.LoadState(state.cpuState);
 	m_RAM.LoadState(state.ramState);
 	m_paletteRAM.LoadState(state.paletteRAMState);
+	m_patternTables.LoadState(state.patternTableState);
 	m_ppu.LoadState(state.ppuState);
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
@@ -84,7 +87,7 @@ void NES::Clock()
 		m_cpu.Clock();
 	}
 	m_ppu.Clock();
-	m_cycleCount++;	
+	m_cycleCount++;
 }
 
 
@@ -144,10 +147,12 @@ std::vector<uint8_t> NES::ProbeCurrentCHRRom() {
 void NES::ConnectCartridge() {
 	assert(m_cartridge != nullptr);
 	m_cpuBus.ConnectDevice(m_cartridge);
+	m_patternTables.ConnectCartridge(m_cartridge);
 }
 
 void NES::DisconnectCartridge() {
 	if (m_cartridge != nullptr) {
+		m_patternTables.DisconnectCartridge();
 		m_cpuBus.DisconnectDevice(m_cartridge);
 		delete m_cartridge;
 		m_cartridge = nullptr;
