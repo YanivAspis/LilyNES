@@ -4,6 +4,7 @@
 #include "../../utils/BitwiseUtils.h"
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
+#include "PaletteRAMDevice.h"
 #include "NESPicture.h"
 
 using namespace BitwiseUtils;
@@ -66,9 +67,9 @@ struct PPUMASKFlags {
 	uint8_t showLeftmostSprites : 1;     // Show sprites on leftmost 8 pixels of sscreen
 	uint8_t renderBackground : 1;        // Render background
 	uint8_t renderSprites : 1;           // Render sprites
-	uint8_t emphasizeRed : 1;            // Has to do with composite video signals - I'll ignore this
-	uint8_t emphasizeGreen : 1;          // Has to do with composite video signals - I'll ignore this
-	uint8_t emphasizeBlue : 1;           // Has to do with composite video signals - I'll ignore this
+	uint8_t emphasizeRed : 1;            // Add tint to red - a complicated operation
+	uint8_t emphasizeGreen : 1;          // Add tint to green - a complicated operation
+	uint8_t emphasizeBlue : 1;           // Add tint to blue - a complicated operation
 };
 
 union PPUMASKRegister {
@@ -132,7 +133,7 @@ struct PPUState {
 
 class PPU2C02 : public BusDevice {
 public:
-	PPU2C02(Environment* environment, CPU2A03* cpu);
+	PPU2C02(Environment* environment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM);
 	~PPU2C02();
 
 	void SoftReset() override;
@@ -202,6 +203,7 @@ private:
 
 	CPU2A03* m_cpu;
 	Bus* m_ppuBus;
+	PaletteRAMDevice* m_paletteRAM;
 
 	// "Open Bus behaviour": PPU has an internal latch that gets filled during CPU reads/writes. Reading from write-only registers should return this
 	uint8_t m_ioLatchValue;

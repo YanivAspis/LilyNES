@@ -31,5 +31,8 @@ void LilyNESApp::OnKeyPress(wxKeyEvent& evt) {
 	case 'Y':
 		m_mainFrame->ToggleRefreshRate();
 		break;
+	case 'U':
+		m_mainFrame->SelectNextPalette();
+		break;
 	}
 }

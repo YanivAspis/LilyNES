@@ -53,12 +53,15 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_cpuStatePanel = new wxCPUStatePanel(this);
     m_ramStatePanel = new wxRAMStatePanel(this);
     m_ppuStatePanel = new wxPPUStatePanel(this);
+    m_paletteRAMPanel = new wxPaletteRAMPanel(this);
 
     topSizer->Add(m_displayPanel, 1, wxSHAPED);
     topSizer->Add(m_disassemblerPanel, 1, wxEXPAND);
     topSizer->Add(m_cpuStatePanel, 1, wxEXPAND);
     topSizer->Add(m_ramStatePanel, 2, wxEXPAND);
+
     bottomSizer->Add(m_ppuStatePanel, 1, wxEXPAND);
+    bottomSizer->Add(m_paletteRAMPanel, 1, wxEXPAND);
 
     mainSizer->Add(topSizer, 3, wxEXPAND);
     mainSizer->Add(bottomSizer, 2, wxEXPAND);
@@ -106,12 +109,15 @@ void wxMainFrame::StartEmulation()
 void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
     // Perhaps not thread safe, in case event is sent right before emulation ends
     NESState state = m_emulationThread->GetCurrentNESState();
+
     wxNESStateEvent<CPUState> cpuPostEvt(EVT_CPU_STATE_GUI_UPDATE);
     cpuPostEvt.SetState(state.cpuState);
     wxPostEvent(m_cpuStatePanel, cpuPostEvt);
+
     wxNESStateEvent<RAMState> ramPostEvt(EVT_RAM_STATE_GUI_UPDATE);
     ramPostEvt.SetState(state.ramState);
     wxPostEvent(m_ramStatePanel, ramPostEvt);
+
     if (!m_disassemblerPanel->IsInitialized()) {
         wxNESStateEvent<DisassemblerInitializeInfo> disassemblerInitializationEvt(EVT_DISASSEMBLER_INITIALIZE);
         disassemblerInitializationEvt.SetState(DisassemblerInitializeInfo(m_loadedROM->GetPRGROM(), 0x8000, 0xFFFF, state.cpuState.regPC));
@@ -122,9 +128,14 @@ void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
         disassemblerNextAddressEvt.SetState(state.cpuState.currInstructionAddress);
         wxPostEvent(m_disassemblerPanel, disassemblerNextAddressEvt);
     }
+
     wxNESStateEvent<PPUState> ppuPostEvt(EVT_PPU_STATE_GUI_UPDATE);
     ppuPostEvt.SetState(state.ppuState);
     wxPostEvent(m_ppuStatePanel, ppuPostEvt);
+
+    wxNESStateEvent<PaletteRAMState> palettePostEvt(EVT_PALETTE_GUI_UPDATE);
+    palettePostEvt.SetState(state.paletteRAMState);
+    wxPostEvent(m_paletteRAMPanel, palettePostEvt);
 }
 
 void wxMainFrame::OnClose(wxCloseEvent& evt)
@@ -207,6 +218,10 @@ void wxMainFrame::RunContinuously() {
 
 void wxMainFrame::ToggleRefreshRate() {
     m_displayPanel->ToggleRefreshRate();
+}
+
+void wxMainFrame::SelectNextPalette() {
+    m_paletteRAMPanel->SelectNextPalette();
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {

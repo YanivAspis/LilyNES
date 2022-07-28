@@ -4,7 +4,7 @@
 #include <random>
 
 
-PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment) {
+PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM) : BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), m_paletteRAM(paletteRAM) {
 	m_frameCount = 0;
 	m_scanline = 0;
 	m_dot = 0;
@@ -33,6 +33,7 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu) : BusDevice(std::list<Ad
 PPU2C02::~PPU2C02() {
 	m_cpu = nullptr;
 	m_ppuBus = nullptr;
+	m_paletteRAM = nullptr;
 }
 
 void PPU2C02::SoftReset() {
@@ -44,6 +45,7 @@ void PPU2C02::SoftReset() {
 	m_ioLatchCounter = 0;
 	m_PPUCTRL.SoftReset();
 	m_PPUMASK.SoftReset();
+	m_paletteRAM->SetGreyscaleMode(m_PPUMASK.flags.greyscaleMode);
 	m_PPUSTATUS.SoftReset();
 	m_PPUDATABuffer = 0;
 	// OAMADDR unchanged on reset
@@ -64,6 +66,7 @@ void PPU2C02::HardReset() {
 	m_ioLatchCounter = 0;
 	m_PPUCTRL.HardReset();
 	m_PPUMASK.HardReset();
+	m_paletteRAM->SetGreyscaleMode(m_PPUMASK.flags.greyscaleMode);
 	m_PPUSTATUS.HardReset();
 	m_PPUDATABuffer = 0;
 	m_OAMADDR = 0;
@@ -123,6 +126,7 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_ioLatchCounter = state.ioLatchCounter;
 	m_PPUCTRL.value = state.PPUCTRL.value;
 	m_PPUMASK.value = state.PPUMASK.value;
+	m_paletteRAM->SetGreyscaleMode(m_PPUMASK.flags.greyscaleMode);
 	m_PPUSTATUS.value = state.PPUSTATUS.value;
 	m_PPUDATABuffer = state.PPUDATABuffer;
 	m_OAMADDR = state.OAMADDR;

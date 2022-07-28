@@ -8,6 +8,7 @@
 #include "wxROMInfoFrame.h"
 #include "wxDisplayPanel.h"
 #include "wxPPUStatePanel.h"
+#include "wxPaletteRAMPanel.h"
 #include "wxEmulationThread.h"
 #include "../Environment.h"
 
@@ -37,6 +38,7 @@ public:
 	void RunUntilNextFrame();
 	void RunContinuously();
 	void ToggleRefreshRate();
+	void SelectNextPalette();
 
 	std::shared_ptr<INESFile> GetLoadedROM() const;
 
@@ -57,6 +59,7 @@ private:
 	wxRAMStatePanel* m_ramStatePanel;
 	wxDisassemblerPanel* m_disassemblerPanel;
 	wxPPUStatePanel* m_ppuStatePanel;
+	wxPaletteRAMPanel* m_paletteRAMPanel;
 	wxROMInfoFrame* m_ROMInfoFrame;
 	
 

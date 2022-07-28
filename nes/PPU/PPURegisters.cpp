@@ -1,5 +1,4 @@
 #include "PPU2C02.h"
-#include "PaletteRAMDevice.h"
 
 // PPUCTRL set to all 0's on reset
 void PPUCTRLRegister::SoftReset() {
@@ -75,6 +74,7 @@ void PPU2C02::PPUMASKWrite(uint8_t data) {
 
 	// Disabling rendering outside VBLANK can corrupt OAM. TODO: Decide if that should be implemented
 	m_PPUMASK.value = data;
+	m_paletteRAM->SetGreyscaleMode(m_PPUMASK.flags.greyscaleMode);
 	this->SetIOLatchValue(data);
 }
 
