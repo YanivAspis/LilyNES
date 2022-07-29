@@ -24,19 +24,19 @@ void wxPatternTablePanel::OnPaint(wxPaintEvent& evt) {
 	wxBufferedPaintDC dc(this);
 
 	// Draw background
-	wxSize windowSize = this->GetClientSize();
+	wxSize windowSize = this->GetSize();
 	dc.SetPen(wxSystemSettings::GetColour(wxSYS_COLOUR_FRAMEBK));
 	dc.SetBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_FRAMEBK));
 	dc.DrawRectangle(0, 0, windowSize.GetWidth(), windowSize.GetHeight());
 
-	this->DrawPatternTable(dc, m_currState.patternTableState.patternTable0, m_currState.paletteRAMState, 0, 0);
-	this->DrawPatternTable(dc, m_currState.patternTableState.patternTable1, m_currState.paletteRAMState, m_widthScaleFactor * windowSize.GetWidth(), 0);
+	this->DrawPatternTable(dc, 0, 0, 0);
+	this->DrawPatternTable(dc, 1, windowSize.GetWidth() / 3, 0);
 }
 
 void wxPatternTablePanel::OnSize(wxSizeEvent& evt) {
 	wxSize currSize = evt.GetSize();
-	m_widthScaleFactor = (double)currSize.GetWidth() / (double)PATTERN_TABLE_IMAGE_WIDTH / 2;
-	m_heightScaleFactor = (double)currSize.GetHeight() / (double)PATTERN_TABLE_IMAGE_HEIGHT;
+	m_widthScaleFactor = (double)currSize.GetWidth() / (double)PATTERN_TABLE_IMAGE_WIDTH / 2 / 1.2;
+	m_heightScaleFactor = (double)currSize.GetHeight() / (double)PATTERN_TABLE_IMAGE_HEIGHT / 1.2;
 	this->Refresh();
 	evt.Skip();
 }
@@ -54,38 +54,48 @@ void wxPatternTablePanel::SelectNextPalette() {
 	this->Refresh();
 }
 
-void wxPatternTablePanel::DrawPatternTable(wxBufferedPaintDC& dc, std::array<uint8_t, PATTERN_TABLE_SIZE> patternTable, PaletteRAMState paletteRAM, unsigned int x, unsigned int y) {
+void wxPatternTablePanel::DrawPatternTable(wxBufferedPaintDC& dc, unsigned int patternTableID, unsigned int x, unsigned int y) {
+	std::array<uint8_t, PATTERN_TABLE_SIZE> patternTable = patternTableID == 0 ? m_currState.patternTableState.patternTable0 : m_currState.patternTableState.patternTable1;
+	
 	wxImage* image = new wxImage(PATTERN_TABLE_IMAGE_WIDTH, PATTERN_TABLE_IMAGE_HEIGHT);
-	for (unsigned int y = 0; y < PATTERN_TABLE_IMAGE_HEIGHT; y++) {
-		for (unsigned int x = 0; x < PATTERN_TABLE_IMAGE_WIDTH; x++) {
-			uint8_t tileIndex = (y / PATTERN_TABLE_NUM_TILES_HEIGHT) * PATTERN_TABLE_NUM_TILES_WIDTH + x / PATTERN_TABLE_NUM_TILES_WIDTH;
-			unsigned int rowIndex = y % PATTERN_TABLE_TILE_HEIGHT;
-			unsigned int colIndex = 7 - (x % PATTERN_TABLE_TILE_WIDTH);
-			uint8_t lsb = TestBit8(patternTable[tileIndex * 2 * PATTERN_TABLE_TILE_HEIGHT + rowIndex], colIndex);
-			uint8_t msb = TestBit8(patternTable[tileIndex * 2 * PATTERN_TABLE_TILE_HEIGHT + rowIndex + PATTERN_TABLE_MSB_OFFSET], colIndex);
-			uint8_t colourIndex = ShiftLeft8(msb, 1) | lsb;
-			NESPixel colour = GetColour(paletteRAM, colourIndex);
-			image->SetRGB(x, y, colour.red, colour.green, colour.blue);
+	for (unsigned int tileY = 0; tileY < PATTERN_TABLE_NUM_TILES_HEIGHT; tileY++) {
+		for (unsigned int tileX = 0; tileX < PATTERN_TABLE_NUM_TILES_WIDTH; tileX++) {
+
+			uint8_t tileID = tileY * PATTERN_TABLE_NUM_TILES_WIDTH + tileX;
+			for (unsigned int row = 0; row < PATTERN_TABLE_TILE_HEIGHT; row++) {
+
+				unsigned int drawY = tileY * PATTERN_TABLE_TILE_HEIGHT + row;
+				uint16_t LSBIndex = ClearUpperBits16(PatternTableDevice::GetTileLowBitsAddress(patternTableID, tileID, row), 12);
+				uint16_t MSBIndex = ClearUpperBits16(PatternTableDevice::GetTileHighBitsAddress(patternTableID, tileID, row), 12);
+				uint8_t LSB = patternTable[LSBIndex];
+				uint8_t MSB = patternTable[MSBIndex];
+				std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> colourIndices = PatternTableDevice::GetRowColourIndices(LSB, MSB);
+				for (unsigned int col = 0; col < PATTERN_TABLE_TILE_WIDTH; col++) {
+					unsigned int drawX = tileX * PATTERN_TABLE_TILE_WIDTH + col;
+					NESPixel colour = this->GetColour(colourIndices[col]);
+					image->SetRGB(drawX, drawY, colour.red, colour.green, colour.blue);
+				}
+			}
 		}
 	}
 	dc.SetUserScale(m_widthScaleFactor, m_heightScaleFactor);
 	if ((*image).IsOk()) {
-		dc.DrawBitmap(*image, 0, 0, false);
+		dc.DrawBitmap(*image, x, y, false);
 	}
 	delete image;
 	image = nullptr;
 }
 
-NESPixel wxPatternTablePanel::GetColour(PaletteRAMState paletteRAM, uint8_t colourIndex) {
+NESPixel wxPatternTablePanel::GetColour(uint8_t colourIndex) {
 	uint8_t colourEntry;
 	if (colourIndex % (PALETTE_NUM_PALETTE_COLOURS + 1) == 0) {
-		colourEntry = paletteRAM.universalBackgroundColour;
+		colourEntry = m_currState.paletteRAMState.universalBackgroundColour;
 	}
 	else if (m_selectedPalette < PALETTE_NUM_BACKGROUND_PALETTES) {
-		colourEntry = paletteRAM.backgroundPalettes[m_selectedPalette][colourIndex - 1];
+		colourEntry = m_currState.paletteRAMState.backgroundPalettes[m_selectedPalette][colourIndex - 1];
 	}
 	else {
-		colourEntry = paletteRAM.spritePalettes[m_selectedPalette - PALETTE_NUM_BACKGROUND_PALETTES][colourIndex - 1];
+		colourEntry = m_currState.paletteRAMState.spritePalettes[m_selectedPalette - PALETTE_NUM_BACKGROUND_PALETTES][colourIndex - 1];
 	}
 	return GetColourFromPalette(colourEntry, 0, 0, 0);
 }

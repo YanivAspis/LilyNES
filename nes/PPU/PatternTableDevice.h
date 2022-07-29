@@ -39,9 +39,9 @@ public:
 	void ConnectCartridge(Cartridge* cartridge);
 	void DisconnectCartridge();
 
-	uint16_t GetTileLowBitsAddress(unsigned int patternTable, uint8_t tileIndex, uint8_t row);
-	uint16_t GetTileHighBitsAddress(unsigned int patternTable, uint8_t tileIndex, uint8_t row);
-	std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> GetRowColourIndices(uint8_t rowLowBits, uint8_t rowHighBits);
+	static uint16_t GetTileLowBitsAddress(unsigned int patternTable, uint8_t tileID, uint8_t row);
+	static uint16_t GetTileHighBitsAddress(unsigned int patternTable, uint8_t tileID, uint8_t row);
+	static std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> GetRowColourIndices(uint8_t rowLowBits, uint8_t rowHighBits);
 
 private:
 	Cartridge* m_cartridge;

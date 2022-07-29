@@ -26,8 +26,8 @@ public:
 	void SelectNextPalette();
 
 private:
-	void DrawPatternTable(wxBufferedPaintDC& dc, std::array<uint8_t, PATTERN_TABLE_SIZE> patternTable, PaletteRAMState paletteRAM, unsigned int x, unsigned int y);
-	NESPixel GetColour(PaletteRAMState paletteRAM, uint8_t colourIndex);
+	void DrawPatternTable(wxBufferedPaintDC& dc, unsigned int patternTableID, unsigned int x, unsigned int y);
+	NESPixel GetColour(uint8_t colourIndex);
 
 	PatternPaletteState m_currState;
 	unsigned int m_selectedPalette;

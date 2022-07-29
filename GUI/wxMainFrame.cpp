@@ -63,7 +63,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
 
     bottomSizer->Add(m_ppuStatePanel, 1, wxEXPAND);
     bottomSizer->Add(m_paletteRAMPanel, 1, wxEXPAND);
-    bottomSizer->Add(m_patternTablePanel, 1, wxEXPAND);
+    bottomSizer->Add(m_patternTablePanel, 2, wxEXPAND);
 
     mainSizer->Add(topSizer, 3, wxEXPAND);
     mainSizer->Add(bottomSizer, 2, wxEXPAND);

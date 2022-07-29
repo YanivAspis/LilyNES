@@ -4,7 +4,7 @@
 #include "mappers/Mapper000.h"
 
 
-NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM, &m_patternTables) {
+NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_ppuBus.ConnectDevice(&m_patternTables);

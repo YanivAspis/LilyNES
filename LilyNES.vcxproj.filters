@@ -254,5 +254,8 @@
     <ClInclude Include="GUI\wxPatternTablePanel.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="nes\PPU\NametableDevice.h">
+      <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

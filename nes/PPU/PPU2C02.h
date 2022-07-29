@@ -33,12 +33,7 @@ constexpr unsigned int PPU_CLEAR_FLAGS_SCANLINE = PPU_PRERENDER_LINE;
 constexpr unsigned int PPU_CLEAR_FLAGS_DOT = 1;
 
 
-// TODO: Move these to NametableDevice.h
-constexpr unsigned int NAMETABLE_NUM_X_TILES = 32;
-constexpr unsigned int NAMETABLE_NUM_Y_TILES = 30;
-constexpr unsigned int NAMETABLE_COARSE_Y_MAX = 31;
-constexpr unsigned int NAMETABLE_TILE_WIDTH = 8;
-constexpr unsigned int NAMETABLE_TILE_HEIGHT = NAMETABLE_TILE_WIDTH;
+
 
 
 
@@ -134,7 +129,7 @@ struct PPUState {
 
 class PPU2C02 : public BusDevice {
 public:
-	PPU2C02(Environment* environment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM, PatternTableDevice* patternTables);
+	PPU2C02(Environment* environment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM);
 	~PPU2C02();
 
 	void SoftReset() override;
@@ -205,7 +200,6 @@ private:
 	CPU2A03* m_cpu;
 	Bus* m_ppuBus;
 	PaletteRAMDevice* m_paletteRAM;
-	PatternTableDevice* m_patternTables;
 
 	// "Open Bus behaviour": PPU has an internal latch that gets filled during CPU reads/writes. Reading from write-only registers should return this
 	uint8_t m_ioLatchValue;

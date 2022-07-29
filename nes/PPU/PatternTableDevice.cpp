@@ -53,12 +53,12 @@ void PatternTableDevice::DisconnectCartridge() {
 	m_cartridge = nullptr;
 }
 
-uint16_t PatternTableDevice::GetTileLowBitsAddress(unsigned int patternTable, uint8_t tileIndex, uint8_t row) {
-	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileIndex * 2 * PATTERN_TABLE_TILE_HEIGHT + row;
+uint16_t PatternTableDevice::GetTileLowBitsAddress(unsigned int patternTable, uint8_t tileID, uint8_t row) {
+	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row;
 }
 
-uint16_t PatternTableDevice::GetTileHighBitsAddress(unsigned int patternTable, uint8_t tileIndex, uint8_t row) {
-	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileIndex * 2 * PATTERN_TABLE_TILE_HEIGHT + row + PATTERN_TABLE_MSB_OFFSET;
+uint16_t PatternTableDevice::GetTileHighBitsAddress(unsigned int patternTable, uint8_t tileID, uint8_t row) {
+	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row + PATTERN_TABLE_MSB_OFFSET;
 }
 
 std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> PatternTableDevice::GetRowColourIndices(uint8_t rowLowBits, uint8_t rowHighBits) {

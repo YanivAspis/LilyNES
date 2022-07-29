@@ -1,4 +1,5 @@
 #include "PPU2C02.h"
+#include "Nametabledevice.h"
 
 
 bool PPU2C02::RenderingEnabled() const {
