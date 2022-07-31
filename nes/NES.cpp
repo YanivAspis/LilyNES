@@ -8,6 +8,7 @@ NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_ppuBus.ConnectDevice(&m_patternTables);
+	m_ppuBus.ConnectDevice(&m_nametables);
 	m_ppuBus.ConnectDevice(&m_paletteRAM);
 	m_cpu.ConnectToBus(&m_cpuBus);
 	m_ppu.ConnectToBus(&m_ppuBus);
@@ -60,6 +61,7 @@ NESState NES::GetState() const
 	state.cpuState = m_cpu.GetState();
 	state.ramState = m_RAM.GetState();
 	state.paletteRAMState = m_paletteRAM.GetState();
+	state.nametableState = m_nametables.GetState();
 	state.ppuState = m_ppu.GetState();
 	if (m_cartridge != nullptr) {
 		state.patternTableState = m_patternTables.GetState();
@@ -73,10 +75,11 @@ void NES::LoadState(NESState& state)
 	m_cpu.LoadState(state.cpuState);
 	m_RAM.LoadState(state.ramState);
 	m_paletteRAM.LoadState(state.paletteRAMState);
-	m_patternTables.LoadState(state.patternTableState);
+	m_nametables.LoadState(state.nametableState);
 	m_ppu.LoadState(state.ppuState);
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
+		m_patternTables.LoadState(state.patternTableState);
 	}
 }
 
@@ -148,11 +151,13 @@ void NES::ConnectCartridge() {
 	assert(m_cartridge != nullptr);
 	m_cpuBus.ConnectDevice(m_cartridge);
 	m_patternTables.ConnectCartridge(m_cartridge);
+	m_nametables.ConnectCartridge(m_cartridge);
 }
 
 void NES::DisconnectCartridge() {
 	if (m_cartridge != nullptr) {
 		m_patternTables.DisconnectCartridge();
+		m_nametables.DisconnectCartridge();
 		m_cpuBus.DisconnectDevice(m_cartridge);
 		delete m_cartridge;
 		m_cartridge = nullptr;

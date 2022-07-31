@@ -3,6 +3,7 @@
 #include <array>
 #include "../BusDevice.h"
 #include "../mappers/Cartridge.h"
+#include "PPU2C02.h"
 
 constexpr unsigned int NAMETABLE_BEGIN_ADDRESS = 0x2000;
 constexpr unsigned int NAMETABLE_END_ADDRESS = 0x3EFF;
@@ -13,6 +14,8 @@ constexpr unsigned int NAMETABLE_COARSE_Y_MAX = 31;
 constexpr unsigned int NAMETABLE_TILE_WIDTH = 8;
 constexpr unsigned int NAMETABLE_TILE_HEIGHT = NAMETABLE_TILE_WIDTH;
 constexpr unsigned int NAMETABLE_SIZE = NAMETABLE_NUM_X_TILES * (NAMETABLE_COARSE_Y_MAX + 1);
+
+constexpr unsigned int NAMETABLE_ATTRIBUTE_OFFSET = 0x3C0;
 
 struct NametableState {
 	std::array<uint8_t, NAMETABLE_SIZE> nametable0;
@@ -32,11 +35,18 @@ public:
 
 	uint8_t Probe(uint16_t address) override;
 
-	PatternTableState GetState() const;
-	void LoadState(PatternTableState& state);
+	NametableState GetState() const;
+	void LoadState(NametableState& state);
 
 	void ConnectCartridge(Cartridge* cartridge);
 	void DisconnectCartridge();
+
+	// Translate loopy reg contents into nametable content address
+	static uint16_t GetNametableByteAddress(LoopyRegister VRAMaddress);
+	// Translate loopy reg contents into attribute (palette) byte address
+	static uint16_t GetAttributeByteAddress(LoopyRegister VRAMaddress);
+	// Extract palette index from palette byte
+	static uint8_t GetPaletteFromAttributeByte(LoopyRegister VRAMaddress, uint8_t attributeByte);
 
 private:
 	// This function will take care of nametable mirroring and indexing by returning a pointer to the correct data address
@@ -51,5 +61,5 @@ private:
 
 	Cartridge* m_cartridge;
 
-	std::map<MirroringMode, std::function<NametableDevice(std::array<uint8_t, NAMETABLE_SIZE>*, uint16_t)>> m_mirroringFunctions;
+	std::map<MirroringMode, std::function<std::array<uint8_t, NAMETABLE_SIZE>*(NametableDevice&, uint16_t)>> m_mirroringFunctions;
 };

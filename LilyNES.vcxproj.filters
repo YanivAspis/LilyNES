@@ -159,6 +159,9 @@
     <ClCompile Include="GUI\wxPatternTablePanel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="nes\PPU\NametableDevice.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">

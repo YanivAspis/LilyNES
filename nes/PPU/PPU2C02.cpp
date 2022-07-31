@@ -1,4 +1,6 @@
 #include "PPU2C02.h"
+#include "NametableDevice.h"
+#include "Palette.h"
 
 // TODO: Used for generating static. Remove when we do actual rendering
 #include <random>
@@ -149,10 +151,30 @@ void PPU2C02::Clock() {
 	static std::uniform_int_distribution<int> rng(0, 1);
 
 	if (m_scanline >= PPU_VISIBLE_SCANLINES_BEGIN && m_scanline < PPU_VISIBLE_SCANLINES_END && m_dot >= PPU_VISIBLE_DOT_BEGIN && m_dot < PPU_VISIBLE_DOT_END) {
-		int val = rng(mt);
-		m_picture[m_scanline][m_dot-1].red = 255 * val;
-		m_picture[m_scanline][m_dot-1].green = 255 * val;
-		m_picture[m_scanline][m_dot-1].blue = 255 * val;
+		//int val = rng(mt);
+		LoopyRegister reg;
+		reg.scrollFlags.coarseX = (m_dot - 1) / 8;
+		reg.scrollFlags.coarseY = m_scanline / 8;
+		reg.scrollFlags.nametableX = 0;
+		reg.scrollFlags.nametableY = 0;
+		reg.scrollFlags.fineY = m_scanline % 8;
+		reg.scrollFlags.unused = 0;
+		uint8_t fineX = (m_dot - 1) % 8;
+		uint16_t nametableByteAddr = NametableDevice::GetNametableByteAddress(reg);
+		uint16_t attributeByteAddr = NametableDevice::GetAttributeByteAddress(reg);
+		uint8_t tileID = m_ppuBus->Read(nametableByteAddr);
+		uint8_t attributeByte = m_ppuBus->Read(attributeByteAddr);
+		uint16_t coloursLSBAddr = PatternTableDevice::GetTileLowBitsAddress(1, tileID, reg.scrollFlags.fineY);
+		uint16_t coloursMSBAddr = PatternTableDevice::GetTileHighBitsAddress(1, tileID, reg.scrollFlags.fineY);
+		uint8_t coloursLSB = m_ppuBus->Read(coloursLSBAddr);
+		uint8_t coloursMSB = m_ppuBus->Read(coloursMSBAddr);
+		std::array<uint8_t, 8> colours = PatternTableDevice::GetRowColourIndices(coloursLSB, coloursMSB);
+		uint8_t colourIndex = colours[fineX];
+		uint8_t paletteIndex = NametableDevice::GetPaletteFromAttributeByte(reg, attributeByte);
+		uint16_t colourAddress = m_paletteRAM->GetBackgroundPaletteAddress(paletteIndex, colourIndex);
+		uint8_t colourEntry = m_ppuBus->Read(colourAddress);
+		NESPixel colour = GetColourFromPalette(colourEntry, 0, 0, 0);
+		m_picture[m_scanline][m_dot - 1] = colour;
 	}
 	if (m_scanline == PPU_VISIBLE_SCANLINES_END && m_dot == 0) {
 		if (m_environment != nullptr) {
