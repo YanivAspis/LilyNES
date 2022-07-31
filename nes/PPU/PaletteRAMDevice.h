@@ -16,6 +16,7 @@ constexpr uint8_t PALETTE_GREY_MODIFIER = 0x30;
 struct PaletteRAMState {
 	PaletteRAMState();
 	uint8_t universalBackgroundColour;
+	std::array<uint8_t, PALETTE_NUM_BACKGROUND_PALETTES - 1> otherBackgroundColours; // Other background colours can be written to, but are not normally displayed
 	std::array<std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>, PALETTE_NUM_BACKGROUND_PALETTES> backgroundPalettes;
 	std::array<std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>, PALETTE_NUM_SPRITE_PALETTES> spritePalettes;
 	bool greyscaleMode;
@@ -41,9 +42,10 @@ public:
 	uint16_t GetSpritePaletteAddress(uint8_t palette, uint8_t index);
 
 private:
-	uint8_t* GetColourPointer(uint16_t address);
+	uint8_t* GetColourPointer(uint16_t address, bool forWrite);
 
 	uint8_t m_universalBackgroundColour;
+	std::array<uint8_t, PALETTE_NUM_BACKGROUND_PALETTES - 1> m_otherBackgroundColours;
 	std::array<std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>, PALETTE_NUM_BACKGROUND_PALETTES> m_backgroundPalettes;
 	std::array<std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>, PALETTE_NUM_SPRITE_PALETTES> m_spritePalettes;
 	bool m_greyscaleMode;

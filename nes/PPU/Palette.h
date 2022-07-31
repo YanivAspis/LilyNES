@@ -19,7 +19,7 @@ static const std::array<NESPixel, PALETTE_NUM_SUPPORTED_COLOURS> BASE_PALETTE_TO
 	NESPixel(32, 42, 0),      // 0x08
 	NESPixel(8, 58, 0),       // 0x09
 	NESPixel(0, 64, 0),       // 0x0A
-	NESPixel(0, 60, 0),        // 0x0B
+	NESPixel(0, 60, 0),       // 0x0B
 	NESPixel(0, 50, 60),      // 0x0C
 	NESPixel(0, 0, 0),        // 0x0D
 	NESPixel(0, 0, 0),        // 0x0E

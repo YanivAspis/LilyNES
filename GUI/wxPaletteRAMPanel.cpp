@@ -37,7 +37,13 @@ void wxPaletteRAMPanel::OnPaint(wxPaintEvent& evt) {
 		else {
 			dc.SetPen(unselectedPen);
 		}
-		NESPixel colour = GetColourFromPalette(m_currState.universalBackgroundColour, 0, 0, 0);
+		NESPixel colour;
+		if (palette == 0) {
+			colour = GetColourFromPalette(m_currState.universalBackgroundColour, 0, 0, 0);
+		}
+		else {
+			colour = GetColourFromPalette(m_currState.otherBackgroundColours[palette - 1], 0, 0, 0);
+		}
 		dc.SetBrush(wxBrush(wxColour(colour.red, colour.green, colour.blue)));
 		unsigned int topLeftX = m_leftMargin;
 		unsigned int topLeftY = m_topMargin + (m_colourHeight + m_betweenColoursMargin) * palette;
@@ -58,7 +64,13 @@ void wxPaletteRAMPanel::OnPaint(wxPaintEvent& evt) {
 		else {
 			dc.SetPen(unselectedPen);
 		}
-		NESPixel colour = GetColourFromPalette(m_currState.universalBackgroundColour, 0, 0, 0);
+		NESPixel colour;
+		if (palette == 0) {
+			colour = GetColourFromPalette(m_currState.universalBackgroundColour, 0, 0, 0);
+		}
+		else {
+			colour = GetColourFromPalette(m_currState.otherBackgroundColours[palette - 1], 0, 0, 0);
+		}
 		dc.SetBrush(wxBrush(wxColour(colour.red, colour.green, colour.blue)));
 		unsigned int topLeftX = m_leftMargin;
 		unsigned int topLeftY = m_topMargin + (m_colourHeight + m_betweenColoursMargin) * PALETTE_NUM_BACKGROUND_PALETTES + (m_colourHeight + m_betweenColoursMargin) * palette;

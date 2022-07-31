@@ -2,12 +2,26 @@
 #include "NametableDevice.h"
 #include "Palette.h"
 
-// TODO: Used for generating static. Remove when we do actual rendering
-#include <random>
+PPUState::PPUState() : backgroundShiftRegister(PPU_BACKGROUND_SHIFT_REGISTER_SIZE) {
+	frameCount = 0;
+	scanline = 0;
+	dot = 0;
+	ioLatchCounter = 0;
+	ioLatchValue = 0;
+	PPUCTRL.value = 0;
+	PPUMASK.value = 0;
+	PPUSTATUS.value = 0;
+	PPUDATABuffer = 0;
+	OAMADDR = 0;
+	TRAMAddress.address = 0;
+	VRAMAddress.address = 0;
+	fineX = 0;
+	loopyWriteToggle = false;
+}
 
 
 PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM) 
-	: BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), m_paletteRAM(paletteRAM) {
+	: BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), m_paletteRAM(paletteRAM), m_backgroundShiftRegister(PPU_BACKGROUND_SHIFT_REGISTER_SIZE) {
 	m_frameCount = 0;
 	m_scanline = 0;
 	m_dot = 0;
@@ -28,9 +42,7 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* palett
 	m_loopyWriteToggle = false;
 
 	ResetNESPicture(m_picture);
-
-	// TODO: Used for generating static. Remove when we do actual rendering
-	srand(time(nullptr));
+	this->setupRenderFunctions();
 }
 
 PPU2C02::~PPU2C02() {
@@ -57,6 +69,10 @@ void PPU2C02::SoftReset() {
 	m_TRAMAddress.address = 0;
 	m_fineX = 0;
 
+	// I'm going to assume these are cleared on reset/power up
+	m_nextBackgroundTileInfo = NextBackgroundTileInfo();
+	m_backgroundShiftRegister.Clear();
+
 	ResetNESPicture(m_picture);
 }
 
@@ -78,6 +94,10 @@ void PPU2C02::HardReset() {
 	m_VRAMAddress.address = 0;
 	m_fineX = 0;
 	m_loopyWriteToggle = false;
+
+	// I'm going to assume these are cleared on reset/power up
+	m_nextBackgroundTileInfo = NextBackgroundTileInfo();
+	m_backgroundShiftRegister.Clear();
 
 	ResetNESPicture(m_picture);
 }
@@ -117,6 +137,9 @@ PPUState PPU2C02::GetState() const {
 	state.fineX = m_fineX;
 	state.loopyWriteToggle = m_loopyWriteToggle;
 
+	state.nextBackgroundTileInfo = m_nextBackgroundTileInfo;
+	state.backgroundShiftRegister = m_backgroundShiftRegister;
+
 	return state;
 }
 
@@ -138,6 +161,9 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_VRAMAddress.address = state.VRAMAddress.address;
 	m_fineX = state.fineX;
 	m_loopyWriteToggle = state.loopyWriteToggle;
+
+	m_nextBackgroundTileInfo = state.nextBackgroundTileInfo;
+	m_backgroundShiftRegister = state.backgroundShiftRegister;
 }
 
 void PPU2C02::ConnectToBus(Bus* ppuBus) {
@@ -146,57 +172,13 @@ void PPU2C02::ConnectToBus(Bus* ppuBus) {
 }
 
 void PPU2C02::Clock() {
-	static std::random_device rd;
-	static std::mt19937 mt(rd());
-	static std::uniform_int_distribution<int> rng(0, 1);
-
-	if (m_scanline >= PPU_VISIBLE_SCANLINES_BEGIN && m_scanline < PPU_VISIBLE_SCANLINES_END && m_dot >= PPU_VISIBLE_DOT_BEGIN && m_dot < PPU_VISIBLE_DOT_END) {
-		//int val = rng(mt);
-		LoopyRegister reg;
-		reg.scrollFlags.coarseX = (m_dot - 1) / 8;
-		reg.scrollFlags.coarseY = m_scanline / 8;
-		reg.scrollFlags.nametableX = 0;
-		reg.scrollFlags.nametableY = 0;
-		reg.scrollFlags.fineY = m_scanline % 8;
-		reg.scrollFlags.unused = 0;
-		uint8_t fineX = (m_dot - 1) % 8;
-		uint16_t nametableByteAddr = NametableDevice::GetNametableByteAddress(reg);
-		uint16_t attributeByteAddr = NametableDevice::GetAttributeByteAddress(reg);
-		uint8_t tileID = m_ppuBus->Read(nametableByteAddr);
-		uint8_t attributeByte = m_ppuBus->Read(attributeByteAddr);
-		uint16_t coloursLSBAddr = PatternTableDevice::GetTileLowBitsAddress(1, tileID, reg.scrollFlags.fineY);
-		uint16_t coloursMSBAddr = PatternTableDevice::GetTileHighBitsAddress(1, tileID, reg.scrollFlags.fineY);
-		uint8_t coloursLSB = m_ppuBus->Read(coloursLSBAddr);
-		uint8_t coloursMSB = m_ppuBus->Read(coloursMSBAddr);
-		std::array<uint8_t, 8> colours = PatternTableDevice::GetRowColourIndices(coloursLSB, coloursMSB);
-		uint8_t colourIndex = colours[fineX];
-		uint8_t paletteIndex = NametableDevice::GetPaletteFromAttributeByte(reg, attributeByte);
-		uint16_t colourAddress = m_paletteRAM->GetBackgroundPaletteAddress(paletteIndex, colourIndex);
-		uint8_t colourEntry = m_ppuBus->Read(colourAddress);
-		NESPixel colour = GetColourFromPalette(colourEntry, 0, 0, 0);
-		m_picture[m_scanline][m_dot - 1] = colour;
-	}
-	if (m_scanline == PPU_VISIBLE_SCANLINES_END && m_dot == 0) {
-		if (m_environment != nullptr) {
-			m_environment->UpdateDisplay(m_picture);
-		}
-	}
-	
-	
-	if (m_scanline == PPU_NMI_SCANLINE && m_dot == PPU_NMI_DOT) {
-		m_PPUSTATUS.flags.VBlank = 1;
-		if (m_PPUCTRL.flags.NMIEnabled) {
-			m_cpu->RaiseNMI();
-		}
-	}
-	if (m_scanline == PPU_CLEAR_FLAGS_SCANLINE && m_dot == PPU_CLEAR_FLAGS_DOT) {
-		m_PPUSTATUS.flags.spriteOverflow = 0;
-		m_PPUSTATUS.flags.sprite0Hit = 0;
-		m_PPUSTATUS.flags.VBlank = 0;
+	for (std::function<void(PPU2C02&)> renderFunc : m_renderFuncs[m_scanline][m_dot]) {
+		renderFunc(*this);
 	}
 	this->DecrementIOLatchCounter();
 	this->IncrementDotScanline();
 }
+
 
 unsigned int PPU2C02::GetFrameCount() const {
 	return m_frameCount;

@@ -78,21 +78,21 @@ uint16_t NametableDevice::GetAttributeByteAddress(LoopyRegister VRAMaddress) {
 
 // Extract palette index from palette byte
 uint8_t NametableDevice::GetPaletteFromAttributeByte(LoopyRegister VRAMaddress, uint8_t attributeByte) {
-	unsigned int leftOrRight = VRAMaddress.scrollFlags.coarseX % 2;
-	unsigned int upOrDown = VRAMaddress.scrollFlags.coarseY % 2;
+	unsigned int leftOrRight = (VRAMaddress.scrollFlags.coarseX % NAMETABLE_ATTRIBUTE_NUM_TILES_PER_BYTE) >> 1;
+	unsigned int upOrDown = (VRAMaddress.scrollFlags.coarseY % NAMETABLE_ATTRIBUTE_NUM_TILES_PER_BYTE) >> 1;
 	uint8_t lowBit;
 	uint8_t highBit;
-	if (leftOrRight && upOrDown) {
+	if (leftOrRight && !upOrDown) {
 		// top right
 		lowBit = TestBit8(attributeByte, 2);
 		highBit = TestBit8(attributeByte, 3);
 	}
-	else if (!leftOrRight && upOrDown) {
+	else if (!leftOrRight && !upOrDown) {
 		// top left
 		lowBit = TestBit8(attributeByte, 0);
 		highBit = TestBit8(attributeByte, 1);
 	}
-	else if (leftOrRight && !upOrDown) {
+	else if (leftOrRight && upOrDown) {
 		// bottom right
 		lowBit = TestBit8(attributeByte, 6);
 		highBit = TestBit8(attributeByte, 7);

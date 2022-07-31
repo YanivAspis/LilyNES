@@ -5,6 +5,7 @@ using namespace BitwiseUtils;
 
 PaletteRAMState::PaletteRAMState() {
 	universalBackgroundColour = 0;
+	otherBackgroundColours.fill(0);
 	for (std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>& palette : backgroundPalettes) {
 		palette.fill(0);
 	}
@@ -16,6 +17,7 @@ PaletteRAMState::PaletteRAMState() {
 
 PaletteRAMDevice::PaletteRAMDevice() : BusDevice(std::list({AddressRange(PALETTE_RAM_BEGIN_ADDRESS, PALETTE_RAM_END_ADDRESS)})) {
 	m_universalBackgroundColour = 0;
+	m_otherBackgroundColours.fill(0);
 	for (std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>& palette : m_backgroundPalettes) {
 		palette.fill(0);
 	}
@@ -40,7 +42,7 @@ void PaletteRAMDevice::HardReset() {
 }
 
 uint8_t PaletteRAMDevice::Read(uint16_t address) {
-	uint8_t valueToReturn = *(this->GetColourPointer(address));
+	uint8_t valueToReturn = *(this->GetColourPointer(address, false));
 	if (m_greyscaleMode) {
 		// Change colour to grey
 		valueToReturn &= PALETTE_GREY_MODIFIER;
@@ -51,7 +53,7 @@ uint8_t PaletteRAMDevice::Read(uint16_t address) {
 
 void PaletteRAMDevice::Write(uint16_t address, uint8_t data) {
 	// Top two bits should always be 0
-	*(this->GetColourPointer(address)) = ClearUpperBits8(data, 6);
+	*(this->GetColourPointer(address, true)) = ClearUpperBits8(data, 6);
 }
 
 uint8_t PaletteRAMDevice::Probe(uint16_t address) {
@@ -61,6 +63,7 @@ uint8_t PaletteRAMDevice::Probe(uint16_t address) {
 PaletteRAMState PaletteRAMDevice::GetState() const {
 	PaletteRAMState state;
 	state.universalBackgroundColour = m_universalBackgroundColour;
+	state.otherBackgroundColours = m_otherBackgroundColours;
 	state.backgroundPalettes = m_backgroundPalettes;
 	state.spritePalettes = m_spritePalettes;
 	state.greyscaleMode = m_greyscaleMode;
@@ -69,6 +72,7 @@ PaletteRAMState PaletteRAMDevice::GetState() const {
 
 void PaletteRAMDevice::LoadState(PaletteRAMState& state) {
 	m_universalBackgroundColour = state.universalBackgroundColour;
+	m_otherBackgroundColours = state.otherBackgroundColours;
 	m_backgroundPalettes = state.backgroundPalettes;
 	m_spritePalettes = state.spritePalettes;
 	m_greyscaleMode = state.greyscaleMode;
@@ -86,14 +90,21 @@ uint16_t PaletteRAMDevice::GetSpritePaletteAddress(uint8_t palette, uint8_t inde
 	return PALETTE_RAM_BEGIN_ADDRESS + PALETTE_NUM_BACKGROUND_PALETTES * (PALETTE_NUM_PALETTE_COLOURS + 1) + palette * (PALETTE_NUM_PALETTE_COLOURS + 1) + index;
 }
 
-uint8_t* PaletteRAMDevice::GetColourPointer(uint16_t address) {
+uint8_t* PaletteRAMDevice::GetColourPointer(uint16_t address, bool forWrite) {
 	// First mirror to 0x00 - 0x1F
 	address = ClearUpperBits16(address, 5);
 
 	// All addresses divisible by four are mapped to the universal background colour
 	// TODO: 0x3F04, 0x3F08, 0x3F0C can be written to, but do not normally display. Emulate this
 	if (address % (PALETTE_NUM_PALETTE_COLOURS + 1) == 0) {
-		return &m_universalBackgroundColour;
+		if (forWrite && address % (PALETTE_NUM_BACKGROUND_PALETTES * (PALETTE_NUM_PALETTE_COLOURS + 1)) != 0) {
+			// Return dummy background palletes
+			unsigned int colourIndex = (address % (PALETTE_NUM_BACKGROUND_PALETTES * (PALETTE_NUM_PALETTE_COLOURS + 1)) / PALETTE_NUM_BACKGROUND_PALETTES) - 1;
+			return &m_otherBackgroundColours[colourIndex];
+		}
+		else {
+			return &m_universalBackgroundColour;
+		}
 	}
 	else if (address < PALETTE_SPRITE_MEMORY_OFFSET) {
 		// background colour

@@ -2,6 +2,7 @@
 
 #include "../../Environment.h"
 #include "../../utils/BitwiseUtils.h"
+#include "../../utils/NESUtils.h"
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
 #include "PaletteRAMDevice.h"
@@ -9,6 +10,7 @@
 #include "NESPicture.h"
 
 using namespace BitwiseUtils;
+using namespace NESUtils;
 
 
 constexpr uint16_t PPU_ADDRESS_RANGE_BEGIN = 0x2000;
@@ -25,13 +27,39 @@ constexpr unsigned int PPU_VISIBLE_SCANLINES_END = NES_PICTURE_HEIGHT; // Also p
 constexpr unsigned int PPU_VISIBLE_DOT_BEGIN = 1;
 constexpr unsigned int PPU_VISIBLE_DOT_END = NES_PICTURE_WIDTH + 1;
 
-constexpr unsigned int PPU_IO_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_DOTS_PER_SCANLINE;
-
+// Timing constants
+constexpr unsigned int PPU_NAMETABLE_TILE_ID_FETCH_BEGIN = 2;
+constexpr unsigned int PPU_NAMETABLE_TILE_ID_FETCH_END = 258;
+constexpr std::array<unsigned int, 4> PPU_NAMETABLE_TILE_ID_FETCH_EXTRA = { 322, 330, 338, 340 };
+constexpr unsigned int PPU_NAMETABLE_ATTRIBUTE_FETCH_BEGIN = 4;
+constexpr unsigned int PPU_NAMETABLE_ATTRIBUTE_FETCH_END = 260;
+constexpr std::array<unsigned int, 2> PPU_NAMETABLE_ATTRIBUTE_FETCH_EXTRA = { 324, 332};
+constexpr unsigned int PPU_BACKGROUND_TILE_LSB_FETCH_BEGIN = 6;
+constexpr unsigned int PPU_BACKGROUND_TILE_LSB_FETCH_END = 262;
+constexpr std::array<unsigned int, 2> PPU_BACKGROUND_TILE_LSB_FETCH_EXTRA = { 326, 334 };
+constexpr unsigned int PPU_BACKGROUND_TILE_MSB_FETCH_BEGIN = 8;
+constexpr unsigned int PPU_BACKGROUND_TILE_MSB_FETCH_END = 264;
+constexpr std::array<unsigned int, 2> PPU_BACKGROUND_TILE_MSB_FETCH_EXTRA = { 328, 336 };
+constexpr unsigned int PPU_INCREMENT_COARSE_X_BEGIN = 8;
+constexpr unsigned int PPU_INCREMENT_COARSE_X_END = 264;
+constexpr std::array<unsigned int, 2> PPU_INCREMENT_COARSE_X_EXTRA = {328, 336};
+constexpr unsigned int PPU_INCREMENT_Y_DOT = 256;
+constexpr unsigned int PPU_INCREMENT_RESET_X_DOT = 257;
+constexpr unsigned int PPU_SET_Y_BEGIN = 280;
+constexpr unsigned int PPU_SET_Y_END = 305;
+constexpr unsigned int PPU_BACKGROUND_FETCH_OFFSET = 8;
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
 constexpr unsigned int PPU_CLEAR_FLAGS_SCANLINE = PPU_PRERENDER_LINE;
 constexpr unsigned int PPU_CLEAR_FLAGS_DOT = 1;
+constexpr unsigned int PPU_DISPLAY_FRAME_SCANLINE = 240;
+constexpr unsigned int PPU_DISPLAY_FRAME_DOT = 0;
 
+constexpr unsigned int PPU_IO_LATCH_DECAY_CYCLES = PPU_NUM_SCANLINES * PPU_NUM_DOTS_PER_SCANLINE;
+
+constexpr unsigned int PPU_BACKGROUND_SHIFT_REGISTER_SIZE = 16;
+
+constexpr unsigned int PPU_LEFTSIDE_MASK_DOT = 8;
 
 
 
@@ -106,9 +134,25 @@ union LoopyRegister {
 	uint16_t address;
 };
 
+// Temporary storage of fetched next tile information, before being placed in the shift register
+struct NextBackgroundTileInfo {
+	NextBackgroundTileInfo();
+	uint8_t tileID; // Index into background pattern table
+	uint8_t paletteIndex; // Taken from the attribute table
+	uint8_t coloursLSB; // Least significant bits for a row in the tile, taken from the pattern table
+	uint8_t coloursMSB; // Most significant bits for a row in the tile, taken from the pattern table
+};
+
+// Used for background shift registers
+struct PixelColourInfo {
+	PixelColourInfo();
+	uint8_t paletteIndex; // Shared across the tile
+	uint8_t colourIndex; // Unique for each pixel
+};
 
 
 struct PPUState {
+	PPUState();
 	unsigned int frameCount;
 	unsigned int scanline;
 	unsigned int dot;
@@ -125,6 +169,10 @@ struct PPUState {
 	LoopyRegister VRAMAddress;
 	uint8_t fineX;
 	bool loopyWriteToggle;
+
+	// Background rendering state
+	NextBackgroundTileInfo nextBackgroundTileInfo;
+	ShiftRegister<PixelColourInfo> backgroundShiftRegister;
 };
 
 class PPU2C02 : public BusDevice {
@@ -181,12 +229,29 @@ private:
 
 
 	// Rendering functions
+	void setupRenderFunctions();
+	void setupFetchFunctionTiming(unsigned int beginDot, unsigned int endDot, std::vector<unsigned int> extraDots, std::function<void(PPU2C02&)> renderFunc);
+
 	bool RenderingEnabled() const;
 	bool IsRendering() const;
+	void RenderPixel();
 
 	void IncrementDotScanline();
 	void IncrementCoarseX(); // Increments coarse X, with wraparound
 	void IncrementY(); // Increments fine Y and coarse Y if needed, with wraparound
+	void ResetX();
+	void SetY();
+
+	void FetchTileIDFromNametable();
+	void FetchPaletteIndexFromNametable();
+	void FetchBackgroundTileLSB();
+	void FetchBackgroundTileMSB();
+	void UpdateBackgroundShiftRegister();
+	void ClearBackgroundShiftRegister();
+
+	void SetVBlank();
+	void ClearSTATUSFlags();
+	void UpdateDisplay();
 
 
 	Environment* m_environment;
@@ -217,6 +282,11 @@ private:
 	uint8_t m_fineX;             // aka Loopy x register
 	bool m_loopyWriteToggle;     // aka Loopy w register - toggles address/scroll writes (true - second write)
 
+
+	// Rendering data
+	NextBackgroundTileInfo m_nextBackgroundTileInfo;
+	ShiftRegister<PixelColourInfo> m_backgroundShiftRegister;
+
 	const std::array<std::function<uint8_t(PPU2C02&)>, 8> m_registerReadFuncs = {
 		&PPU2C02::PPUCTRLRead,
 		&PPU2C02::PPUMASKRead,
@@ -237,4 +307,6 @@ private:
 		&PPU2C02::PPUADDRWrite,
 		&PPU2C02::PPUDATAWrite
 	};
+
+	std::array<std::array<std::list<std::function<void(PPU2C02&)>>, PPU_NUM_DOTS_PER_SCANLINE>, PPU_NUM_SCANLINES> m_renderFuncs;
 };

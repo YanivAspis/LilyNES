@@ -16,6 +16,7 @@ constexpr unsigned int NAMETABLE_TILE_HEIGHT = NAMETABLE_TILE_WIDTH;
 constexpr unsigned int NAMETABLE_SIZE = NAMETABLE_NUM_X_TILES * (NAMETABLE_COARSE_Y_MAX + 1);
 
 constexpr unsigned int NAMETABLE_ATTRIBUTE_OFFSET = 0x3C0;
+constexpr unsigned int NAMETABLE_ATTRIBUTE_NUM_TILES_PER_BYTE = 4;
 
 struct NametableState {
 	std::array<uint8_t, NAMETABLE_SIZE> nametable0;

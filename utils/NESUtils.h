@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <deque>
 
 
 namespace NESUtils {
@@ -34,4 +35,49 @@ namespace NESUtils {
 	};
 
     void RunCPUTest(std::string romPath, std::string outputPath);
+
+    template<typename T> class ShiftRegister {
+    public:
+        ShiftRegister(size_t size) {
+            m_size = size;
+            m_endIndex = 0;
+            m_register.resize(size);
+        }
+
+        T& operator[](size_t index) {
+            return m_register[index];
+        }
+
+        void Shift() {
+            if (m_endIndex > 0) {
+                m_register.pop_front();
+                m_endIndex--;
+                m_register.push_back(T());
+            }   
+        }
+
+        void InsertElements(std::vector<T>& elements) {
+            for (T& element : elements) {
+                if (m_endIndex == m_size) {
+                    // Don't push elements in more than register size
+                    return;
+                }
+                m_register[m_endIndex] = element;
+                m_endIndex++;
+            }
+        }
+
+        void Clear() {
+            m_register.clear();
+            m_register.resize(m_size);
+            m_endIndex = 0;
+        }
+
+
+    private:
+        std::deque<T> m_register;
+        size_t m_endIndex;
+        size_t m_size;
+    };
+
 }
