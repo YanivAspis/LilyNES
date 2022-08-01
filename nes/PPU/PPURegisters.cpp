@@ -114,8 +114,10 @@ void PPU2C02::OAMADDRWrite(uint8_t data) {
 }
 
 uint8_t PPU2C02::OAMDATARead() {
-	// TODO: Read value from OAM - this is again rather complicated
-	uint8_t valueToReturn = 0;
+	// TODO: Reads during rendering should return internal information having to do with sprite evaluation/secondary OAM
+	// I may not implment that (Micro machines needs this, though)
+	uint8_t valueToReturn = m_OAM.Read(m_OAMADDR);
+
 	// Do we ever increment OAMADDR after read?
 
 	this->SetIOLatchValue(valueToReturn);
@@ -129,6 +131,7 @@ void PPU2C02::OAMDATAWrite(uint8_t data) {
 	}
 
 	// TODO: Write data to OAM
+	m_OAM.Write(m_OAMADDR, data);
 	this->SetIOLatchValue(data);
 
 	// Writes increment OAMADDR

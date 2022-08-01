@@ -162,6 +162,12 @@
     <ClCompile Include="nes\PPU\NametableDevice.cpp">
       <Filter>Source Files\nes\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="nes\PPU\OAM.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\PPU\OAMDMADevice.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -258,6 +264,12 @@
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="nes\PPU\NametableDevice.h">
+      <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\OAM.h">
+      <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\OAMDMADevice.h">
       <Filter>Header Files\nes\PPU</Filter>
     </ClInclude>
   </ItemGroup>

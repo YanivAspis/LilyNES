@@ -10,6 +10,7 @@
 #include "PPU/PaletteRAMDevice.h"
 #include "PPU/PatternTableDevice.h"
 #include "PPU/NametableDevice.h"
+#include "PPU/OAMDMADevice.h"
 #include "ROM/INESFile.h"
 #include "mappers/Cartridge.h"
 
@@ -22,6 +23,7 @@ struct NESState {
 	PaletteRAMState paletteRAMState;
 	PatternTableState patternTableState;
 	NametableState nametableState;
+	OAMDMAState oamDMAState;
 	PPUState ppuState;
 };
 
@@ -72,6 +74,7 @@ private:
 	PaletteRAMDevice m_paletteRAM;
 	PatternTableDevice m_patternTables;
 	NametableDevice m_nametables;
+	OAMDMADevice m_OAMDMA;
 	Cartridge* m_cartridge;
 
 	unsigned int m_cycleCount;

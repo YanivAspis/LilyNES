@@ -45,9 +45,12 @@ public:
 	void DisconnectFromBus();
 	bool IsInAddressRanges(uint16_t address);
 	bool DoAddressesCollide(BusDevice* otherDevice);
+
+protected:
+	Bus* m_bus;
+
 private:
 	// A list of ranges so we can handle non-contiguous address ranges
 	std::list<AddressRange> m_addressRanges;
 
-	Bus* m_bus;
 };

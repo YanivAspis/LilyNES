@@ -7,6 +7,7 @@
 NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
+	m_cpuBus.ConnectDevice(&m_OAMDMA);
 	m_ppuBus.ConnectDevice(&m_patternTables);
 	m_ppuBus.ConnectDevice(&m_nametables);
 	m_ppuBus.ConnectDevice(&m_paletteRAM);
@@ -63,6 +64,7 @@ NESState NES::GetState() const
 	state.paletteRAMState = m_paletteRAM.GetState();
 	state.nametableState = m_nametables.GetState();
 	state.ppuState = m_ppu.GetState();
+	state.oamDMAState = m_OAMDMA.GetState();
 	if (m_cartridge != nullptr) {
 		state.patternTableState = m_patternTables.GetState();
 		state.cartridgeState = m_cartridge->GetState();
@@ -76,6 +78,7 @@ void NES::LoadState(NESState& state)
 	m_RAM.LoadState(state.ramState);
 	m_paletteRAM.LoadState(state.paletteRAMState);
 	m_nametables.LoadState(state.nametableState);
+	m_OAMDMA.LoadState(state.oamDMAState);
 	m_ppu.LoadState(state.ppuState);
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
@@ -87,7 +90,11 @@ void NES::Clock()
 {
 	// CPU runs every 3 PPU cycles. Running when mod 3 = 2 matches nestest log
 	if (m_cycleCount % 3 == 2) {
-		m_cpu.Clock();
+		// CPU is suspended while OAM DMA transfer is occuring
+		if (m_OAMDMA.GetCyclesRemaining() == 0) {
+			m_cpu.Clock();
+		}
+		m_OAMDMA.Clock();
 	}
 	m_ppu.Clock();
 	m_cycleCount++;

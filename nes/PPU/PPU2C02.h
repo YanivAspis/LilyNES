@@ -7,6 +7,7 @@
 #include "../CPU/CPU2A03.h"
 #include "PaletteRAMDevice.h"
 #include "PatternTableDevice.h"
+#include "OAM.h"
 #include "NESPicture.h"
 
 using namespace BitwiseUtils;
@@ -281,6 +282,8 @@ private:
 	LoopyRegister m_VRAMAddress; // aka Loopy v register
 	uint8_t m_fineX;             // aka Loopy x register
 	bool m_loopyWriteToggle;     // aka Loopy w register - toggles address/scroll writes (true - second write)
+
+	OAM m_OAM;
 
 
 	// Rendering data

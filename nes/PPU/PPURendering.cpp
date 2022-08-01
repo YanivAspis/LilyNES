@@ -113,12 +113,17 @@ bool PPU2C02::IsRendering() const {
 void PPU2C02::RenderPixel() {
 	// At the moment, only render the background
 
+	// Fetch background colour
+	PixelColourInfo info = m_backgroundShiftRegister[m_fineX];
+	uint16_t colourAddress = m_paletteRAM->GetBackgroundPaletteAddress(info.paletteIndex, info.colourIndex);
+	uint8_t colourEntry = m_ppuBus->Read(colourAddress);
+
+	// Choose if to render pixel or not
 	if (this->IsRendering() && m_PPUMASK.flags.renderBackground && (m_dot >= PPU_LEFTSIDE_MASK_DOT || m_PPUMASK.flags.showLeftmostBackground)) {
-		PixelColourInfo info = m_backgroundShiftRegister[m_fineX];
-		uint16_t colourAddress = m_paletteRAM->GetBackgroundPaletteAddress(info.paletteIndex, info.colourIndex);
-		uint8_t colourEntry = m_ppuBus->Read(colourAddress);
 		m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(colourEntry, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
 	}
+
+	// Shift background register in preparation for the next pixel
 	m_backgroundShiftRegister.Shift();
 }
 

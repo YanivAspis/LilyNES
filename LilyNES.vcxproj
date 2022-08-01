@@ -169,6 +169,8 @@
     <ClCompile Include="nes\NES.cpp" />
     <ClCompile Include="nes\PPU\NametableDevice.cpp" />
     <ClCompile Include="nes\PPU\NESPicture.cpp" />
+    <ClCompile Include="nes\PPU\OAM.cpp" />
+    <ClCompile Include="nes\PPU\OAMDMADevice.cpp" />
     <ClCompile Include="nes\PPU\Palette.cpp" />
     <ClCompile Include="nes\PPU\PaletteRAMDevice.cpp" />
     <ClCompile Include="nes\PPU\PatternTableDevice.cpp" />
@@ -205,6 +207,8 @@
     <ClInclude Include="nes\NES.h" />
     <ClInclude Include="nes\PPU\NametableDevice.h" />
     <ClInclude Include="nes\PPU\NESPicture.h" />
+    <ClInclude Include="nes\PPU\OAM.h" />
+    <ClInclude Include="nes\PPU\OAMDMADevice.h" />
     <ClInclude Include="nes\PPU\Palette.h" />
     <ClInclude Include="nes\PPU\PaletteRAMDevice.h" />
     <ClInclude Include="nes\PPU\PatternTableDevice.h" />
