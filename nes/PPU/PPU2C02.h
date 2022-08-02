@@ -171,6 +171,8 @@ struct PPUState {
 	uint8_t fineX;
 	bool loopyWriteToggle;
 
+	OAMState oam;
+
 	// Background rendering state
 	NextBackgroundTileInfo nextBackgroundTileInfo;
 	ShiftRegister<PixelColourInfo> backgroundShiftRegister;

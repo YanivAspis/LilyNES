@@ -55,6 +55,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_ppuStatePanel = new wxPPUStatePanel(this);
     m_paletteRAMPanel = new wxPaletteRAMPanel(this);
     m_patternTablePanel = new wxPatternTablePanel(this);
+    m_OAMPanel = new wxOAMPanel(this);
 
     topSizer->Add(m_displayPanel, 1, wxSHAPED);
     topSizer->Add(m_disassemblerPanel, 1, wxEXPAND);
@@ -64,6 +65,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     bottomSizer->Add(m_ppuStatePanel, 1, wxEXPAND);
     bottomSizer->Add(m_paletteRAMPanel, 1, wxEXPAND);
     bottomSizer->Add(m_patternTablePanel, 2, wxEXPAND);
+    bottomSizer->Add(m_OAMPanel, 2, wxEXPAND);
 
     mainSizer->Add(topSizer, 3, wxEXPAND);
     mainSizer->Add(bottomSizer, 2, wxEXPAND);
@@ -147,6 +149,10 @@ void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
     patternPaletteState.patternTableState = state.patternTableState;
     patternTablePostEvt.SetState(patternPaletteState);
     wxPostEvent(m_patternTablePanel, patternTablePostEvt);
+
+    wxNESStateEvent<OAMState> oamPostEvt(EVT_OAM_STATE_GUI_UPDATE);
+    oamPostEvt.SetState(state.ppuState.oam);
+    wxPostEvent(m_OAMPanel, oamPostEvt);
 }
 
 void wxMainFrame::OnClose(wxCloseEvent& evt)

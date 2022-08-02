@@ -10,6 +10,7 @@
 #include "wxPPUStatePanel.h"
 #include "wxPaletteRAMPanel.h"
 #include "wxPatternTablePanel.h"
+#include "wxOAMPanel.h"
 #include "wxEmulationThread.h"
 #include "../Environment.h"
 
@@ -62,6 +63,7 @@ private:
 	wxPPUStatePanel* m_ppuStatePanel;
 	wxPaletteRAMPanel* m_paletteRAMPanel;
 	wxPatternTablePanel* m_patternTablePanel;
+	wxOAMPanel* m_OAMPanel;
 	wxROMInfoFrame* m_ROMInfoFrame;
 	
 

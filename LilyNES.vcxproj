@@ -155,6 +155,7 @@
     <ClCompile Include="GUI\wxDisplayPanel.cpp" />
     <ClCompile Include="GUI\wxEmulationThread.cpp" />
     <ClCompile Include="GUI\wxMainFrame.cpp" />
+    <ClCompile Include="GUI\wxOAMPanel.cpp" />
     <ClCompile Include="GUI\wxPaletteRAMPanel.cpp" />
     <ClCompile Include="GUI\wxPatternTablePanel.cpp" />
     <ClCompile Include="GUI\wxPPUStatePanel.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="GUI\wxEmulationThread.h" />
     <ClInclude Include="GUI\wxMainFrame.h" />
     <ClInclude Include="GUI\wxNESStateEvent.h" />
+    <ClInclude Include="GUI\wxOAMPanel.h" />
     <ClInclude Include="GUI\wxPaletteRAMPanel.h" />
     <ClInclude Include="GUI\wxPatternTablePanel.h" />
     <ClInclude Include="GUI\wxPPUStatePanel.h" />

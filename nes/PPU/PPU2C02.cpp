@@ -137,6 +137,8 @@ PPUState PPU2C02::GetState() const {
 	state.fineX = m_fineX;
 	state.loopyWriteToggle = m_loopyWriteToggle;
 
+	state.oam = m_OAM.GetState();
+
 	state.nextBackgroundTileInfo = m_nextBackgroundTileInfo;
 	state.backgroundShiftRegister = m_backgroundShiftRegister;
 
@@ -161,6 +163,8 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_VRAMAddress.address = state.VRAMAddress.address;
 	m_fineX = state.fineX;
 	m_loopyWriteToggle = state.loopyWriteToggle;
+
+	m_OAM.LoadState(state.oam);
 
 	m_nextBackgroundTileInfo = state.nextBackgroundTileInfo;
 	m_backgroundShiftRegister = state.backgroundShiftRegister;

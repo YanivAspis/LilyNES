@@ -168,6 +168,9 @@
     <ClCompile Include="nes\PPU\OAMDMADevice.cpp">
       <Filter>Source Files\nes\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\wxOAMPanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -271,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="nes\PPU\OAMDMADevice.h">
       <Filter>Header Files\nes\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\wxOAMPanel.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
