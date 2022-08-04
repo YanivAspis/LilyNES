@@ -44,7 +44,7 @@ wxOAMPanel::wxOAMPanel(wxWindow* parent) : wxPanel(parent, wxID_ANY) {
 void wxOAMPanel::OnSize(wxSizeEvent& evt) {
 	int newHeight = evt.GetSize().GetHeight();
 	int newWidth = evt.GetSize().GetWidth();
-	int fontsize = std::min(newHeight / 48, newWidth / 48);
+	int fontsize = std::min(newHeight / 20, newWidth / 20);
 	m_OAMViewGrid->SetLabelFont(wxFont(wxFontInfo(fontsize)));
 	m_OAMViewGrid->SetFont(wxFont(wxFontInfo(fontsize)));
 	m_OAMViewGrid->SetDefaultCellFont(wxFont(wxFontInfo(fontsize)));
