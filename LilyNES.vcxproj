@@ -178,6 +178,7 @@
     <ClCompile Include="nes\PPU\PPU2C02.cpp" />
     <ClCompile Include="nes\PPU\PPURegisters.cpp" />
     <ClCompile Include="nes\PPU\PPURendering.cpp" />
+    <ClCompile Include="nes\PPU\SecondaryOAM.cpp" />
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="nes\PPU\PaletteRAMDevice.h" />
     <ClInclude Include="nes\PPU\PatternTableDevice.h" />
     <ClInclude Include="nes\PPU\PPU2C02.h" />
+    <ClInclude Include="nes\PPU\SecondaryOAM.h" />
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />
     <ClInclude Include="nes\ROM\INESHeader.h" />

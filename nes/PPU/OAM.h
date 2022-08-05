@@ -22,8 +22,6 @@ union Attribute {
 struct OAMEntry {
 	OAMEntry();
 
-	bool isOnScanline(unsigned int scanline, bool mode8by16) const;
-
 	uint8_t y;
 	uint8_t tileID;
 	Attribute attribute;

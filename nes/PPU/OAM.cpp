@@ -7,11 +7,6 @@ OAMEntry::OAMEntry() {
 	x = 0;
 }
 
-bool OAMEntry::isOnScanline(unsigned int scanline, bool mode8by16) const {
-	unsigned int yOffset = mode8by16 ? 16 : 8;
-	return (scanline >= y) && (scanline < (y + yOffset));
-}
-
 // OAM Entries are unspecified on power/reset. I'll set them all to 0
 void OAM::SoftReset() {
 	for (OAMEntry& entry : m_entries) {
@@ -44,6 +39,7 @@ uint8_t OAM::Read(uint8_t address) {
 	case 3:
 		return m_entries[index].x;
 	}
+	return 0;
 }
 
 void OAM::Write(uint8_t address, uint8_t data) {

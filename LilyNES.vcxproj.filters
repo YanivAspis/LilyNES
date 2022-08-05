@@ -171,6 +171,9 @@
     <ClCompile Include="GUI\wxOAMPanel.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="nes\PPU\SecondaryOAM.cpp">
+      <Filter>Source Files\nes\PPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -277,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="GUI\wxOAMPanel.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\PPU\SecondaryOAM.h">
+      <Filter>Header Files\nes\PPU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
