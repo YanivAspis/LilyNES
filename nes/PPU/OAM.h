@@ -5,6 +5,7 @@
 
 constexpr unsigned int OAM_NUM_SPRITES = 64;
 constexpr uint8_t OAM_ATTRIBUTE_UNUSED_MASK = 0xE3;
+constexpr unsigned int OAM_INITIAL_VALUE = 0xFF;
 
 struct AttributeFlags {
 	uint8_t paletteIndex : 2;

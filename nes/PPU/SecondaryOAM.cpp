@@ -1,7 +1,7 @@
 #include "SecondaryOAM.h"
 
 SecondaryOAMState::SecondaryOAMState() {
-	internalBuffer = SECONDARY_OAM_INITIAL_VALUE;
+	internalBuffer = OAM_INITIAL_VALUE;
 	byteIndex = 0;
 	spriteIndex = 0;
 	entriesAdded = 0;
@@ -17,7 +17,35 @@ SecondaryOAMState::SecondaryOAMState() {
 SecondaryOAM::SecondaryOAM(OAM* primaryOAM)
 {
 	m_primaryOAM = primaryOAM;
-	m_internalBuffer = SECONDARY_OAM_INITIAL_VALUE;
+	m_internalBuffer = OAM_INITIAL_VALUE;
+	m_byteIndex = 0;
+	m_spriteIndex = 0;
+	m_entriesAdded = 0;
+	m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
+	m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
+	m_spriteOverflowDetected = false;
+
+	for (SecondaryOAMEntry& entry : m_entries) {
+		entry.spriteID = OAM_NO_SPRITE_ID;
+	}
+}
+
+void SecondaryOAM::SoftReset() {
+	m_internalBuffer = OAM_INITIAL_VALUE;
+	m_byteIndex = 0;
+	m_spriteIndex = 0;
+	m_entriesAdded = 0;
+	m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
+	m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
+	m_spriteOverflowDetected = false;
+
+	for (SecondaryOAMEntry& entry : m_entries) {
+		entry.spriteID = OAM_NO_SPRITE_ID;
+	}
+}
+
+void SecondaryOAM::HardReset() {
+	m_internalBuffer = OAM_INITIAL_VALUE;
 	m_byteIndex = 0;
 	m_spriteIndex = 0;
 	m_entriesAdded = 0;
@@ -32,11 +60,11 @@ SecondaryOAM::SecondaryOAM(OAM* primaryOAM)
 
 void SecondaryOAM::Clock(unsigned int scanline, unsigned int dot, bool mode8by16)
 {
-	if (dot == 0) {
+	if (dot == SECONDARY_OAM_INTERNAL_INITIALIZATION_DOT) {
 		this->Initialize();
 	}
 	else if (dot >= SECONDARY_OAM_INITIALIZATION_START_DOT && dot <= SECONDARY_OAM_INITIALIZATION_END_DOT) {
-		if (dot % 2 == 0) {
+		if (dot % 2 != 0) {
 			this->SecondaryOAMInitializationRead();
 		}
 		else {
@@ -44,7 +72,7 @@ void SecondaryOAM::Clock(unsigned int scanline, unsigned int dot, bool mode8by16
 		}
 	}
 	else if (dot >= SECONDARY_OAM_EVALUATION_START_DOT && dot <= SECONDARY_OAM_EVALUATION_END_DOT) {
-		if (dot % 2 == 0) {
+		if (dot % 2 != 0) {
 			this->SpriteEvaluationRead();
 		}
 		else {
@@ -144,7 +172,7 @@ void SecondaryOAM::WriteToEntry(unsigned int entryIndex, unsigned int byteIndex,
 
 void SecondaryOAM::SecondaryOAMInitializationRead()
 {
-	m_internalBuffer = SECONDARY_OAM_INITIAL_VALUE;
+	m_internalBuffer = OAM_INITIAL_VALUE;
 }
 
 void SecondaryOAM::SecondaryOAMInitializationWrite(unsigned int dot)

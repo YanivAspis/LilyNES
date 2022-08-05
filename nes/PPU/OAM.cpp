@@ -1,7 +1,7 @@
 #include "OAM.h"
 
 OAMEntry::OAMEntry() {
-	y = 0;
+	y = OAM_INITIAL_VALUE;
 	tileID = 0;
 	attribute.value = 0;
 	x = 0;
@@ -10,7 +10,7 @@ OAMEntry::OAMEntry() {
 // OAM Entries are unspecified on power/reset. I'll set them all to 0
 void OAM::SoftReset() {
 	for (OAMEntry& entry : m_entries) {
-		entry.y = 0;
+		entry.y = OAM_INITIAL_VALUE;
 		entry.tileID = 0;
 		entry.attribute.value = 0;
 		entry.x = 0;
@@ -19,7 +19,7 @@ void OAM::SoftReset() {
 
 void OAM::HardReset() {
 	for (OAMEntry& entry : m_entries) {
-		entry.y = 0;
+		entry.y = OAM_INITIAL_VALUE;
 		entry.tileID = 0;
 		entry.attribute.value = 0;
 		entry.x = 0;

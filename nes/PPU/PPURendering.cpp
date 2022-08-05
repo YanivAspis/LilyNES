@@ -75,6 +75,16 @@ void PPU2C02::setupRenderFunctions() {
 		m_renderFuncs[PPU_PRERENDER_LINE][dot].push_back(&PPU2C02::UpdateBackgroundShiftRegister);
 	}
 
+	// Secondary OAM
+	for (unsigned int scanline = PPU_VISIBLE_SCANLINES_BEGIN; scanline < PPU_VISIBLE_SCANLINES_END; scanline++) {
+		for (unsigned int dot = 0; dot < PPU_NUM_DOTS_PER_SCANLINE; dot++) {
+			m_renderFuncs[scanline][dot].push_back(&PPU2C02::SecondaryOAMClock);
+		}
+	}
+	for (unsigned int dot = PPU_VISIBLE_DOT_END; dot < PPU_NUM_DOTS_PER_SCANLINE; dot++) {
+		m_renderFuncs[PPU_PRERENDER_LINE][dot].push_back(&PPU2C02::SecondaryOAMClock);
+	}
+
 	// VBland and flags funcs
 	m_renderFuncs[PPU_NMI_SCANLINE][PPU_NMI_DOT].push_back(&PPU2C02::SetVBlank);
 	m_renderFuncs[PPU_CLEAR_FLAGS_SCANLINE][PPU_CLEAR_FLAGS_DOT].push_back(&PPU2C02::ClearSTATUSFlags);
@@ -223,6 +233,14 @@ void PPU2C02::UpdateBackgroundShiftRegister() {
 
 void PPU2C02::ClearBackgroundShiftRegister() {
 	m_backgroundShiftRegister.Clear();
+}
+
+void PPU2C02::SecondaryOAMClock() {
+	if (m_scanline == 127) {
+		uint8_t value = 0;
+		value++;
+	}
+	m_secondaryOAM.Clock(m_scanline, m_dot, m_PPUCTRL.flags.spriteSize);
 }
 
 void PPU2C02::SetVBlank() {

@@ -21,7 +21,7 @@ PPUState::PPUState() : backgroundShiftRegister(PPU_BACKGROUND_SHIFT_REGISTER_SIZ
 
 
 PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* paletteRAM) 
-	: BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), m_paletteRAM(paletteRAM), m_backgroundShiftRegister(PPU_BACKGROUND_SHIFT_REGISTER_SIZE) {
+	: BusDevice(std::list<AddressRange>({AddressRange(PPU_ADDRESS_RANGE_BEGIN, PPU_ADDRESS_RANGE_END)})), m_environment(enviroment), m_paletteRAM(paletteRAM), m_backgroundShiftRegister(PPU_BACKGROUND_SHIFT_REGISTER_SIZE), m_secondaryOAM(&m_OAM) {
 	m_frameCount = 0;
 	m_scanline = 0;
 	m_dot = 0;
@@ -69,6 +69,9 @@ void PPU2C02::SoftReset() {
 	m_TRAMAddress.address = 0;
 	m_fineX = 0;
 
+	m_OAM.SoftReset();
+	m_secondaryOAM.SoftReset();
+
 	// I'm going to assume these are cleared on reset/power up
 	m_nextBackgroundTileInfo = NextBackgroundTileInfo();
 	m_backgroundShiftRegister.Clear();
@@ -94,6 +97,9 @@ void PPU2C02::HardReset() {
 	m_VRAMAddress.address = 0;
 	m_fineX = 0;
 	m_loopyWriteToggle = false;
+
+	m_OAM.HardReset();
+	m_secondaryOAM.HardReset();
 
 	// I'm going to assume these are cleared on reset/power up
 	m_nextBackgroundTileInfo = NextBackgroundTileInfo();
@@ -138,6 +144,7 @@ PPUState PPU2C02::GetState() const {
 	state.loopyWriteToggle = m_loopyWriteToggle;
 
 	state.oam = m_OAM.GetState();
+	state.secondaryOAM = m_secondaryOAM.GetState();
 
 	state.nextBackgroundTileInfo = m_nextBackgroundTileInfo;
 	state.backgroundShiftRegister = m_backgroundShiftRegister;
@@ -165,6 +172,7 @@ void PPU2C02::LoadState(PPUState& state) {
 	m_loopyWriteToggle = state.loopyWriteToggle;
 
 	m_OAM.LoadState(state.oam);
+	m_secondaryOAM.LoadState(state.secondaryOAM);
 
 	m_nextBackgroundTileInfo = state.nextBackgroundTileInfo;
 	m_backgroundShiftRegister = state.backgroundShiftRegister;

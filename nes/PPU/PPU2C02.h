@@ -8,6 +8,7 @@
 #include "PaletteRAMDevice.h"
 #include "PatternTableDevice.h"
 #include "OAM.h"
+#include "SecondaryOAM.h"
 #include "NESPicture.h"
 
 using namespace BitwiseUtils;
@@ -172,6 +173,7 @@ struct PPUState {
 	bool loopyWriteToggle;
 
 	OAMState oam;
+	SecondaryOAMState secondaryOAM;
 
 	// Background rendering state
 	NextBackgroundTileInfo nextBackgroundTileInfo;
@@ -252,6 +254,8 @@ private:
 	void UpdateBackgroundShiftRegister();
 	void ClearBackgroundShiftRegister();
 
+	void SecondaryOAMClock();
+
 	void SetVBlank();
 	void ClearSTATUSFlags();
 	void UpdateDisplay();
@@ -286,6 +290,7 @@ private:
 	bool m_loopyWriteToggle;     // aka Loopy w register - toggles address/scroll writes (true - second write)
 
 	OAM m_OAM;
+	SecondaryOAM m_secondaryOAM;
 
 
 	// Rendering data

@@ -15,7 +15,6 @@ constexpr unsigned int SECONDARY_OAM_SPRITE_FETCH_END_DOT = 320;
 constexpr unsigned int SECONDARY_OAM_BACKGROUND_RENDER_START_DOT = 321;
 constexpr unsigned int SECONDARY_OAM_BACKGROUND_RENDER_END_DOT = 340;
 
-constexpr unsigned int SECONDARY_OAM_INITIAL_VALUE = 0xFF;
 constexpr unsigned int SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS = 3;
 
 
@@ -47,6 +46,9 @@ struct SecondaryOAMState {
 class SecondaryOAM {
 public:
 	SecondaryOAM(OAM* primaryOAM);
+
+	void SoftReset();
+	void HardReset();
 
 	void Clock(unsigned int scanline, unsigned int dot, bool mode8by16);
 
