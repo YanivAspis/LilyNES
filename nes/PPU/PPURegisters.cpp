@@ -109,15 +109,20 @@ uint8_t PPU2C02::OAMADDRRead() {
 void PPU2C02::OAMADDRWrite(uint8_t data) {
 	// TODO: Writing to OAMADDR is complicated and meant to corrupt OAM data
 	// I'm going to ingore this corrupting behaviour
+	// I think it should also interfere with sprite evaluation, but I'll ignore this
 	m_OAMADDR = data;
 	this->SetIOLatchValue(data);
 }
 
 uint8_t PPU2C02::OAMDATARead() {
-	// TODO: Reads during rendering should return internal information having to do with sprite evaluation/secondary OAM
-	// I may not implment that (Micro machines needs this, though)
-	uint8_t valueToReturn = m_OAM.Read(m_OAMADDR);
-
+	uint8_t valueToReturn;
+	if (this->IsRendering()) {
+		// Reads during rendering return internal information having to do with sprite evaluation/secondary OAM
+		valueToReturn = m_secondaryOAM.GetInternalBuffer();
+	}
+	else {
+		valueToReturn = m_OAM.Read(m_OAMADDR);
+	}
 	// Do we ever increment OAMADDR after read?
 
 	this->SetIOLatchValue(valueToReturn);
@@ -126,7 +131,9 @@ uint8_t PPU2C02::OAMDATARead() {
 
 void PPU2C02::OAMDATAWrite(uint8_t data) {
 	if (this->IsRendering()) {
-		// Per NESdev wiki's suggestion, I'm going to ignore writes to OAMDATA during rendering
+		// Writing to PPUDATA while rendering is supposed to increment spritedIndex in secondaryOAM (& OAMADDR)
+		// This is tricky to emulate correctly when spriteIndex overflows back to 0
+		// So for now I will follow NESdev wiki's suggestion, and ignore writes during rendering
 		return;
 	}
 
