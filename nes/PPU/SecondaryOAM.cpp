@@ -178,8 +178,8 @@ void SecondaryOAM::SecondaryOAMInitializationRead()
 void SecondaryOAM::SecondaryOAMInitializationWrite(unsigned int dot)
 {
 	unsigned int initializationCycle = (dot - SECONDARY_OAM_INITIALIZATION_START_DOT) / 2;
-	this->WriteToEntry(initializationCycle / SECONDARY_OAM_SIZE, initializationCycle % SECONDARY_OAM_SIZE, m_internalBuffer);
-	m_entries[initializationCycle / SECONDARY_OAM_SIZE].spriteID = OAM_NO_SPRITE_ID;
+	this->WriteToEntry(initializationCycle / OAM_ENTRY_SIZE, initializationCycle % OAM_ENTRY_SIZE, m_internalBuffer);
+	m_entries[initializationCycle / OAM_ENTRY_SIZE].spriteID = OAM_NO_SPRITE_ID;
 }
 
 void SecondaryOAM::SpriteEvaluationRead() {
