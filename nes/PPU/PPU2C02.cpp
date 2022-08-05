@@ -17,6 +17,8 @@ PPUState::PPUState() : backgroundShiftRegister(PPU_BACKGROUND_SHIFT_REGISTER_SIZ
 	VRAMAddress.address = 0;
 	fineX = 0;
 	loopyWriteToggle = false;
+	fetchedSpriteLSB = 0;
+	spriteLine.fill(SpritePixelInfo());
 }
 
 
@@ -40,6 +42,9 @@ PPU2C02::PPU2C02(Environment* enviroment, CPU2A03* cpu, PaletteRAMDevice* palett
 	m_VRAMAddress.address = 0;
 	m_fineX = 0;
 	m_loopyWriteToggle = false;
+
+	m_fetchedSpriteLSB = 0;
+	m_spriteLine.fill(SpritePixelInfo());
 
 	ResetNESPicture(m_picture);
 	this->setupRenderFunctions();
@@ -76,6 +81,11 @@ void PPU2C02::SoftReset() {
 	m_nextBackgroundTileInfo = NextBackgroundTileInfo();
 	m_backgroundShiftRegister.Clear();
 
+	m_fetchedSpriteLSB = 0;
+	this->ClearSpritesStack();
+	m_spriteLine.fill(SpritePixelInfo());
+
+
 	ResetNESPicture(m_picture);
 }
 
@@ -104,6 +114,10 @@ void PPU2C02::HardReset() {
 	// I'm going to assume these are cleared on reset/power up
 	m_nextBackgroundTileInfo = NextBackgroundTileInfo();
 	m_backgroundShiftRegister.Clear();
+
+	m_fetchedSpriteLSB = 0;
+	this->ClearSpritesStack();
+	m_spriteLine.fill(SpritePixelInfo());
 
 	ResetNESPicture(m_picture);
 }
@@ -149,6 +163,10 @@ PPUState PPU2C02::GetState() const {
 	state.nextBackgroundTileInfo = m_nextBackgroundTileInfo;
 	state.backgroundShiftRegister = m_backgroundShiftRegister;
 
+	state.fetchedSpriteLSB = m_fetchedSpriteLSB;
+	state.spritesToRender = m_spritesToRender;
+	state.spriteLine = m_spriteLine;
+
 	return state;
 }
 
@@ -176,6 +194,10 @@ void PPU2C02::LoadState(PPUState& state) {
 
 	m_nextBackgroundTileInfo = state.nextBackgroundTileInfo;
 	m_backgroundShiftRegister = state.backgroundShiftRegister;
+
+	m_fetchedSpriteLSB = state.fetchedSpriteLSB;
+	m_spritesToRender = state.spritesToRender;
+	m_spriteLine = state.spriteLine;
 }
 
 void PPU2C02::ConnectToBus(Bus* ppuBus) {

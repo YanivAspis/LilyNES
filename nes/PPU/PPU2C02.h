@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stack>
+
 #include "../../Environment.h"
 #include "../../utils/BitwiseUtils.h"
 #include "../../utils/NESUtils.h"
@@ -50,6 +52,15 @@ constexpr unsigned int PPU_INCREMENT_RESET_X_DOT = 257;
 constexpr unsigned int PPU_SET_Y_BEGIN = 280;
 constexpr unsigned int PPU_SET_Y_END = 305;
 constexpr unsigned int PPU_BACKGROUND_FETCH_OFFSET = 8;
+constexpr unsigned int PPU_GARBAGE_TILE_ID_FETCH_BEGIN = 258;
+constexpr unsigned int PPU_GARBAGE_TILE_ID_FETCH_END = 322;
+constexpr unsigned int PPU_GARBAGE_ATTRIBUTE_FETCH_BEGIN = 260;
+constexpr unsigned int PPU_GARBAGE_ATTRIBUTE_FETCH_END = 324;
+constexpr unsigned int PPU_SPRITE_TILE_LSB_FETCH_BEGIN = 262;
+constexpr unsigned int PPU_SPRITE_TILE_LSB_FETCH_END = 326;
+constexpr unsigned int PPU_SPRITE_TILE_MSB_FETCH_BEGIN = 264;
+constexpr unsigned int PPU_SPRITE_TILE_MSB_FETCH_END = 328;
+constexpr unsigned int PPU_UPDATE_SPRITE_LINE_DOT = PPU_NUM_DOTS_PER_SCANLINE - 1;
 constexpr unsigned int PPU_NMI_SCANLINE = 241;
 constexpr unsigned int PPU_NMI_DOT = 1;
 constexpr unsigned int PPU_CLEAR_FLAGS_SCANLINE = PPU_PRERENDER_LINE;
@@ -152,6 +163,22 @@ struct PixelColourInfo {
 	uint8_t colourIndex; // Unique for each pixel
 };
 
+struct SpritePixelInfo {
+	SpritePixelInfo();
+	uint8_t paletteIndex;
+	uint8_t colourIndex;
+	unsigned int spriteID;
+	bool backgroundPriority;
+};
+
+struct SpriteRowInfo {
+	uint8_t x;
+	uint8_t paletteIndex;
+	std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> rowColours;
+	unsigned int spriteID;
+	bool backgroundPriority;
+};
+
 
 struct PPUState {
 	PPUState();
@@ -178,6 +205,11 @@ struct PPUState {
 	// Background rendering state
 	NextBackgroundTileInfo nextBackgroundTileInfo;
 	ShiftRegister<PixelColourInfo> backgroundShiftRegister;
+
+	// Sprite rendering state
+	uint8_t fetchedSpriteLSB;
+	std::stack<SpriteRowInfo> spritesToRender;
+	std::array<SpritePixelInfo, NES_PICTURE_WIDTH> spriteLine;
 };
 
 class PPU2C02 : public BusDevice {
@@ -239,7 +271,10 @@ private:
 
 	bool RenderingEnabled() const;
 	bool IsRendering() const;
+	bool IsRenderingBackground() const;
+	bool IsRenderingSprites() const;
 	void RenderPixel();
+	void GetPixelColour(uint8_t backgroundPalette, uint8_t backgroundColourIndex, uint8_t spritePalette, uint8_t spriteColourIndex, unsigned int spriteID, bool backgroundPriority, uint8_t& selectedPalette, uint8_t& selectedColourIndex);
 
 	void IncrementDotScanline();
 	void IncrementCoarseX(); // Increments coarse X, with wraparound
@@ -253,6 +288,14 @@ private:
 	void FetchBackgroundTileMSB();
 	void UpdateBackgroundShiftRegister();
 	void ClearBackgroundShiftRegister();
+
+	void GarbageFetchTileIDFromNametable();
+	void GarbageFetchPaletteIndexFromNametable();
+	void FetchSpriteLSB();
+	void FetchSpriteMSB();
+	void ClearSpritesStack();
+	void ClearSpritesLine();
+	void RenderToSpriteLine();
 
 	void SecondaryOAMClock();
 
@@ -292,10 +335,13 @@ private:
 	OAM m_OAM;
 	SecondaryOAM m_secondaryOAM;
 
-
 	// Rendering data
 	NextBackgroundTileInfo m_nextBackgroundTileInfo;
 	ShiftRegister<PixelColourInfo> m_backgroundShiftRegister;
+	uint8_t m_fetchedSpriteLSB;
+	std::stack<SpriteRowInfo> m_spritesToRender;
+	std::array<SpritePixelInfo, NES_PICTURE_WIDTH> m_spriteLine;
+
 
 	const std::array<std::function<uint8_t(PPU2C02&)>, 8> m_registerReadFuncs = {
 		&PPU2C02::PPUCTRLRead,

@@ -61,6 +61,38 @@ uint16_t PatternTableDevice::GetTileHighBitsAddress(unsigned int patternTable, u
 	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row + PATTERN_TABLE_MSB_OFFSET;
 }
 
+uint16_t PatternTableDevice::GetSpriteLowBitsAddress(unsigned int patternTable, bool mode8by16, uint8_t tileID, uint8_t spriteY, unsigned int scanline, bool flipVertically) {
+	unsigned int row = scanline - spriteY;
+	if (mode8by16) {
+		if (flipVertically) {
+			row = 2 * PATTERN_TABLE_TILE_HEIGHT - 1 - row;
+		}
+		return PatternTableDevice::GetSpriteLowBitsAddress8by16(tileID, row);
+	}
+	else {
+		if (flipVertically) {
+			row = PATTERN_TABLE_TILE_HEIGHT - 1 - row;
+		}
+		return PatternTableDevice::GetSpriteLowBitsAddress8by8(patternTable, tileID, row);
+	}
+}
+
+uint16_t PatternTableDevice::GetSpriteHighBitsAddress(unsigned int patternTable, bool mode8by16, uint8_t tileID, uint8_t spriteY, unsigned int scanline, bool flipVertically) {
+	unsigned int row = scanline - spriteY;
+	if (mode8by16) {
+		if (flipVertically) {
+			row = 2 * PATTERN_TABLE_TILE_HEIGHT - 1 - row;
+		}
+		return PatternTableDevice::GetSpriteHighBitsAddress8by16(tileID, row);
+	}
+	else {
+		if (flipVertically) {
+			row = PATTERN_TABLE_TILE_HEIGHT - 1 - row;
+		}
+		return PatternTableDevice::GetSpriteHighBitsAddress8by8(patternTable, tileID, row);
+	}
+}
+
 std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> PatternTableDevice::GetRowColourIndices(uint8_t rowLowBits, uint8_t rowHighBits) {
 	std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> colours;
 	for (unsigned int i = 0; i < PATTERN_TABLE_TILE_WIDTH; i++) {
@@ -69,4 +101,38 @@ std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> PatternTableDevice::GetRowColourIn
 		rowHighBits = ShiftLeft8(rowHighBits, 1);
 	}
 	return colours;
+}
+
+uint16_t PatternTableDevice::GetSpriteLowBitsAddress8by8(unsigned int patternTable, uint8_t tileID, unsigned int row) {
+	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row;
+}
+
+uint16_t PatternTableDevice::GetSpriteLowBitsAddress8by16(uint8_t tileID, unsigned int row) {
+	unsigned int patternTable = TestBit8(tileID, 0);
+	// This selects top or bottom tile
+	if (row >= PATTERN_TABLE_TILE_HEIGHT) {
+		SetBit8(tileID, 0);
+		row -= PATTERN_TABLE_TILE_HEIGHT;
+	}
+	else {
+		ClearBit8(tileID, 0);
+	}
+	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row;
+}
+
+uint16_t PatternTableDevice::GetSpriteHighBitsAddress8by8(unsigned int patternTable, uint8_t tileID, unsigned int row) {
+	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row + PATTERN_TABLE_MSB_OFFSET;
+}
+
+uint16_t PatternTableDevice::GetSpriteHighBitsAddress8by16(uint8_t tileID, unsigned int row) {
+	unsigned int patternTable = TestBit8(tileID, 0);
+	// This selects top or bottom tile
+	if (row >= PATTERN_TABLE_TILE_HEIGHT) {
+		SetBit8(tileID, 0);
+		row -= PATTERN_TABLE_TILE_HEIGHT;
+	}
+	else {
+		ClearBit8(tileID, 0);
+	}
+	return PATTERN_TABLE_BEGIN_ADDRESS + patternTable * PATTERN_TABLE_SIZE + tileID * 2 * PATTERN_TABLE_TILE_HEIGHT + row + PATTERN_TABLE_MSB_OFFSET;
 }

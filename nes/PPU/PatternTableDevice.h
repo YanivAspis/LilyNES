@@ -41,8 +41,15 @@ public:
 
 	static uint16_t GetTileLowBitsAddress(unsigned int patternTable, uint8_t tileID, uint8_t row);
 	static uint16_t GetTileHighBitsAddress(unsigned int patternTable, uint8_t tileID, uint8_t row);
+	static uint16_t GetSpriteLowBitsAddress(unsigned int patternTable, bool mode8by16, uint8_t tileID, uint8_t spriteY, unsigned int scanline, bool flipVertically);
+	static uint16_t GetSpriteHighBitsAddress(unsigned int patternTable, bool mode8by16, uint8_t tileID, uint8_t spriteY, unsigned int scanline, bool flipVertically);
 	static std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> GetRowColourIndices(uint8_t rowLowBits, uint8_t rowHighBits);
 
 private:
+	static uint16_t GetSpriteLowBitsAddress8by8(unsigned int patternTable, uint8_t tileID, unsigned int row);
+	static uint16_t GetSpriteLowBitsAddress8by16(uint8_t tileID, unsigned int row);
+	static uint16_t GetSpriteHighBitsAddress8by8(unsigned int patternTable, uint8_t tileID, unsigned int row);
+	static uint16_t GetSpriteHighBitsAddress8by16(uint8_t tileID, unsigned int row);
+
 	Cartridge* m_cartridge;
 };

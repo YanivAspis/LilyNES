@@ -14,6 +14,13 @@ PixelColourInfo::PixelColourInfo() {
 	colourIndex = 0;
 }
 
+SpritePixelInfo::SpritePixelInfo() {
+	paletteIndex = 0;
+	colourIndex = 0;
+	spriteID = OAM_NO_SPRITE_ID;
+	backgroundPriority = true;
+}
+
 void PPU2C02::IncrementDotScanline() {
 	m_dot++;
 	if (m_dot == PPU_NUM_DOTS_PER_SCANLINE) {
@@ -86,6 +93,18 @@ void PPU2C02::setupRenderFunctions() {
 		m_renderFuncs[PPU_PRERENDER_LINE][dot].push_back(&PPU2C02::SecondaryOAMClock);
 	}
 
+	// Fetching sprite data
+	this->setupFetchFunctionTiming(PPU_GARBAGE_TILE_ID_FETCH_BEGIN, PPU_GARBAGE_TILE_ID_FETCH_END, std::vector<unsigned int>(), &PPU2C02::GarbageFetchTileIDFromNametable);
+	this->setupFetchFunctionTiming(PPU_GARBAGE_ATTRIBUTE_FETCH_BEGIN, PPU_GARBAGE_ATTRIBUTE_FETCH_END, std::vector<unsigned int>(), &PPU2C02::GarbageFetchPaletteIndexFromNametable);
+	this->setupFetchFunctionTiming(PPU_SPRITE_TILE_LSB_FETCH_BEGIN, PPU_SPRITE_TILE_LSB_FETCH_END, std::vector<unsigned int>(), &PPU2C02::FetchSpriteLSB);
+	this->setupFetchFunctionTiming(PPU_SPRITE_TILE_MSB_FETCH_BEGIN, PPU_SPRITE_TILE_MSB_FETCH_END, std::vector<unsigned int>(), &PPU2C02::FetchSpriteMSB);
+	for (unsigned int scanline = PPU_VISIBLE_SCANLINES_BEGIN; scanline < PPU_VISIBLE_SCANLINES_END; scanline++) {
+		m_renderFuncs[scanline][PPU_UPDATE_SPRITE_LINE_DOT].push_back(&PPU2C02::ClearSpritesLine);
+		m_renderFuncs[scanline][PPU_UPDATE_SPRITE_LINE_DOT].push_back(&PPU2C02::RenderToSpriteLine);
+	}
+	m_renderFuncs[PPU_PRERENDER_LINE][PPU_UPDATE_SPRITE_LINE_DOT].push_back(&PPU2C02::ClearSpritesStack); // Remove garbage data from sprites stack
+	m_renderFuncs[PPU_PRERENDER_LINE][PPU_UPDATE_SPRITE_LINE_DOT].push_back(&PPU2C02::ClearSpritesLine); //  This makes sure there is nothing to render for the first scanline
+
 	// VBland and flags funcs
 	m_renderFuncs[PPU_NMI_SCANLINE][PPU_NMI_DOT].push_back(&PPU2C02::SetVBlank);
 	m_renderFuncs[PPU_CLEAR_FLAGS_SCANLINE][PPU_CLEAR_FLAGS_DOT].push_back(&PPU2C02::ClearSTATUSFlags);
@@ -121,27 +140,97 @@ bool PPU2C02::IsRendering() const {
 			|| m_scanline == PPU_PRERENDER_LINE);
 }
 
+bool PPU2C02::IsRenderingBackground() const {
+	return (this->IsRendering()) && m_PPUMASK.flags.renderBackground && (m_dot >= PPU_LEFTSIDE_MASK_DOT || m_PPUMASK.flags.showLeftmostBackground);
+}
+
+bool PPU2C02::IsRenderingSprites() const {
+	return (this->IsRendering()) && m_PPUMASK.flags.renderSprites && (m_dot >= PPU_LEFTSIDE_MASK_DOT || m_PPUMASK.flags.showLeftmostSprites);
+}
+
 void PPU2C02::RenderPixel() {
 	// At the moment, only render the background
 
-	// Fetch background colour
-	PixelColourInfo info = m_backgroundShiftRegister[m_fineX];
-	uint16_t colourAddress = m_paletteRAM->GetBackgroundPaletteAddress(info.paletteIndex, info.colourIndex);
-	uint8_t colourEntry = m_ppuBus->Read(colourAddress);
+	// Fetch background and foreground colours
+	PixelColourInfo backgroundInfo = m_backgroundShiftRegister[m_fineX];
+	SpritePixelInfo spriteInfo = m_spriteLine[m_dot - 1];
 
-	// Choose if to render pixel or not
-	if (this->IsRendering() && m_PPUMASK.flags.renderBackground && (m_dot >= PPU_LEFTSIDE_MASK_DOT || m_PPUMASK.flags.showLeftmostBackground)) {
-		m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(colourEntry, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
-		
-	}
-	else {
-		m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(0x00, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
-	}
+	// Choose if rendering background or foreground
+	uint8_t selectedPalette;
+	uint8_t selectedColourIndex;
+	this->GetPixelColour(backgroundInfo.paletteIndex, backgroundInfo.colourIndex, spriteInfo.paletteIndex, spriteInfo.colourIndex, spriteInfo.spriteID, spriteInfo.backgroundPriority, selectedPalette, selectedColourIndex);
+
+	// Fetch colour and render
+	uint16_t colourAddress = m_paletteRAM->GetBackgroundPaletteAddress(selectedPalette, selectedColourIndex);
+	uint8_t colourEntry = m_ppuBus->Read(colourAddress);
+	m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(colourEntry, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
 
 	// Shift background register in preparation for the next pixel
 	m_backgroundShiftRegister.Shift();
+
+	/*
+if (this->IsRendering() && m_PPUMASK.flags.renderBackground && (m_dot >= PPU_LEFTSIDE_MASK_DOT || m_PPUMASK.flags.showLeftmostBackground)) {
+	m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(colourEntry, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
+
+}
+else {
+	m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(0x00, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
+}*/
 	
 }
+
+void PPU2C02::GetPixelColour(uint8_t backgroundPalette, uint8_t backgroundColourIndex, uint8_t spritePalette, uint8_t spriteColourIndex, unsigned int spriteID, bool backgroundPriority, uint8_t& selectedPalette, uint8_t& selectedColourIndex) {
+	if (!this->IsRenderingBackground()) {
+		if (!this->IsRenderingSprites() || spriteID == OAM_NO_SPRITE_ID) {
+			// Case 1 - nothing to render - either rendering disabled or background disabled and no sprite
+			selectedPalette = 0;
+			selectedColourIndex = 0;
+			return;
+		}
+		// Case 2 - only sprites are rendered
+		selectedPalette = spritePalette + PALETTE_NUM_BACKGROUND_PALETTES;
+		selectedColourIndex = spriteColourIndex;
+		return;
+	}
+	else if (!this->IsRenderingSprites()) {
+		// Case 3 - only background is rendered
+		selectedPalette = backgroundPalette;
+		selectedColourIndex = backgroundColourIndex;
+		return;
+	}
+
+	// Both background and sprites are rendering - check if they're transparent
+
+	if (spriteColourIndex == 0) {
+		// Case 4 - sprite is transparent, or both, so render background
+		selectedPalette = backgroundPalette;
+		selectedColourIndex = backgroundColourIndex;
+		return;
+	}
+	else if (backgroundColourIndex == 0) {
+		// Case 5 - background is transparent, so render sprite
+		selectedPalette = spritePalette + PALETTE_NUM_BACKGROUND_PALETTES;
+		selectedColourIndex = spriteColourIndex;
+		return;
+	}
+
+	// Both are opaque, so use background priority to resolve
+	if (backgroundPriority) {
+		selectedPalette = backgroundPalette;
+		selectedColourIndex = backgroundColourIndex;
+	}
+	else {
+		selectedPalette = spritePalette + PALETTE_NUM_BACKGROUND_PALETTES;
+		selectedColourIndex = spriteColourIndex;
+	}
+
+	// Since both are opaque, check conditions for sprite 0 hit
+	// TODO: Should this only be checked from dot 2?
+	if (!m_PPUSTATUS.flags.sprite0Hit && spriteID == 0) {
+		m_PPUSTATUS.flags.sprite0Hit = 1;
+	}
+}
+
 
 void PPU2C02::IncrementCoarseX() {
 	if (!this->IsRendering()) {
@@ -234,6 +323,66 @@ void PPU2C02::UpdateBackgroundShiftRegister() {
 
 void PPU2C02::ClearBackgroundShiftRegister() {
 	m_backgroundShiftRegister.Clear();
+}
+
+void PPU2C02::GarbageFetchTileIDFromNametable() {
+	m_ppuBus->Read(NametableDevice::GetNametableByteAddress(m_VRAMAddress));
+}
+
+void PPU2C02::GarbageFetchPaletteIndexFromNametable() {
+	m_ppuBus->Read(NametableDevice::GetAttributeByteAddress(m_VRAMAddress));
+}
+
+void PPU2C02::FetchSpriteLSB() {
+	unsigned int entryIndex = (m_dot - PPU_GARBAGE_TILE_ID_FETCH_BEGIN) / SECONDARY_OAM_SIZE;
+	SecondaryOAMEntry entry = m_secondaryOAM.GetEntry(entryIndex);
+	m_fetchedSpriteLSB = m_ppuBus->Read(PatternTableDevice::GetSpriteLowBitsAddress(m_PPUCTRL.flags.spritePatternTable, m_PPUCTRL.flags.spriteSize,
+		entry.entry.tileID, entry.entry.y, m_scanline, entry.entry.attribute.flags.flipVertically));
+}
+
+void PPU2C02::FetchSpriteMSB() {
+	unsigned int entryIndex = (m_dot - PPU_GARBAGE_TILE_ID_FETCH_BEGIN) / SECONDARY_OAM_SIZE;
+	SecondaryOAMEntry entry = m_secondaryOAM.GetEntry(entryIndex);
+	uint8_t fetchedSpriteMSB = m_ppuBus->Read(PatternTableDevice::GetSpriteHighBitsAddress(m_PPUCTRL.flags.spritePatternTable, m_PPUCTRL.flags.spriteSize,
+		entry.entry.tileID, entry.entry.y, m_scanline, entry.entry.attribute.flags.flipVertically));
+
+	std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> rowColours = PatternTableDevice::GetRowColourIndices(m_fetchedSpriteLSB, fetchedSpriteMSB);
+	if (entry.entry.attribute.flags.flipHorizontally) {
+		std::reverse(rowColours.begin(), rowColours.end());
+	}
+
+	SpriteRowInfo rowInfo;
+	rowInfo.x = entry.entry.x;
+	rowInfo.paletteIndex = entry.entry.attribute.flags.paletteIndex;
+	rowInfo.rowColours = rowColours;
+	rowInfo.spriteID = entry.spriteID;
+	rowInfo.backgroundPriority = entry.entry.attribute.flags.backgroundPriority;
+	m_spritesToRender.push(rowInfo);
+}
+
+void PPU2C02::ClearSpritesStack() {
+	while (!m_spritesToRender.empty()) {
+		m_spritesToRender.pop();
+	}
+}
+
+void PPU2C02::ClearSpritesLine() {
+	m_spriteLine.fill(SpritePixelInfo());
+}
+
+void PPU2C02::RenderToSpriteLine() {
+	while (!m_spritesToRender.empty()) {
+		SpriteRowInfo rowInfo = m_spritesToRender.top();
+		for (unsigned int i = rowInfo.x; (i < rowInfo.x + PATTERN_TABLE_TILE_WIDTH) && i < NES_PICTURE_WIDTH; i++) {
+			if (rowInfo.rowColours[i - rowInfo.x] != 0) {
+				m_spriteLine[i].paletteIndex = rowInfo.paletteIndex;
+				m_spriteLine[i].colourIndex = rowInfo.rowColours[i - rowInfo.x];
+				m_spriteLine[i].spriteID = rowInfo.spriteID;
+				m_spriteLine[i].backgroundPriority = rowInfo.backgroundPriority;
+			}
+		}
+		m_spritesToRender.pop();
+	}
 }
 
 void PPU2C02::SecondaryOAMClock() {
