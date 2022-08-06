@@ -17,12 +17,6 @@
 class wxEmulationThread;
 class wxROMInfoFrame;
 
-enum KeyPressRequestType {
-	REQUEST_NONE,
-	REQUEST_NEXT_CYCLE,
-	REQUEST_NEXT_INSTRUCTION
-};
-
 class wxMainFrame : public wxFrame
 {
 public:
@@ -35,6 +29,8 @@ public:
 	void OnTestCPU(wxCommandEvent& evt);
 	void OnROMInformation(wxCommandEvent& evt);
 
+	std::shared_ptr<INESFile> GetLoadedROM() const;
+
 	void RunUntilNextCycle();
 	void RunUntilNextInstruction();
 	void RunUntilNextFrame();
@@ -42,7 +38,11 @@ public:
 	void ToggleRefreshRate();
 	void SelectNextPalette();
 
-	std::shared_ptr<INESFile> GetLoadedROM() const;
+	void HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
+	void HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
+
+	bool IsClosing() const;
+	
 
 private:
 	void StopEmulation(bool wait);
@@ -70,8 +70,8 @@ private:
 	std::shared_ptr<INESFile> m_loadedROM;
 
 	wxCriticalSection m_currNESState_cs;
-	wxMessageQueue<KeyPressRequestType> m_keypressMessageQueue;
 
+	bool m_closingFlag;
 
 	wxDECLARE_EVENT_TABLE();
 };

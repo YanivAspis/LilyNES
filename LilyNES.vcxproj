@@ -163,6 +163,7 @@
     <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
+    <ClCompile Include="nes\ControllerDevice.cpp" />
     <ClCompile Include="nes\CPU\CPU2A03.cpp" />
     <ClCompile Include="nes\CPU\CPUInstruction.cpp" />
     <ClCompile Include="nes\mappers\Cartridge.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="GUI\wxROMInfoFrame.h" />
     <ClInclude Include="nes\Bus.h" />
     <ClInclude Include="nes\BusDevice.h" />
+    <ClInclude Include="nes\ControllerDevice.h" />
     <ClInclude Include="nes\CPU\CPU2A03.h" />
     <ClInclude Include="nes\CPU\CPUInstruction.h" />
     <ClInclude Include="nes\mappers\Cartridge.h" />

@@ -4,10 +4,11 @@
 #include "mappers/Mapper000.h"
 
 
-NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM) {
+NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpuBus.ConnectDevice(&m_OAMDMA);
+	m_cpuBus.ConnectDevice(&m_controllers);
 	m_ppuBus.ConnectDevice(&m_patternTables);
 	m_ppuBus.ConnectDevice(&m_nametables);
 	m_ppuBus.ConnectDevice(&m_paletteRAM);
@@ -45,6 +46,7 @@ void NES::LoadROM(const INESFile& romFile) {
 void NES::SoftReset()
 {
 	m_cpuBus.SoftReset();
+	m_ppuBus.SoftReset();
 	m_cpu.SoftReset();
 	m_cycleCount = 0;
 }
@@ -52,6 +54,7 @@ void NES::SoftReset()
 void NES::HardReset()
 {
 	m_cpuBus.HardReset();
+	m_ppuBus.HardReset();
 	m_cpu.HardReset();
 	m_cycleCount = 0;
 }
@@ -65,6 +68,7 @@ NESState NES::GetState() const
 	state.nametableState = m_nametables.GetState();
 	state.ppuState = m_ppu.GetState();
 	state.oamDMAState = m_OAMDMA.GetState();
+	state.controllerState = m_controllers.GetState();
 	if (m_cartridge != nullptr) {
 		state.patternTableState = m_patternTables.GetState();
 		state.cartridgeState = m_cartridge->GetState();
@@ -78,8 +82,9 @@ void NES::LoadState(NESState& state)
 	m_RAM.LoadState(state.ramState);
 	m_paletteRAM.LoadState(state.paletteRAMState);
 	m_nametables.LoadState(state.nametableState);
-	m_OAMDMA.LoadState(state.oamDMAState);
 	m_ppu.LoadState(state.ppuState);
+	m_OAMDMA.LoadState(state.oamDMAState);
+	m_controllers.LoadState(state.controllerState);
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
 		m_patternTables.LoadState(state.patternTableState);

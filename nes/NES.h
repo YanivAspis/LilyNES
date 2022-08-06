@@ -11,6 +11,7 @@
 #include "PPU/PatternTableDevice.h"
 #include "PPU/NametableDevice.h"
 #include "PPU/OAMDMADevice.h"
+#include "ControllerDevice.h"
 #include "ROM/INESFile.h"
 #include "mappers/Cartridge.h"
 
@@ -25,6 +26,7 @@ struct NESState {
 	NametableState nametableState;
 	OAMDMAState oamDMAState;
 	PPUState ppuState;
+	ControllerState controllerState;
 };
 
 
@@ -75,6 +77,7 @@ private:
 	PatternTableDevice m_patternTables;
 	NametableDevice m_nametables;
 	OAMDMADevice m_OAMDMA;
+	ControllerDevice m_controllers;
 	Cartridge* m_cartridge;
 
 	unsigned int m_cycleCount;

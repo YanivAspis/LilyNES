@@ -13,6 +13,7 @@
 using namespace NESUtils;
 using namespace BitwiseUtils;
 
+
 enum MenuOptions {
     wxID_OPEN_ROM,
     wxID_TEST_CPU,
@@ -76,6 +77,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_environment.SetDisplayPanel(m_displayPanel);
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
+    m_closingFlag = false;
 }
 
 
@@ -87,6 +89,13 @@ void wxMainFrame::StartEmulation()
     }
 
     m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice, &m_environment);
+
+    if (m_emulationThread->Create() != wxTHREAD_NO_ERROR) {
+        m_emulationThread->Delete();
+        wxLogError("Error while creating emulation thread");
+        return;
+    }
+
     try {
         m_emulationThread->LoadROM(*m_loadedROM);
     }
@@ -99,11 +108,6 @@ void wxMainFrame::StartEmulation()
     m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
 
-    if (m_emulationThread->Create() != wxTHREAD_NO_ERROR) {
-        m_emulationThread->Delete();
-        wxLogError("Error while creating emulation thread");
-        return;
-    }
     if (m_emulationThread->Run() != wxTHREAD_NO_ERROR) {
         m_emulationThread->Delete();
         wxLogError("Failed to run emulation thread.");
@@ -157,6 +161,7 @@ void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
 
 void wxMainFrame::OnClose(wxCloseEvent& evt)
 {
+    m_closingFlag = true;
     this->StopEmulation(false);
     Destroy();
 }
@@ -240,6 +245,18 @@ void wxMainFrame::ToggleRefreshRate() {
 void wxMainFrame::SelectNextPalette() {
     m_paletteRAMPanel->SelectNextPalette();
     m_patternTablePanel->SelectNextPalette();
+}
+
+void wxMainFrame::HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
+    m_environment.HandleNESKeyDown(controller, key);
+}
+
+void wxMainFrame::HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
+    m_environment.HandleNESKeyUp(controller, key);
+}
+
+bool wxMainFrame::IsClosing() const {
+    return m_closingFlag;
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {
