@@ -22,7 +22,12 @@ constexpr uint16_t ADDR_IRQ_BRK_VECTOR_HIGH = 0xFFFF;
 constexpr int OPCODE_TABLE_SIZE = 256;
 constexpr int NUM_MNEMONICS_WITHOUT_ADDITIONAL_CYCLES = 7;
 
-constexpr int NUM_RESET_CYCLES = 7;
+constexpr unsigned int NUM_RESET_CYCLES = 7;
+constexpr unsigned int NUM_INTERRUPT_CYCLES = 7;
+
+struct CPUInstruction;
+enum InstructionMnemonic;
+enum AddressingMode;
 
 
 struct CPUStatusFlag {
@@ -44,6 +49,19 @@ union CPUStatusRegister {
 	CPUStatusFlag flags;
 };
 
+struct CurrentInstruction {
+	CurrentInstruction();
+	InstructionMnemonic mnemonic;
+	AddressingMode addressMode;
+	uint16_t instructionAddress;
+	uint16_t targetAddress;
+	bool accumulatorMode;
+	unsigned int length;
+	unsigned int cycles;
+	bool reset;
+	bool interrupt;
+};
+
 
 struct CPUState {
 	uint8_t regA;
@@ -53,20 +71,18 @@ struct CPUState {
 	uint16_t regPC;
 	CPUStatusRegister regP;
 
-	int cyclesRemaining;
+	unsigned int cyclesRemaining;
 	int irqPending;
 	bool nmiRaised;
 
 	bool instructionFirstCycle;
-	uint16_t currInstructionAddress;
+	CurrentInstruction currInstruction;
 	unsigned int cycleCount;
 
 	CPUState();
 };
 
-struct CPUInstruction;
-enum InstructionMnemonic;
-enum AddressingMode;
+
 
 
 // The main CPU class
@@ -98,96 +114,103 @@ public:
 
 private:
 	// Address mode functions
-	// These return parameters that the instruction execution function needs. Different instructions need different parameters, so not all three are used at once.
-	// value - data for the instruction to execute upon (often the content of memory). If no data is required - this will be set to 0
-	// targetAddress - some instructions have a destination in memory. If the destination is a register instead - this will be set to 0
-	// accumulatorMode - ASL, LSR, ROR, ROL need to know if they are in accumulator mode. If true, will operate on the accumulator, else on targetAddress.
-	// Return value is 1 if an additional cycle is needed due to page crossing, else 0.
-	int Implied(uint16_t& targetAddress, bool& accumulatorMode);
-	int Accumulator(uint16_t& targetAddress, bool& accumulatorMode);
-	int Immediate(uint16_t& targetAddress, bool& accumulatorMode);
-	int ZeroPage(uint16_t& targetAddress, bool& accumulatorMode);
-	int Absolute(uint16_t& targetAddress, bool& accumulatorMode);
-	int Relative(uint16_t& targetAddress, bool& accumulatorMode);
-	int Indirect(uint16_t& targetAddress, bool& accumulatorMode);
-	int ZeroPageIndexedX(uint16_t& targetAddress, bool& accumulatorMode);
-	int ZeroPageIndexedY(uint16_t& targetAddress, bool& accumulatorMode);
-	int AbsoluteIndexedX(uint16_t& targetAddress, bool& accumulatorMode);
-	int AbsoluteIndexedY(uint16_t& targetAddress, bool& accumulatorMode);
-	int IndexedIndirectX(uint16_t& targetAddress, bool& accumulatorMode);
-	int IndirectIndexedY(uint16_t& targetAddress, bool& accumulatorMode);
-
+	// These emulate the addressing mode by modifying the current instruction values
+	// They will update: target address, accumulator mode, additional cycles (due to page cross)
+	void Implied();
+	void Accumulator();
+	void Immediate();
+	void ZeroPage();
+	void Absolute();
+	void Relative();
+	void Indirect();
+	void ZeroPageIndexedX();
+	void ZeroPageIndexedY();
+	void AbsoluteIndexedX();
+	void AbsoluteIndexedY();
+	void IndexedIndirectX();
+	void IndirectIndexedY();
 
 
 	// Instruction execution functions
-	int Adc(uint16_t targetAddress, bool accumulatorMode);
-	int And(uint16_t targetAddress, bool accumulatorMode);
-	int Asl(uint16_t targetAddress, bool accumulatorMode);
-	int Bcc(uint16_t targetAddress, bool accumulatorMode);
-	int Bcs(uint16_t targetAddress, bool accumulatorMode);
-	int Beq(uint16_t targetAddress, bool accumulatorMode);
-	int Bit(uint16_t targetAddress, bool accumulatorMode);
-	int Bmi(uint16_t targetAddress, bool accumulatorMode);
-	int Bne(uint16_t targetAddress, bool accumulatorMode);
-	int Bpl(uint16_t targetAddress, bool accumulatorMode);
-	int Brk(uint16_t targetAddress, bool accumulatorMode);
-	int Bvc(uint16_t targetAddress, bool accumulatorMode);
-	int Bvs(uint16_t targetAddress, bool accumulatorMode);
-	int Clc(uint16_t targetAddress, bool accumulatorMode);
-	int Cld(uint16_t targetAddress, bool accumulatorMode);
-	int Cli(uint16_t targetAddress, bool accumulatorMode);
-	int Clv(uint16_t targetAddress, bool accumulatorMode);
-	int Cmp(uint16_t targetAddress, bool accumulatorMode);
-	int Cpx(uint16_t targetAddress, bool accumulatorMode);
-	int Cpy(uint16_t targetAddress, bool accumulatorMode);
-	int Dec(uint16_t targetAddress, bool accumulatorMode);
-	int Dex(uint16_t targetAddress, bool accumulatorMode);
-	int Dey(uint16_t targetAddress, bool accumulatorMode);
-	int Eor(uint16_t targetAddress, bool accumulatorMode);
-	int Inc(uint16_t targetAddress, bool accumulatorMode);
-	int Inx(uint16_t targetAddress, bool accumulatorMode);
-	int Iny(uint16_t targetAddress, bool accumulatorMode);
-	int Jmp(uint16_t targetAddress, bool accumulatorMode);
-	int Jsr(uint16_t targetAddress, bool accumulatorMode);
-	int Lda(uint16_t targetAddress, bool accumulatorMode);
-	int Ldx(uint16_t targetAddress, bool accumulatorMode);
-	int Ldy(uint16_t targetAddress, bool accumulatorMode);
-	int Lsr(uint16_t targetAddress, bool accumulatorMode);
-	int Nop(uint16_t targetAddress, bool accumulatorMode);
-	int Ora(uint16_t targetAddress, bool accumulatorMode);
-	int Pha(uint16_t targetAddress, bool accumulatorMode);
-	int Php(uint16_t targetAddress, bool accumulatorMode);
-	int Pla(uint16_t targetAddress, bool accumulatorMode);
-	int Plp(uint16_t targetAddress, bool accumulatorMode);
-	int Rol(uint16_t targetAddress, bool accumulatorMode);
-	int Ror(uint16_t targetAddress, bool accumulatorMode);
-	int Rti(uint16_t targetAddress, bool accumulatorMode);
-	int Rts(uint16_t targetAddress, bool accumulatorMode);
-	int Sbc(uint16_t targetAddress, bool accumulatorMode);
-	int Sec(uint16_t targetAddress, bool accumulatorMode);
-	int Sed(uint16_t targetAddress, bool accumulatorMode);
-	int Sei(uint16_t targetAddress, bool accumulatorMode);
-	int Sta(uint16_t targetAddress, bool accumulatorMode);
-	int Stx(uint16_t targetAddress, bool accumulatorMode);
-	int Sty(uint16_t targetAddress, bool accumulatorMode);
-	int Tax(uint16_t targetAddress, bool accumulatorMode);
-	int Tay(uint16_t targetAddress, bool accumulatorMode);
-	int Tsx(uint16_t targetAddress, bool accumulatorMode);
-	int Txa(uint16_t targetAddress, bool accumulatorMode);
-	int Txs(uint16_t targetAddress, bool accumulatorMode);
-	int Tya(uint16_t targetAddress, bool accumulatorMode);
-	int Illegal(uint16_t targetAddress, bool accumulatorMode);
+	void Adc();
+	void And();
+	void Asl();
+	void Bcc();
+	void Bcs();
+	void Beq();
+	void Bit();
+	void Bmi();
+	void Bne();
+	void Bpl();
+	void Brk();
+	void Bvc();
+	void Bvs();
+	void Clc();
+	void Cld();
+	void Cli();
+	void Clv();
+	void Cmp();
+	void Cpx();
+	void Cpy();
+	void Dec();
+	void Dex();
+	void Dey();
+	void Eor();
+	void Inc();
+	void Inx();
+	void Iny();
+	void Jmp();
+	void Jsr();
+	void Lda();
+	void Ldx();
+	void Ldy();
+	void Lsr();
+	void Nop();
+	void Ora();
+	void Pha();
+	void Php();
+	void Pla();
+	void Plp();
+	void Rol();
+	void Ror();
+	void Rti();
+	void Rts();
+	void Sbc();
+	void Sec();
+	void Sed();
+	void Sei();
+	void Sta();
+	void Stx();
+	void Sty();
+	void Tax();
+	void Tay();
+	void Tsx();
+	void Txa();
+	void Txs();
+	void Tya();
+	void Illegal();
+
+	// Execution additional cycle functions
+	void BccCycles();
+	void BcsCycles();
+	void BeqCycles();
+	void BmiCycles();
+	void BneCycles();
+	void BplCycles();
+	void BvcCycles();
+	void BvsCycles();
 
 	void PushToStack(uint8_t value);
 	uint8_t PullFromStack();
 	void HandleInterrupt(bool initiatedByBrk);
 
-	int AdcBinaryMode(uint8_t value);
-	int AdcDecimalMode(uint8_t value);
-	int SbcBinaryMode(uint8_t value);
-	int SbcDecimalMode(uint8_t value);
-	int Branch(bool shouldBranch, uint16_t targetAddress);
-	int CompareRegister(uint8_t regValue, uint8_t memoryValue);
+	void AdcBinaryMode(uint8_t value);
+	void AdcDecimalMode(uint8_t value);
+	void SbcBinaryMode(uint8_t value);
+	void SbcDecimalMode(uint8_t value);
+	void Branch(bool shouldBranch);
+	int BranchCycles(bool shouldBranch);
+	void CompareRegister(uint8_t regValue, uint8_t memoryValue);
 
 	void UpdateZNFlags(uint8_t testValue);
 	void PopulateFunctionMaps();
@@ -205,19 +228,20 @@ private:
 	uint16_t m_regPC;
 	CPUStatusRegister m_regP;
 
-	int m_cyclesRemaining;
+	unsigned int m_cyclesRemaining;
 	int m_irqPending;
 	bool m_nmiRaised;
 
 	// True if this is the first cycle for the current instruction. Needed for debugging
 	bool m_instructionFirstCycle;
 	// Address of current instruction. Needed for debugging
-	uint16_t m_currInstructionAddress;
+	CurrentInstruction m_currInstruction;
 	// Cycle count, needed for debugging
 	unsigned int m_cycleCount;
 
 
-	std::map<InstructionMnemonic, std::function<int(CPU2A03&, uint16_t, bool)> > m_executeFunctions;
-	std::map<AddressingMode, std::function<int(CPU2A03&, uint16_t&, bool&)> > m_addressModeFunctions;
+	std::map<InstructionMnemonic, std::function<void(CPU2A03&)> > m_executeFunctions;
+	std::map<AddressingMode, std::function<void(CPU2A03&)> > m_addressModeFunctions;
+	std::map<InstructionMnemonic, std::function<void(CPU2A03&)> > m_additionalExecuteCyclesFunctions;
 
 };

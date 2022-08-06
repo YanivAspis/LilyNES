@@ -135,7 +135,7 @@ void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
     }
     else if (state.cpuState.instructionFirstCycle) {
         wxNESStateEvent<uint16_t> disassemblerNextAddressEvt(EVT_DISASSEMBLER_NEXT_ADDRESS);
-        disassemblerNextAddressEvt.SetState(state.cpuState.currInstructionAddress);
+        disassemblerNextAddressEvt.SetState(state.cpuState.currInstruction.instructionAddress);
         wxPostEvent(m_disassemblerPanel, disassemblerNextAddressEvt);
     }
 

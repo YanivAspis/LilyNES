@@ -29,6 +29,18 @@ void CPUStatusFlag::HardReset() {
 	N = 0;
 }
 
+CurrentInstruction::CurrentInstruction() {
+	mnemonic = INSTR_BRK;
+	addressMode = MODE_IMPLIED;
+	instructionAddress = 0;
+	targetAddress = 0;
+	accumulatorMode = false;
+	length = 0;
+	cycles = 0;
+	reset = true;
+	interrupt = false;
+}
+
 CPUState::CPUState() {
 	regA = 0;
 	regX = 0;
@@ -42,7 +54,6 @@ CPUState::CPUState() {
 	nmiRaised = false;
 
 	instructionFirstCycle = false;
-	currInstructionAddress = 0;
 	cycleCount = 0;
 }
 
@@ -66,7 +77,6 @@ CPU2A03::CPU2A03(bool decimalAllowed) {
 	m_nmiRaised = false;
 
 	m_instructionFirstCycle = false;
-	m_currInstructionAddress = 0;
 	m_cycleCount = 0;
 
 	this->PopulateFunctionMaps();
@@ -97,7 +107,7 @@ void CPU2A03::SoftReset() {
 	m_nmiRaised = false;
 
 	m_instructionFirstCycle = false;
-	m_currInstructionAddress = 0;
+	m_currInstruction = CurrentInstruction();
 	m_cycleCount = 0;
 
 	m_regPC = this->FetchInitialPC();
@@ -118,7 +128,7 @@ void CPU2A03::HardReset() {
 	m_nmiRaised = false;
 
 	m_instructionFirstCycle = false;
-	m_currInstructionAddress = 0;
+	m_currInstruction = CurrentInstruction();
 	m_cycleCount = 0;
 
 	m_regPC = this->FetchInitialPC();
@@ -138,7 +148,7 @@ CPUState CPU2A03::GetState() const {
 	state.nmiRaised = m_nmiRaised;
 
 	state.instructionFirstCycle = m_instructionFirstCycle;
-	state.currInstructionAddress = m_currInstructionAddress;
+	state.currInstruction = m_currInstruction;
 	state.cycleCount = m_cycleCount;
 
 	return state;
@@ -157,7 +167,7 @@ void CPU2A03::LoadState(CPUState& state) {
 	m_nmiRaised = state.nmiRaised;
 
 	m_instructionFirstCycle = state.instructionFirstCycle;
-	m_currInstructionAddress = state.currInstructionAddress;
+	m_currInstruction = state.currInstruction;
 	m_cycleCount = state.cycleCount;
 }
 
@@ -171,39 +181,60 @@ void CPU2A03::Clock()
 		return;
 	}
 
-	// Check if an interrupt needs to be handled
-	if (m_nmiRaised || (!m_regP.flags.I && m_irqPending > 0)) {
-		this->HandleInterrupt(false);
-		return;
+	// Reached cycle 0 - actually execute current instruction
+	if (!m_currInstruction.reset) {
+		if (m_currInstruction.interrupt) {
+			// Current instruction was actually IRQ or NMI
+			this->HandleInterrupt(false);
+		}
+		else {
+			m_regPC = Add16Bit(m_regPC, m_currInstruction.length);
+			m_executeFunctions[m_currInstruction.mnemonic](*this);
+		}
 	}
 
+	// Set up next instruction
 	m_instructionFirstCycle = true;
-	m_currInstructionAddress = m_regPC;
+	m_currInstruction = CurrentInstruction();
+	m_currInstruction.reset = false;
+
+	// Check if an interrupt needs to be handled
+	if (m_nmiRaised || (!m_regP.flags.I && m_irqPending > 0)) {
+		m_currInstruction.interrupt = true;
+		m_cyclesRemaining = NUM_INTERRUPT_CYCLES;
+		return;
+	}
 	
 	// No interrupt, perform next instruction
 	uint8_t opCode = m_cpuBus->Read(m_regPC);
-	Inc16Bit(m_regPC);
 	CPUInstruction instruction = s_opCodeTable[opCode];
-	int baseCycles = instruction.baseCycleCount;
+
+	m_currInstruction.interrupt = false;
+	m_currInstruction.mnemonic = instruction.mnemonic;
+	m_currInstruction.addressMode = instruction.addressMode;
+	m_currInstruction.instructionAddress = m_regPC;
+	m_currInstruction.cycles = instruction.baseCycleCount;
+	m_currInstruction.length = instruction.GetInstructionLength();
 
 	// read target address for the instruction to act upon
-	uint16_t targetAddress;
-	bool accumulatorMode;
-	int addrModeAdditionalCycles = m_addressModeFunctions[instruction.addressMode](*this, targetAddress, accumulatorMode);
+	m_addressModeFunctions[instruction.addressMode](*this);
 
 	// Fix addressing mode additional cycles for those instructions that don't actually have any
 	for (InstructionMnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
 		if (mnemonic == instruction.mnemonic) {
-			addrModeAdditionalCycles = 0;
+			m_currInstruction.cycles = instruction.baseCycleCount;
 			break;
 		}
 	}
 
-	// actually execute the instruction
-	int executionAdditionalCycles = m_executeFunctions[instruction.mnemonic](*this, targetAddress, accumulatorMode);
+	// Check if additional cycles are added due actual execution
+	std::map<InstructionMnemonic, std::function<void(CPU2A03&)>>::iterator funcIt = m_additionalExecuteCyclesFunctions.find(instruction.mnemonic);
+	if (funcIt != m_additionalExecuteCyclesFunctions.end()) {
+		funcIt->second(*this);
+	}
 
 	// set amount of cycles to wait until next instruction
-	m_cyclesRemaining = baseCycles + addrModeAdditionalCycles + executionAdditionalCycles;
+	m_cyclesRemaining = m_currInstruction.cycles;
 }
 
 void CPU2A03::RaiseIRQ() {
@@ -215,10 +246,10 @@ void CPU2A03::RaiseNMI() {
 }
 
 std::vector<uint8_t> CPU2A03::GetCurrentInstructionBytes() {
-	uint8_t currOpCode = m_cpuBus->Probe(m_currInstructionAddress);
+	uint8_t currOpCode = m_cpuBus->Probe(m_currInstruction.instructionAddress);
 	std::vector<uint8_t> instructionBytes = { currOpCode };
 	for (int i = 1; i < s_opCodeTable[currOpCode].GetInstructionLength(); i++) {
-		instructionBytes.push_back(m_cpuBus->Probe(Add16Bit(m_currInstructionAddress, i)));
+		instructionBytes.push_back(m_cpuBus->Probe(Add16Bit(m_currInstruction.instructionAddress, i)));
 	}
 	return instructionBytes;
 }

@@ -77,25 +77,25 @@ namespace NESUtils {
 	}
 
 	void RunCPUTest(std::string romPath, std::string outputPath) {
-		INESFile romFile(romPath);
-		NES nes;
-		nes.LoadROM(romFile);
-		nes.HardReset();
+		INESFile* romFile = new INESFile(romPath);
+		NES* nes = new NES();
+		nes->LoadROM(*romFile);
+		nes->HardReset();
 
-		NESState state = nes.GetState();
+		NESState state = nes->GetState();
 		state.cpuState.regPC = 0xC000;
-		nes.LoadState(state);
+		nes->LoadState(state);
 
 		std::list<NESTestInstructionLine> lines;
 		NESTestInstructionLine currInstruction;
 
 		try {
 			while (true) {
+				nes->RunUntilNextInstruction();
+				state = nes->GetState();
 				currInstruction.SetRegisters(state.cpuState.regPC, state.cpuState.regA, state.cpuState.regX, state.cpuState.regY, state.cpuState.regP.value, state.cpuState.regS, state.ramState.content[0x0002]);
-				nes.RunUntilNextInstruction();
-				state = nes.GetState();
 				currInstruction.SetCycles(state.ppuState.scanline, state.ppuState.dot, state.cpuState.cycleCount);
-				currInstruction.SetInstructionBytes(nes.ProbeCurrentCPUInstruction());
+				currInstruction.SetInstructionBytes(nes->ProbeCurrentCPUInstruction());
 				lines.push_back(currInstruction);
 			}
 		}
@@ -107,5 +107,8 @@ namespace NESUtils {
 			outputFile << line.ToString() << "\n";
 		}
 		outputFile.close();
+
+		delete romFile;
+		delete nes;
 	}
 }
