@@ -99,9 +99,11 @@ void wxMainFrame::StartEmulation()
     try {
         m_emulationThread->LoadROM(*m_loadedROM);
     }
-    catch (UnsupportedMapperException ex) {
+    catch (UnsupportedMapperException& ex) {
         m_emulationThread->Delete();
+        m_emulationThreadExitNotice.Wait();
         wxMessageBox(ex.what());
+        m_emulationThread = nullptr;
         return;
     }
 
@@ -110,7 +112,9 @@ void wxMainFrame::StartEmulation()
 
     if (m_emulationThread->Run() != wxTHREAD_NO_ERROR) {
         m_emulationThread->Delete();
+        m_emulationThreadExitNotice.Wait();
         wxLogError("Failed to run emulation thread.");
+        m_emulationThread = nullptr;
         return;
     }
 }

@@ -31,8 +31,8 @@ void PPU2C02::IncrementDotScanline() {
 		m_scanline = 0;
 		m_frameCount++;
 
-		// Skip (0,0) cycle on odd frames
-		if (m_frameCount % 2 == 1) {
+		// Skip (0,0) cycle on odd frames if rendering is enabled
+		if (m_frameCount % 2 == 1 && this->RenderingEnabled()) {
 			m_dot++;
 		}
 	}
@@ -166,17 +166,7 @@ void PPU2C02::RenderPixel() {
 	m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(colourEntry, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
 
 	// Shift background register in preparation for the next pixel
-	m_backgroundShiftRegister.Shift();
-
-	/*
-if (this->IsRendering() && m_PPUMASK.flags.renderBackground && (m_dot >= PPU_LEFTSIDE_MASK_DOT || m_PPUMASK.flags.showLeftmostBackground)) {
-	m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(colourEntry, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
-
-}
-else {
-	m_picture[m_scanline][m_dot - 1] = GetColourFromPalette(0x00, m_PPUMASK.flags.emphasizeRed, m_PPUMASK.flags.emphasizeGreen, m_PPUMASK.flags.emphasizeBlue);
-}*/
-	
+	m_backgroundShiftRegister.Shift();	
 }
 
 void PPU2C02::GetPixelColour(uint8_t backgroundPalette, uint8_t backgroundColourIndex, uint8_t spritePalette, uint8_t spriteColourIndex, unsigned int spriteID, bool backgroundPriority, uint8_t& selectedPalette, uint8_t& selectedColourIndex) {

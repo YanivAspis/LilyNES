@@ -43,8 +43,12 @@ uint8_t Mapper000::PPURead(uint16_t address) {
 }
 
 void Mapper000::PPUWrite(uint16_t address, uint8_t data) {
-	// CHRRAM not supported for this mapper, ignore
-	return;
+	// CHRRAM is not usually supported for this mapper, but some homebrew ROMs assume it is
+	if (m_CHRRAMEnabled) {
+		// Mirror to Pattern Table range
+		address = ClearUpperBits16(address, 13);
+		m_CHRROM[address] = data;
+	}
 }
 
 uint8_t Mapper000::ProbePPU(uint16_t address) {

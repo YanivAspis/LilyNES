@@ -9,17 +9,17 @@
 using namespace NESUtils;
 
 constexpr uint16_t PRG_RAM_START_ADDRESS = 0x6000;
-constexpr uint16_t PRG_RAM_END_ADDRESS = 0x7999;
+constexpr uint16_t PRG_RAM_END_ADDRESS = 0x7FFF;
 constexpr uint16_t PRG_ROM_START_ADDRESS = 0x8000;
 constexpr uint16_t PRG_ROM_END_ADDRESS = 0xFFFF;
 
 
 class UnsupportedMapperException : public std::exception {
 public:
-	UnsupportedMapperException(uint8_t mapperID) 
+	UnsupportedMapperException(uint8_t mapperID)
 	{
 		std::string mapperStr = DecUint8ToString(mapperID);
-		m_exceptMessage = "Unsupported mapper: " + mapperStr;
+		m_exceptMessage = "Unsupported mapper: " + mapperStr;		
 	}
 
 	const char* what() const throw () {
