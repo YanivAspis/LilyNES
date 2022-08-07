@@ -2,6 +2,7 @@
 
 #include "NES.h"
 #include "mappers/Mapper000.h"
+#include "mappers/Mapper002.h"
 
 
 NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment) {
@@ -34,6 +35,9 @@ void NES::LoadROM(const INESFile& romFile) {
 	switch (romFile.GetHeader().GetMapperId()) {
 	case 0x00:
 		m_cartridge = new Mapper000(romFile);
+		break;
+	case 0x02:
+		m_cartridge = new Mapper002(romFile);
 		break;
 	default:
 		throw UnsupportedMapperException(romFile.GetHeader().GetMapperId());

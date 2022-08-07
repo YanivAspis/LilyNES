@@ -3,16 +3,17 @@
 #include "Cartridge.h"
 #include "../ROM/INESFile.h"
 
-constexpr uint16_t MAPPER_000_PRG_FIRST_BANK_START = PRG_ROM_START_ADDRESS;
-constexpr uint16_t MAPPER_000_PRG_BANK_SIZE = 0x4000;
-constexpr uint16_t MAPPER_000_CHR_FIRST_BANK_START = 0x0;
-constexpr uint16_t MAPPER_000_CHR_BANK_SIZE = 0x2000;
+constexpr uint16_t MAPPER_002_PRG_FIRST_BANK_START = PRG_ROM_START_ADDRESS;
+constexpr uint16_t MAPPER_002_PRG_BANK_SIZE = 0x4000;
+constexpr uint16_t MAPPER_002_CHR_FIRST_BANK_START = 0x0;
+constexpr uint16_t MAPPER_002_CHR_BANK_SIZE = 0x2000;
+constexpr unsigned int MAPPER_002_STANDARD_NUM_BANKS = 8;
 
-struct Mapper000State : public MapperAdditionalState {};
+struct Mapper002State : public MapperAdditionalState {};
 
-class Mapper000 : public Cartridge {
+class Mapper002 : public Cartridge {
 public:
-	Mapper000(const INESFile& romFile);
+	Mapper002(const INESFile& romFile);
 
 	void SetupLogicalBanks() override;
 	void InitializeBankMapping() override;

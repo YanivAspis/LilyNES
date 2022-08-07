@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "../ROM/INESFile.h"
 #include "../BusDevice.h"
@@ -42,6 +43,12 @@ enum MirroringMode {
 	MIRRORING_L_SHAPED // Needed for Castlevania 3
 };
 
+struct LogicalBank {
+	LogicalBank(uint16_t sAddress, uint16_t bankSize);
+	uint16_t startAddress;
+	uint16_t size;
+};
+
 // Each mapper inherits this to define its own specific state information
 struct MapperAdditionalState {
 	virtual ~MapperAdditionalState() = 0;
@@ -52,6 +59,12 @@ struct CartridgeState {
 
 	std::vector<uint8_t> CHRROM;
 	std::vector<uint8_t> PRGRAM;
+
+	std::vector<LogicalBank> PRGLogicalBanks;
+	std::vector<LogicalBank> CHRLogicalBanks;
+	std::map<unsigned int, size_t> PRGBankMapping;
+	std::map<unsigned int, size_t> CHRBankMapping;
+
 
 	// Additional Mapper-specific state information
 	std::shared_ptr<MapperAdditionalState> additionalState;
@@ -64,10 +77,17 @@ public:
 	void SoftReset() override;
 	void HardReset() override;
 
-	virtual uint8_t PPURead(uint16_t address) = 0;
-	virtual void PPUWrite(uint16_t address, uint8_t data) = 0;
+	virtual void SetupLogicalBanks() = 0;
+	virtual void InitializeBankMapping() = 0;
 
-	virtual uint8_t ProbePPU(uint16_t address) = 0;
+	virtual uint8_t Read(uint16_t address) override;
+	virtual void Write(uint16_t address, uint8_t data) override;
+
+	virtual uint8_t PPURead(uint16_t address);
+	virtual void PPUWrite(uint16_t address, uint8_t data);
+
+	virtual uint8_t Probe(uint16_t address);
+	virtual uint8_t ProbePPU(uint16_t address);
 
 	virtual MirroringMode GetCurrentMirroringMode() = 0;
 
@@ -75,6 +95,13 @@ public:
 	void LoadState(CartridgeState& state);
 
 protected:
+	virtual uint8_t PRGROMRead(uint16_t address);
+	virtual void PRGROMWrite(uint16_t address, uint8_t data) = 0;
+	virtual uint8_t PRGRAMRead(uint16_t address);
+	virtual void PRGRAMWrite(uint16_t address, uint8_t data);
+	virtual uint8_t CHRROMRead(uint16_t address);
+	virtual void CHRROMWrite(uint16_t address, uint8_t data);
+
 	std::vector<uint8_t> m_PRGROM;
 
 	// CHRROM can act as CHRRAM depending on m_CHRRAMEnabled flag
@@ -84,8 +111,15 @@ protected:
 
 	bool m_CHRRAMEnabled;
 
+	std::vector<LogicalBank> m_PRGLogicalBanks;
+	std::vector<LogicalBank> m_CHRLogicalBanks;
+	std::map<unsigned int, size_t> m_PRGBankMapping;
+	std::map<unsigned int, size_t> m_CHRBankMapping;
+
 private:
 	// Each mapper implements these to save/load its additional state
 	virtual void GetAdditionalState(std::shared_ptr<MapperAdditionalState> state) const = 0;
 	virtual void LoadAdditionalState(std::shared_ptr<MapperAdditionalState> state) = 0;
+
+	unsigned int GetLogicalBankIndex(std::vector<LogicalBank> logicalBanks, uint16_t address);
 };

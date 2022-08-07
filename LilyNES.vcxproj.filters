@@ -177,6 +177,9 @@
     <ClCompile Include="nes\ControllerDevice.cpp">
       <Filter>Source Files\nes</Filter>
     </ClCompile>
+    <ClCompile Include="nes\mappers\Mapper002.cpp">
+      <Filter>Source Files\nes\mappers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -289,6 +292,9 @@
     </ClInclude>
     <ClInclude Include="nes\ControllerDevice.h">
       <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\mappers\Mapper002.h">
+      <Filter>Header Files\nes\mappers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
