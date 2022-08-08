@@ -90,8 +90,6 @@ private:
 	void PRGBankWrite();
 	void ResetLoadRegister();
 
-	uint8_t MirrorBankSelect(uint8_t selectedBank, size_t numBanks);
-
 	size_t m_numPRGROMBanks;
 	size_t m_numCHRROMBanks;
 	bool m_batteryBackedRAM;

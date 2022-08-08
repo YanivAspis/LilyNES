@@ -22,7 +22,6 @@ Cartridge::Cartridge(const INESFile& romFile) : BusDevice(std::list<AddressRange
 	m_PRGRAM = std::vector<uint8_t>(PRG_RAM_BANK_SIZE * romFile.GetHeader().GetPRGRAMSize(), 0);
 	if (m_CHRRAMEnabled) {
 		m_CHRROM.resize(CHR_RAM_BANK_SIZE);
-		m_CHRROM.clear();
 	}
 	
 }

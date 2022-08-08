@@ -129,20 +129,20 @@ void Mapper001::ControlRegisterWrite() {
 
 void Mapper001::CHRBank0Write() {
 	if (m_controlRegister.flags.CHRBankMode == MAPPER_001_CHR_BANK_4K) {
-		m_CHRBankMapping[0] = this->MirrorBankSelect(m_loadData, m_numCHRROMBanks) * MAPPER_001_CHR_BANK_SIZE;
+		m_CHRBankMapping[0] = m_loadData * MAPPER_001_CHR_BANK_SIZE;
 	}
 	else {
 		// Low bit ignored in 8 bit mode - but banks are twice as large
 		ClearBit8(m_loadData, 0);
-		m_loadData = ShiftRight8(m_loadData, 1);
-		m_CHRBankMapping[0] = this->MirrorBankSelect(m_loadData, m_numCHRROMBanks / 2) * MAPPER_001_CHR_BANK_SIZE;
+		//m_loadData = ShiftRight8(m_loadData, 1);
+		m_CHRBankMapping[0] = m_loadData * MAPPER_001_CHR_BANK_SIZE;
 		m_CHRBankMapping[1] = m_CHRBankMapping[0] + MAPPER_001_CHR_BANK_SIZE;
 	}
 }
 
 void Mapper001::CHRBank1Write() {
 	if (m_controlRegister.flags.CHRBankMode == MAPPER_001_CHR_BANK_4K) {
-		m_CHRBankMapping[1] = this->MirrorBankSelect(m_loadData, m_numCHRROMBanks) * MAPPER_001_CHR_BANK_SIZE;
+		m_CHRBankMapping[1] = m_loadData * MAPPER_001_CHR_BANK_SIZE;
 	}
 }
 
@@ -155,18 +155,17 @@ void Mapper001::PRGBankWrite() {
 	case MAPPER_001_PRG_BANK_32K_1:
 		// Low bit ignored in 8 bit mode - but banks are twice as large
 		ClearBit8(m_loadData, 0);
-		m_loadData = ShiftRight8(m_loadData, 1);
-		m_PRGBankMapping[0] = this->MirrorBankSelect(m_loadData, m_numPRGROMBanks / 2) * MAPPER_001_PRG_BANK_SIZE;
+		m_PRGBankMapping[0] = m_loadData * MAPPER_001_PRG_BANK_SIZE;
 		m_PRGBankMapping[1] = m_PRGBankMapping[0] + MAPPER_001_PRG_BANK_SIZE;
 		break;
 	case MAPPER_001_PRG_BANK_16K_LOW_FIXED:
 		// Low 16K are fixed to first bank, High 16K are selected
 		m_PRGBankMapping[0] = 0;
-		m_PRGBankMapping[1] = this->MirrorBankSelect(m_loadData, m_numPRGROMBanks) * MAPPER_001_PRG_BANK_SIZE;
+		m_PRGBankMapping[1] = m_loadData * MAPPER_001_PRG_BANK_SIZE;
 		break;
 	case MAPPER_001_PRG_BANK_16K_HIGH_FIXED:
 		// Low 16K are selected, High 16K are fixed to last bank
-		m_PRGBankMapping[0] = this->MirrorBankSelect(m_loadData, m_numPRGROMBanks) * MAPPER_001_PRG_BANK_SIZE;
+		m_PRGBankMapping[0] = m_loadData * MAPPER_001_PRG_BANK_SIZE;
 		m_PRGBankMapping[1] = (m_numPRGROMBanks - 1) * MAPPER_001_PRG_BANK_SIZE;
 		break;
 	}
@@ -175,18 +174,4 @@ void Mapper001::PRGBankWrite() {
 void Mapper001::ResetLoadRegister() {
 	m_loadData = 0;
 	m_loadCounter = MAPPER_001_LOAD_REGISTER_NUM_WRITES;
-}
-
-uint8_t Mapper001::MirrorBankSelect(uint8_t selectedBank, size_t numBanks) {
-	return selectedBank;
-	if (numBanks == 1) {
-		return 0;
-	}
-	unsigned int numBits = 0;
-	numBanks--;
-	while (numBanks > 0) {
-		numBits++;
-		numBanks >>= 1;
-	}
-	return selectedBank & ((1 << numBits) - 1);
 }
