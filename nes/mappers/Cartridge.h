@@ -74,8 +74,8 @@ class Cartridge : public BusDevice {
 public:
 	Cartridge(const INESFile& romFile);
 
-	void SoftReset() override;
-	void HardReset() override;
+	virtual void SoftReset() override;
+	virtual void HardReset() override;
 
 	virtual void SetupLogicalBanks() = 0;
 	virtual void InitializeBankMapping() = 0;

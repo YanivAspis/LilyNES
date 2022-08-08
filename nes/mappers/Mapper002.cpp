@@ -39,10 +39,10 @@ void Mapper002::PRGROMWrite(uint16_t address, uint8_t data)
 	// I am ignoring bus conflicts, since not all boards have those, and games would work around them in software anyways
 	uint8_t bankIndex;
 	if (m_numPRGROMBanks <= MAPPER_002_STANDARD_NUM_BANKS) {
-		bankIndex = ClearUpperBits8(data, 3);
+		bankIndex = ClearUpperBits8(data, MAPPER_002_BANK_SELECT_STANDARD_HIGH_BIT+1);
 	}
 	else {
-		bankIndex = ClearUpperBits8(data, 4);
+		bankIndex = ClearUpperBits8(data, MAPPER_002_BANK_SELECT_NON_STANDARD_HIGH_BIT+1);
 	}
 	m_PRGBankMapping[0] = bankIndex * MAPPER_002_PRG_BANK_SIZE;
 }

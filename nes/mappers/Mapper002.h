@@ -8,6 +8,9 @@ constexpr uint16_t MAPPER_002_PRG_BANK_SIZE = 0x4000;
 constexpr uint16_t MAPPER_002_CHR_FIRST_BANK_START = 0x0;
 constexpr uint16_t MAPPER_002_CHR_BANK_SIZE = 0x2000;
 constexpr unsigned int MAPPER_002_STANDARD_NUM_BANKS = 8;
+constexpr unsigned int MAPPER_002_BANK_SELECT_STANDARD_HIGH_BIT = 2;
+constexpr unsigned int MAPPER_002_BANK_SELECT_NON_STANDARD_HIGH_BIT = 3;
+
 
 struct Mapper002State : public MapperAdditionalState {};
 

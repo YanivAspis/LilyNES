@@ -5,7 +5,7 @@
 using namespace BitwiseUtils;
 
 LogicalBank::LogicalBank(uint16_t sAddress, uint16_t bankSize) {
-	assert(startAddress + bankSize <= PRG_ROM_END_ADDRESS);
+	assert(sAddress + bankSize <= (PRG_ROM_END_ADDRESS+1));
 	startAddress = sAddress;
 	size = bankSize;
 }
