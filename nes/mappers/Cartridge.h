@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <any>
 
 #include "../ROM/INESFile.h"
 #include "../BusDevice.h"
@@ -67,7 +68,7 @@ struct CartridgeState {
 
 
 	// Additional Mapper-specific state information
-	std::shared_ptr<MapperAdditionalState> additionalState;
+	std::any additionalState;
 };
 
 class Cartridge : public BusDevice {
@@ -118,8 +119,8 @@ protected:
 
 private:
 	// Each mapper implements these to save/load its additional state
-	virtual void GetAdditionalState(std::shared_ptr<MapperAdditionalState> state) const = 0;
-	virtual void LoadAdditionalState(std::shared_ptr<MapperAdditionalState> state) = 0;
+	virtual std::any GetAdditionalState() const = 0;
+	virtual void LoadAdditionalState(std::any state) = 0;
 
 	unsigned int GetLogicalBankIndex(std::vector<LogicalBank> logicalBanks, uint16_t address);
 };

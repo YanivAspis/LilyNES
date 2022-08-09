@@ -29,9 +29,9 @@ MirroringMode Mapper000::GetCurrentMirroringMode() {
 }
 
 
-void Mapper000::GetAdditionalState(std::shared_ptr<MapperAdditionalState> state) const {}
+std::any Mapper000::GetAdditionalState() const { return 0; }
 
-void Mapper000::LoadAdditionalState(std::shared_ptr<MapperAdditionalState> state) {}
+void Mapper000::LoadAdditionalState(std::any state) {}
 
 void Mapper000::PRGROMWrite(uint16_t address, uint8_t data) {
 	// Can't write to ROM, ingore

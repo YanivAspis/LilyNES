@@ -30,9 +30,9 @@ MirroringMode Mapper002::GetCurrentMirroringMode()
 	return m_mirroringMode;
 }
 
-void Mapper002::GetAdditionalState(std::shared_ptr<MapperAdditionalState> state) const {}
+std::any Mapper002::GetAdditionalState() const { return 0; }
 
-void Mapper002::LoadAdditionalState(std::shared_ptr<MapperAdditionalState> state) {}
+void Mapper002::LoadAdditionalState(std::any state) {}
 
 void Mapper002::PRGROMWrite(uint16_t address, uint8_t data)
 {

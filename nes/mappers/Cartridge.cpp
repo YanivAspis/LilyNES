@@ -97,7 +97,7 @@ CartridgeState Cartridge::GetState() const {
 	state.CHRLogicalBanks = m_CHRLogicalBanks;
 	state.PRGBankMapping = m_PRGBankMapping;
 	state.CHRBankMapping = m_CHRBankMapping;
-	this->GetAdditionalState(state.additionalState);
+	state.additionalState = this->GetAdditionalState();
 	return state;
 }
 

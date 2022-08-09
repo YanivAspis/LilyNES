@@ -20,8 +20,8 @@ public:
 	MirroringMode GetCurrentMirroringMode() override;
 
 private:
-	void GetAdditionalState(std::shared_ptr<MapperAdditionalState> state) const;
-	void LoadAdditionalState(std::shared_ptr<MapperAdditionalState> state);
+	std::any GetAdditionalState() const;
+	void LoadAdditionalState(std::any state);
 
 	void PRGROMWrite(uint16_t address, uint8_t data);
 

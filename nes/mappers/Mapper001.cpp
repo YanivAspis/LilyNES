@@ -64,23 +64,21 @@ MirroringMode Mapper001::GetCurrentMirroringMode()
 	}
 }
 
-void Mapper001::GetAdditionalState(std::shared_ptr<MapperAdditionalState> state) const
+std::any Mapper001::GetAdditionalState() const
 {
-	/*
-	state = std::shared_ptr<MapperAdditionalState>(new Mapper001State());
-	//Mapper001State* mapperState = (Mapper001State*)(state.get());
-	((std::shared_ptr<Mapper001State>)state)->loadData = m_loadData;
-	state->loadCounter = m_loadCounter;
-	state->controlRegister.value = m_controlRegister.value;
-	*/
+	Mapper001State state;
+	state.loadData = m_loadData;
+	state.loadCounter = m_loadCounter;
+	state.controlRegister.value = m_controlRegister.value;
+	return state;
 }
 
-void Mapper001::LoadAdditionalState(std::shared_ptr<MapperAdditionalState> state)
+void Mapper001::LoadAdditionalState(std::any state)
 {
-	Mapper001State* mapperState = (Mapper001State*)(state.get());
-	m_loadData = mapperState->loadData;
-	m_loadCounter = mapperState->loadCounter;
-	m_controlRegister.value = mapperState->controlRegister.value;
+	Mapper001State mapperState = std::any_cast<Mapper001State>(state);
+	m_loadData = mapperState.loadData;
+	m_loadCounter = mapperState.loadCounter;
+	m_controlRegister.value = mapperState.controlRegister.value;
 }
 
 void Mapper001::PRGROMWrite(uint16_t address, uint8_t data)
