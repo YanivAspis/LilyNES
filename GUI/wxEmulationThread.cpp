@@ -140,8 +140,6 @@ void wxEmulationThread::DoContinuousRun() {
 	}
 	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
 	this->RunUntilNextFrame();
-	//m_sleepTargetTime += std::chrono::nanoseconds(3000);
-	//this->RunUntilNextCycle();
 	this->EmulationWait();
 }
 
