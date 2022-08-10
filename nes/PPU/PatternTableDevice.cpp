@@ -62,7 +62,14 @@ uint16_t PatternTableDevice::GetTileHighBitsAddress(unsigned int patternTable, u
 }
 
 uint16_t PatternTableDevice::GetSpriteLowBitsAddress(unsigned int patternTable, bool mode8by16, uint8_t tileID, uint8_t spriteY, unsigned int scanline, bool flipVertically) {
-	unsigned int row = scanline - spriteY;
+	unsigned int row;
+	if (scanline < spriteY || (!mode8by16 && scanline >= spriteY + PATTERN_TABLE_TILE_HEIGHT) || (mode8by16 && scanline >= spriteY + 2 * PATTERN_TABLE_TILE_HEIGHT)) {
+		// No sprite
+		row = 0;
+	}
+	else {
+		row = scanline - spriteY;
+	}
 	if (mode8by16) {
 		if (flipVertically) {
 			row = 2 * PATTERN_TABLE_TILE_HEIGHT - 1 - row;
@@ -78,7 +85,14 @@ uint16_t PatternTableDevice::GetSpriteLowBitsAddress(unsigned int patternTable, 
 }
 
 uint16_t PatternTableDevice::GetSpriteHighBitsAddress(unsigned int patternTable, bool mode8by16, uint8_t tileID, uint8_t spriteY, unsigned int scanline, bool flipVertically) {
-	unsigned int row = scanline - spriteY;
+	unsigned int row;
+	if (scanline < spriteY || (!mode8by16 && scanline >= spriteY + PATTERN_TABLE_TILE_HEIGHT) || (mode8by16 && scanline >= spriteY + 2*PATTERN_TABLE_TILE_HEIGHT)) {
+		// No sprite
+		row = 0;
+	}
+	else {
+		row = scanline - spriteY;
+	}
 	if (mode8by16) {
 		if (flipVertically) {
 			row = 2 * PATTERN_TABLE_TILE_HEIGHT - 1 - row;

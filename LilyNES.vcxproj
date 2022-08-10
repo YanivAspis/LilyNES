@@ -171,6 +171,7 @@
     <ClCompile Include="nes\mappers\Mapper001.cpp" />
     <ClCompile Include="nes\mappers\Mapper002.cpp" />
     <ClCompile Include="nes\mappers\Mapper003.cpp" />
+    <ClCompile Include="nes\mappers\Mapper004.cpp" />
     <ClCompile Include="nes\NES.cpp" />
     <ClCompile Include="nes\PPU\NametableDevice.cpp" />
     <ClCompile Include="nes\PPU\NESPicture.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="nes\mappers\Mapper001.h" />
     <ClInclude Include="nes\mappers\Mapper002.h" />
     <ClInclude Include="nes\mappers\Mapper003.h" />
+    <ClInclude Include="nes\mappers\Mapper004.h" />
     <ClInclude Include="nes\NES.h" />
     <ClInclude Include="nes\PPU\NametableDevice.h" />
     <ClInclude Include="nes\PPU\NESPicture.h" />

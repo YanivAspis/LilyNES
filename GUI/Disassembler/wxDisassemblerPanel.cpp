@@ -332,6 +332,7 @@ void wxDisassemblerPanel::Clear() {
 }
 
 void wxDisassemblerPanel::OnNextAddress(wxNESStateEvent<uint16_t>& evt) {
+	return;
 	if (evt.GetState() >= 0x8000 && evt.GetState() <= 0xFFFF) {
 		m_disassembler.SetNextAddress(evt.GetState());
 		m_programListBox->SelectItem(m_disassembler.GetCurrentAddressIndex());

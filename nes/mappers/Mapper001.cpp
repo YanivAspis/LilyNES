@@ -1,16 +1,28 @@
+#include <assert.h>
+
 #include "Mapper001.h"
 #include "../../utils/BitwiseUtils.h"
 
 using namespace BitwiseUtils;
 
+Mapper001State::Mapper001State() {
+	loadData = 0;
+	loadCounter = MAPPER_001_LOAD_REGISTER_NUM_WRITES;
+	controlRegister.flags.mirroring = MAPPER_001_MIRRORING_SINGLE_SCREEN_LOW;
+	controlRegister.flags.PRGBankMode = MAPPER_001_PRG_BANK_16K_HIGH_FIXED;
+	controlRegister.flags.CHRBankMode = MAPPER_001_CHR_BANK_8K;
+	controlRegister.flags.unused = 0;
+}
+
 Mapper001::Mapper001(const INESFile& romFile) : Cartridge(romFile)
 {
 	m_numPRGROMBanks = romFile.GetHeader().GetNumPRGRomBanks();
-	m_numCHRROMBanks = romFile.GetHeader().GetNumCHRRomBanks();
+	//m_numCHRROMBanks = romFile.GetHeader().GetNumCHRRomBanks();
 	m_batteryBackedRAM = romFile.GetHeader().IsPRGRAMBatteryBacked();
 	m_controlRegister.flags.mirroring = MAPPER_001_MIRRORING_SINGLE_SCREEN_LOW;
 	m_controlRegister.flags.PRGBankMode = MAPPER_001_PRG_BANK_16K_HIGH_FIXED;
 	m_controlRegister.flags.CHRBankMode = MAPPER_001_CHR_BANK_8K;
+	m_controlRegister.flags.unused = 0;
 	m_loadCounter = MAPPER_001_LOAD_REGISTER_NUM_WRITES;
 	this->SetupLogicalBanks();
 	this->InitializeBankMapping();
@@ -23,6 +35,7 @@ void Mapper001::SoftReset()
 	m_controlRegister.flags.mirroring = MAPPER_001_MIRRORING_SINGLE_SCREEN_LOW;
 	m_controlRegister.flags.PRGBankMode = MAPPER_001_PRG_BANK_16K_HIGH_FIXED;
 	m_controlRegister.flags.CHRBankMode = MAPPER_001_CHR_BANK_8K;
+	m_controlRegister.flags.unused = 0;
 }
 
 void Mapper001::HardReset()
@@ -32,6 +45,7 @@ void Mapper001::HardReset()
 	m_controlRegister.flags.mirroring = MAPPER_001_MIRRORING_SINGLE_SCREEN_LOW;
 	m_controlRegister.flags.PRGBankMode = MAPPER_001_PRG_BANK_16K_HIGH_FIXED;
 	m_controlRegister.flags.CHRBankMode = MAPPER_001_CHR_BANK_8K;
+	m_controlRegister.flags.unused = 0;
 }
 
 void Mapper001::SetupLogicalBanks()
@@ -62,6 +76,10 @@ MirroringMode Mapper001::GetCurrentMirroringMode()
 	case MAPPER_001_MIRRORING_HORIZONTAL:
 		return MIRRORING_HORIZONTAL;
 	}
+
+	// Should not reach here
+	assert(false);
+	return MIRRORING_SINGLE_SCREEN;
 }
 
 std::any Mapper001::GetAdditionalState() const
@@ -132,7 +150,6 @@ void Mapper001::CHRBank0Write() {
 	else {
 		// Low bit ignored in 8 bit mode - but banks are twice as large
 		ClearBit8(m_loadData, 0);
-		//m_loadData = ShiftRight8(m_loadData, 1);
 		m_CHRBankMapping[0] = m_loadData * MAPPER_001_CHR_BANK_SIZE;
 		m_CHRBankMapping[1] = m_CHRBankMapping[0] + MAPPER_001_CHR_BANK_SIZE;
 	}

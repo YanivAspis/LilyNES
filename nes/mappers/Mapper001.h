@@ -60,6 +60,7 @@ union ControlRegister {
 };
 
 struct Mapper001State : public MapperAdditionalState {
+	Mapper001State();
 	uint8_t loadData;
 	unsigned int loadCounter;
 	ControlRegister controlRegister;
@@ -91,7 +92,7 @@ private:
 	void ResetLoadRegister();
 
 	size_t m_numPRGROMBanks;
-	size_t m_numCHRROMBanks;
+	//size_t m_numCHRROMBanks;
 	bool m_batteryBackedRAM;
 
 	uint8_t m_loadData;
