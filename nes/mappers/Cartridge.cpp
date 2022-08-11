@@ -12,7 +12,9 @@ LogicalBank::LogicalBank(uint16_t sAddress, uint16_t bankSize) {
 
 MapperAdditionalState::~MapperAdditionalState() {}
 
-CartridgeState::CartridgeState() : additionalState(nullptr) {}
+CartridgeState::CartridgeState() {
+	mapperID = 0;
+}
 
 
 Cartridge::Cartridge(const INESFile& romFile) : BusDevice(std::list<AddressRange>({
@@ -23,7 +25,8 @@ Cartridge::Cartridge(const INESFile& romFile) : BusDevice(std::list<AddressRange
 	if (m_CHRRAMEnabled) {
 		m_CHRROM.resize(CHR_RAM_BANK_SIZE);
 	}
-	
+
+	m_mapperID = romFile.GetHeader().GetMapperId();
 }
 
 
@@ -91,6 +94,7 @@ uint8_t Cartridge::ProbePPU(uint16_t address) {
 
 CartridgeState Cartridge::GetState() const {
 	CartridgeState state;
+	state.mapperID = m_mapperID;
 	state.CHRROM = m_CHRROM;
 	state.PRGRAM = m_PRGRAM;
 	state.PRGLogicalBanks = m_PRGLogicalBanks;
