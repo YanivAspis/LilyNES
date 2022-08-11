@@ -162,6 +162,8 @@ void Mapper004::BankDataWrite(uint8_t data) {
 		// PRG Banks ignore top two bits
 		ClearBit8(data, 6);
 		ClearBit8(data, 7);
+
+		// TODO: Correct bank mirroring?
 		data %= m_numPRGROMBanks;
 	}
 	m_registers[m_bankSelectRegister.flags.registerSelect] = data;
@@ -324,10 +326,10 @@ void Mapper004::CHRROMWrite(uint16_t address, uint8_t data) {
 	}
 
 	if (m_bankSelectRegister.flags.CHRROMBankMode == 0) {
-		return this->CHRROMWriteMode0(address, data);
+		this->CHRROMWriteMode0(address, data);
 	}
 	else {
-		return this->CHRROMWriteMode1(address , data);
+		this->CHRROMWriteMode1(address , data);
 	}
 }
 
@@ -376,14 +378,25 @@ void Mapper004::CHRROMWriteMode1(uint16_t address, uint8_t data) {
 
 void Mapper004::DecrementIRQCounter()
 {
+	// "Old" or "alternate" IRQ behaviour seems to be what most games expect
 	if (m_irqReload) {
 		m_irqReload = false;
 		m_irqCounter = m_irqLatchValue;
-	}
-	else if (m_irqCounter == 0) {
-		if (m_irqEnabled) {
+		// When IRQ is reloaded with a value of 0, it fires once
+		if (m_irqCounter == 0 && m_irqEnabled) {
 			m_cpu->RaiseIRQ();
 		}
+		// Counter not decremented upon reload
+		return;
+	}
+
+	// Fire IRQ when decrementing from 1 to 0
+	if (m_irqCounter == 1 && m_irqEnabled) {
+		m_cpu->RaiseIRQ();
+	}
+
+	// Reload IRQ counter only when counter is 0 (so the scanline after firing the IRQ)
+	if (m_irqCounter == 0) {
 		m_irqCounter = m_irqLatchValue;
 	}
 	else {
