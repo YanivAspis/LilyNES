@@ -68,6 +68,16 @@ std::map<InstructionMnemonic, std::string> Disassembler::s_mnemonicToString = {
 	{INSTR_ILLEGAL, "ILLEGAL"}
 };
 
+DisassemblerLineData::DisassemblerLineData() {
+	m_beginAddress = 0;
+	m_length = 0;
+	m_mnemonic = INSTR_BRK;
+	m_addressingMode = MODE_IMPLIED;
+	m_dataLow = 0;
+	m_dataHigh = 0;
+	m_listIndex = 0;
+}
+
 
 std::string DisassemblerLineData::ToString(uint16_t addressOffset) const {
 	std::string result;
@@ -91,7 +101,7 @@ std::string DisassemblerLineData::ToString(uint16_t addressOffset) const {
 			result += this->AbsoluteToString();
 			break;
 		case MODE_RELATIVE:
-			result += this->RelativeToString();
+			result += this->RelativeToString(addressOffset);
 			break;
 		case MODE_INDIRECT:
 			result += this->IndirectToString();
@@ -172,9 +182,9 @@ std::string DisassemblerLineData::AbsoluteToString() const
 	return " $" + HexUint16ToString(CombineBytes(m_dataLow, m_dataHigh));
 }
 
-std::string DisassemblerLineData::RelativeToString() const
+std::string DisassemblerLineData::RelativeToString(uint16_t addressOffset) const
 {
-	uint16_t resultAddress = Add16Bit(m_beginAddress, m_length);
+	uint16_t resultAddress = Add16Bit(m_beginAddress + addressOffset, m_length);
 	resultAddress = AddRelativeAddress(resultAddress, m_dataLow);
 	return " $" + HexUint8ToString(m_dataLow) + " [$" + HexUint16ToString(resultAddress) + "]";
 }
@@ -220,39 +230,9 @@ void Disassembler::Initialize(DisassemblerInitializeInfo& initializationInfo) {
 	m_PRGBankMapping = initializationInfo.PRGBankMapping;
 	this->SetupPRGRom(initializationInfo.PRGROM);
 	for (size_t i = 0; i < m_PRGROM.size(); i++) {
-		m_disassembled[i] = this->DisassembleBank(i, 0, 0);
+		m_disassembled.push_back(this->DisassembleBank(i, 0, 0));
 	}
 	m_currAddress = initializationInfo.address;
-
-	/*
-	std::queue<uint8_t> restOfProgramContent;
-	for (size_t address = beginAddress; address < beginAddress + programContent.size(); address++) {
-		restOfProgramContent.push(programContent[address - 0x8000]);
-	}
-	uint16_t address = beginAddress;
-	uint16_t lastAddress = beginAddress;
-	int currIndex = 0;
-	DisassemblerLineData currLineData = DisassemblerLineData(beginAddress, 0, INSTR_BRK, MODE_IMPLIED, 0, 0, currIndex);
-	while (address <= endAddress && this->ConsumeNextLine(restOfProgramContent, address, currLineData)) {
-		m_programData.push_back(currLineData);
-		m_addressToIndex[lastAddress] = currIndex;
-		lastAddress = address;
-		currIndex++;
-	}
-	if (programContent.size() <= 16 * 1024) {
-		std::vector<DisassemblerLineData> programMirror;
-		for (const DisassemblerLineData& lineData : m_programData) {
-			programMirror.push_back(DisassemblerLineData(lineData.GetAddress() + 0x4000, lineData.GetLength(), lineData.GetMnemonic(), 
-				lineData.GetAddressingMode(), lineData.GetDataLow(), lineData.GetDataHigh()));
-		}
-		for (const DisassemblerLineData& lineData : programMirror) {
-			m_programData.push_back(lineData);
-			m_addressToIndex[lineData.GetAddress()] = currIndex;
-			currIndex++;
-		}
-	}
-	m_currAddress = currAddress;
-	*/
 }
 
 void Disassembler::Clear() {
@@ -274,12 +254,12 @@ bool Disassembler::SetNextState(DisassemblerNextStateInfo& nextStateInfo) {
 	}
 	if (m_currAddress >= PRG_ROM_START_ADDRESS && m_currAddress <= PRG_ROM_END_ADDRESS) {
 		size_t bankIndex = this->GetAddressPhysicalBankIndex(m_currAddress);
-		if (m_disassembled[bankIndex].find(m_currAddress) == m_disassembled[bankIndex].end()) {
+		uint16_t bankAddress = m_currAddress - PRG_ROM_START_ADDRESS - this->GetAddressLogicalBankIndex(m_currAddress) * m_PRGLogicalBanks[0].size;
+		if (m_disassembled[bankIndex].find(bankAddress) == m_disassembled[bankIndex].end()) {
 			// address not in disassembled bank - this means the disassembled code is not aligned with program code
 			// Realign
-			size_t splitIndex = 0;
-			std::map<uint16_t, DisassemblerLineData> prefix = this->GetDisassembledDataUpToAddress(bankIndex, m_currAddress, splitIndex);
-			std::map<uint16_t, DisassemblerLineData> suffix = this->DisassembleBank(bankIndex, m_currAddress, splitIndex+1);
+			std::map<uint16_t, DisassemblerLineData> prefix = this->GetDisassembledDataUpToAddress(bankIndex, bankAddress);
+			std::map<uint16_t, DisassemblerLineData> suffix = this->DisassembleBank(bankIndex, bankAddress, prefix.size());
 			prefix.insert(suffix.begin(), suffix.end());
 			m_disassembled[bankIndex] = prefix;
 
@@ -290,15 +270,14 @@ bool Disassembler::SetNextState(DisassemblerNextStateInfo& nextStateInfo) {
 	return updateList;
 }
 
-int Disassembler::GetCurrentAddressIndex() const {
+size_t Disassembler::GetCurrentAddressIndex() const {
 	size_t result = 0;
-	size_t logicalBankIndex;
 	for (size_t i = 0; i < m_PRGLogicalBanks.size(); i++) {
 		if (m_currAddress >= m_PRGLogicalBanks[i].startAddress + m_PRGLogicalBanks[i].size) {
-			result += m_disassembled[i].size();
+			result += m_disassembled[this->LogicalBankToPhysicalBankIndex(i)].size();
 		}
 		else {
-			result += m_disassembled[i].at(m_currAddress).GetListIndex();
+			result += m_disassembled[this->LogicalBankToPhysicalBankIndex(i)].at(m_currAddress - m_PRGLogicalBanks[i].startAddress).GetListIndex();
 			break;
 		}
 	}
@@ -306,11 +285,12 @@ int Disassembler::GetCurrentAddressIndex() const {
 }
 
 std::vector<std::string> Disassembler::GetProgramLines() {
+	size_t bankSize = m_PRGLogicalBanks[0].size;
 	std::vector<std::string> lines;
 	for (const std::pair<unsigned int, size_t>& mapping : m_PRGBankMapping) {
-		size_t bankIndex = this->GetAddressPhysicalBankIndex(PRG_ROM_START_ADDRESS + mapping.second);
+		size_t bankIndex = this->LogicalBankToPhysicalBankIndex(mapping.first);
 		for (const std::pair<uint16_t, DisassemblerLineData>& data : m_disassembled[bankIndex]) {
-			lines.push_back(data.second.ToString());
+			lines.push_back(data.second.ToString(PRG_ROM_START_ADDRESS + (uint16_t)(mapping.first * bankSize)));
 		}
 	}
 	return lines;
@@ -331,18 +311,20 @@ std::map<uint16_t, DisassemblerLineData> Disassembler::DisassembleBank(size_t ph
 	}
 	uint16_t address = startAddress;
 	uint16_t endAddress = m_PRGROM[physicalBankIndex].size();
-	uint16_t lastAddress = startAddress;
 	int currIndex = startIndex;
+	std::map<uint16_t, DisassemblerLineData> result;
+
 	DisassemblerLineData currLineData = DisassemblerLineData(startAddress, 0, INSTR_BRK, MODE_IMPLIED, 0, 0, currIndex);
-	while (address <= endAddress && this->ConsumeNextLine(restOfProgramContent, address, currLineData)) {
-		m_programData.push_back(currLineData);
-		m_addressToIndex[lastAddress] = currIndex;
-		lastAddress = address;
+	while (address <= endAddress && this->ConsumeNextLine(restOfProgramContent, address, currLineData, currIndex)) {
+		result[address] = currLineData;
+		address += currLineData.GetLength();
 		currIndex++;
 	}
+
+	return result;
 }
 
-bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& currAddress, DisassemblerLineData& lineData) {
+bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& currAddress, DisassemblerLineData& lineData, size_t currIndex) {
 	if (restOfProgramContent.size() == 0) {
 		return false;
 	}
@@ -366,10 +348,41 @@ bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, ui
 		restOfProgramContent.pop();
 	}
 
-	uint16_t beginAddress = currAddress;
-	lineData = DisassemblerLineData(beginAddress, instructionLength, lineInstruction.mnemonic, lineInstruction.addressMode, lowData, highData);
-	currAddress += instructionLength;
+	lineData = DisassemblerLineData(currAddress, instructionLength, lineInstruction.mnemonic, lineInstruction.addressMode, lowData, highData, currIndex);
 	return true;
+}
+
+size_t Disassembler::LogicalBankToPhysicalBankIndex(size_t logicalBankIndex) const {
+	// This assumes all banks are the same size
+	return m_PRGBankMapping.at(logicalBankIndex) / m_PRGLogicalBanks.at(logicalBankIndex).size;
+}
+
+size_t Disassembler::GetAddressLogicalBankIndex(uint16_t address) const {
+	size_t bankIndex = 0;
+	while (address >= m_PRGLogicalBanks[bankIndex].startAddress + m_PRGLogicalBanks[bankIndex].size) {
+		bankIndex++;
+	}
+	return bankIndex;
+}
+
+size_t Disassembler::GetAddressPhysicalBankIndex(uint16_t address) const {
+	// This assumes all banks are the same size
+	size_t bankSize = m_PRGLogicalBanks[0].size;
+	size_t logicalBankIndex = (address - PRG_ROM_START_ADDRESS) / bankSize;
+	return m_PRGBankMapping.at(logicalBankIndex) / bankSize;
+}
+
+std::map<uint16_t, DisassemblerLineData> Disassembler::GetDisassembledDataUpToAddress(size_t physicalBankIndex, uint16_t targetAddress) {
+	std::map<uint16_t, DisassemblerLineData> prefix;
+	for (const std::pair<uint16_t, DisassemblerLineData>& data : m_disassembled[physicalBankIndex]) {
+		if (data.first + data.second.GetLength() <= targetAddress) {
+			prefix.insert(data);
+		}
+		else {
+			break;
+		}
+	}
+	return prefix;
 }
 
 
@@ -421,6 +434,7 @@ void wxDisassemblerPanel::OnNextState(wxNESStateEvent<DisassemblerNextStateInfo>
 
 void wxDisassemblerPanel::UpdateList() {
 	wxArrayString lines;
+	m_programListBox->Clear();
 	for (auto const& line : m_disassembler.GetProgramLines()) {
 		lines.push_back(wxString(line));
 	}

@@ -9,6 +9,7 @@
 
 class DisassemblerLineData {
 public:
+	DisassemblerLineData();
 	DisassemblerLineData(uint16_t beginAddress, int length, InstructionMnemonic mnemonic, AddressingMode addressingMode, uint8_t dataLow, uint8_t dataHigh, size_t listIndex) :
 		m_beginAddress(beginAddress), m_length(length), m_mnemonic(mnemonic), m_addressingMode(addressingMode), m_dataLow(dataLow), m_dataHigh(dataHigh), m_listIndex(listIndex) {}
 	std::string ToString(uint16_t addressOffset) const;
@@ -27,7 +28,7 @@ private:
 	std::string ImmediateToString() const;
 	std::string ZeroPageToString() const;
 	std::string AbsoluteToString() const;
-	std::string RelativeToString() const;
+	std::string RelativeToString(uint16_t addressOffset) const;
 	std::string IndirectToString() const;
 	std::string ZeroPageIndexedXToString() const;
 	std::string ZeroPageIndexedYToString() const;
@@ -48,7 +49,7 @@ private:
 
 struct DisassemblerInitializeInfo {
 	DisassemblerInitializeInfo() : address(0) {}
-	DisassemblerInitializeInfo(std::vector<uint8_t>& initPRGROM, std::vector<LogicalBank>& initPRGLogicalBanks, BankMapping& initPRGBankMapping, uint16_t initAddress) :
+	DisassemblerInitializeInfo(std::vector<uint8_t> initPRGROM, std::vector<LogicalBank> initPRGLogicalBanks, BankMapping initPRGBankMapping, uint16_t initAddress) :
 		PRGROM(initPRGROM), PRGLogicalBanks(initPRGLogicalBanks), PRGBankMapping(initPRGBankMapping), address(initAddress) {}
 
 	std::vector<uint8_t> PRGROM;
@@ -74,7 +75,7 @@ public:
 	void Initialize(DisassemblerInitializeInfo& initializationInfo);
 	void Clear();
 	bool SetNextState(DisassemblerNextStateInfo& nextStateInfo); // True if ListBox requires updating
-	int GetCurrentAddressIndex() const;
+	size_t GetCurrentAddressIndex() const;
 	std::vector<std::string> GetProgramLines();
 
 	static std::map<InstructionMnemonic, std::string> s_mnemonicToString;
@@ -83,9 +84,11 @@ private:
 	void SetupPRGRom(std::vector<uint8_t>& PRGROM);
 	std::map<uint16_t, DisassemblerLineData> DisassembleBank(size_t physicalBankIndex, uint16_t startAddress, size_t startIndex);
 	// Returns true if there's more data to read, false if done
-	bool ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& beginAddress, DisassemblerLineData& lineData);
-	size_t GetAddressPhysicalBankIndex(uint16_t address);
-	std::map<uint16_t, DisassemblerLineData> GetDisassembledDataUpToAddress(size_t physicalBankIndex, uint16_t targetAddress, size_t& lastIndex);
+	bool ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& beginAddress, DisassemblerLineData& lineData, size_t currIndex);
+	size_t LogicalBankToPhysicalBankIndex(size_t logicalBankIndex) const;
+	size_t GetAddressLogicalBankIndex(uint16_t address) const;
+	size_t GetAddressPhysicalBankIndex(uint16_t address) const;
+	std::map<uint16_t, DisassemblerLineData> GetDisassembledDataUpToAddress(size_t physicalBankIndex, uint16_t targetAddress);
 
 	PRGPhysicalBanks m_PRGROM;
 	std::vector<LogicalBank> m_PRGLogicalBanks;
