@@ -143,6 +143,10 @@ uint8_t DisassemblerLineData::GetDataHigh() const {
 	return m_dataHigh;
 }
 
+size_t DisassemblerLineData::GetListIndex() const {
+	return m_listIndex;
+}
+
 std::string DisassemblerLineData::ImpliedToString()
 {
 	return "";
@@ -211,7 +215,16 @@ std::string DisassemblerLineData::IndirectIndexedYToString()
 }
 
 
-void Disassembler::Initialize(std::vector<uint8_t> programContent, uint16_t beginAddress, uint16_t endAddress, uint16_t currAddress) {
+void Disassembler::Initialize(DisassemblerInitializeInfo& initializationInfo) {
+	m_PRGLogicalBanks = initializationInfo.PRGLogicalBanks;
+	m_PRGBankMapping = initializationInfo.PRGBankMapping;
+	this->SetupPRGRom(initializationInfo.PRGROM);
+	for (size_t i = 0; i < m_PRGROM.size(); i++) {
+		m_disassembled[i] = this->DisassembleBank(i, 0);
+	}
+	m_currAddress = initializationInfo.address;
+
+	/*
 	std::queue<uint8_t> restOfProgramContent;
 	for (size_t address = beginAddress; address < beginAddress + programContent.size(); address++) {
 		restOfProgramContent.push(programContent[address - 0x8000]);
@@ -219,7 +232,7 @@ void Disassembler::Initialize(std::vector<uint8_t> programContent, uint16_t begi
 	uint16_t address = beginAddress;
 	uint16_t lastAddress = beginAddress;
 	int currIndex = 0;
-	DisassemblerLineData currLineData = DisassemblerLineData(beginAddress, 0, INSTR_BRK, MODE_IMPLIED, 0, 0);
+	DisassemblerLineData currLineData = DisassemblerLineData(beginAddress, 0, INSTR_BRK, MODE_IMPLIED, 0, 0, currIndex);
 	while (address <= endAddress && this->ConsumeNextLine(restOfProgramContent, address, currLineData)) {
 		m_programData.push_back(currLineData);
 		m_addressToIndex[lastAddress] = currIndex;
@@ -239,16 +252,64 @@ void Disassembler::Initialize(std::vector<uint8_t> programContent, uint16_t begi
 		}
 	}
 	m_currAddress = currAddress;
+	*/
 }
 
 void Disassembler::Clear() {
-	m_programData.clear();
-	m_addressToIndex.clear();
+	m_PRGROM.clear();
+	m_PRGLogicalBanks.clear();
+	m_PRGBankMapping.clear();
+	m_disassembled.clear();
 	m_currAddress = 0;
 }
 
-void Disassembler::SetNextAddress(uint16_t newAddress) {
-	m_currAddress = newAddress;
+bool Disassembler::SetNextState(DisassemblerNextStateInfo& nextStateInfo) {
+	m_currAddress = nextStateInfo.address;
+	bool updateList = false;
+	if (m_PRGBankMapping != nextStateInfo.PRGBankMapping) {
+		m_PRGBankMapping = nextStateInfo.PRGBankMapping;
+
+		// Banks have been switched, so update list
+		updateList = true;
+	}
+	if (m_currAddress >= PRG_ROM_START_ADDRESS && m_currAddress <= PRG_ROM_END_ADDRESS) {
+		size_t bankIndex = this->GetAddressPhysicalBankIndex();
+		if (m_disassembled[bankIndex].find(m_currAddress) == m_disassembled[bankIndex].end()) {
+			// address not in disassembled bank - this means the disassembled code is not aligned with program code
+			// Realign
+			std::map<uint16_t, DisassemblerLineData> prefix = this->GetDisassembledDataUpToAddress(bankIndex, m_currAddress);
+			std::map<uint16_t, DisassemblerLineData> suffix = this->DisassembleBank(bankIndex, m_currAddress);
+			prefix.insert(suffix.begin(), suffix.end());
+			m_disassembled[bankIndex] = prefix;
+
+			// Need to update list to reflect changes
+			updateList = true;
+		}
+	}
+	return updateList;
+}
+
+int Disassembler::GetCurrentAddressIndex() const {
+	size_t result = 0;
+	size_t logicalBankIndex;
+	for (size_t i = 0; i < m_PRGLogicalBanks.size(); i++) {
+		if (m_currAddress >= m_PRGLogicalBanks[i].startAddress + m_PRGLogicalBanks[i].size) {
+			result += m_disassembled[i].size();
+		}
+		else {
+			result += m_disassembled[i][m_currAddress].listIndex;
+			break;
+		}
+	}
+	return result;
+}
+
+std::vector<std::string> Disassembler::GetProgramLines() {
+	std::vector<std::string> lines;
+	for (auto& lineData : m_programData) {
+		lines.push_back(lineData.ToString());
+	}
+	return lines;
 }
 
 bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& currAddress, DisassemblerLineData& lineData) {
@@ -281,25 +342,15 @@ bool Disassembler::ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, ui
 	return true;
 }
 
-int Disassembler::GetCurrentAddressIndex() const {
-	return m_addressToIndex.at(m_currAddress);
-}
 
-std::vector<std::string> Disassembler::GetProgramLines() {
-	std::vector<std::string> lines;
-	for (auto & lineData : m_programData) {
-		lines.push_back(lineData.ToString());
-	}
-	return lines;
-}
 
 
 wxDEFINE_EVENT(EVT_DISASSEMBLER_INITIALIZE, wxNESStateEvent<DisassemblerInitializeInfo>);
-wxDEFINE_EVENT(EVT_DISASSEMBLER_NEXT_ADDRESS, wxNESStateEvent<uint16_t>);
+wxDEFINE_EVENT(EVT_DISASSEMBLER_NEXT_STATE, wxNESStateEvent<DisassemblerNextStateInfo>);
 
 wxDisassemblerPanel::wxDisassemblerPanel(wxWindow* parent) : wxPanel(parent, wxID_ANY) {
 	Bind(EVT_DISASSEMBLER_INITIALIZE, &wxDisassemblerPanel::OnInitialize, this);
-	Bind(EVT_DISASSEMBLER_NEXT_ADDRESS, &wxDisassemblerPanel::OnNextAddress, this);
+	Bind(EVT_DISASSEMBLER_NEXT_STATE, &wxDisassemblerPanel::OnNextState, this);
 
 	m_isInitialized = false;
 
@@ -316,12 +367,9 @@ bool wxDisassemblerPanel::IsInitialized() const {
 }
 
 void wxDisassemblerPanel::OnInitialize(wxNESStateEvent<DisassemblerInitializeInfo>& evt) {
-	m_disassembler.Initialize(evt.GetState().programContent, evt.GetState().beginAddress, evt.GetState().endAddress, evt.GetState().currAddress);
-	wxArrayString lines;
-	for (auto const& line : m_disassembler.GetProgramLines()) {
-		lines.push_back(wxString(line));
-	}
-	m_programListBox->SetItems(lines);
+	DisassemblerInitializeInfo state = evt.GetState();
+	m_disassembler.Initialize(state);
+	this->UpdateList();
 	m_isInitialized = true;
 }
 
@@ -331,10 +379,20 @@ void wxDisassemblerPanel::Clear() {
 	m_isInitialized = false;
 }
 
-void wxDisassemblerPanel::OnNextAddress(wxNESStateEvent<uint16_t>& evt) {
-	return;
-	if (evt.GetState() >= 0x8000 && evt.GetState() <= 0xFFFF) {
-		m_disassembler.SetNextAddress(evt.GetState());
+void wxDisassemblerPanel::OnNextState(wxNESStateEvent<DisassemblerNextStateInfo>& evt) {
+	if (evt.GetState().address >= 0x8000 && evt.GetState().address <= 0xFFFF) {
+		DisassemblerNextStateInfo state = evt.GetState();
+		if (m_disassembler.SetNextState(state)) {
+			this->UpdateList();
+		}
 		m_programListBox->SelectItem(m_disassembler.GetCurrentAddressIndex());
 	}
+}
+
+void wxDisassemblerPanel::UpdateList() {
+	wxArrayString lines;
+	for (auto const& line : m_disassembler.GetProgramLines()) {
+		lines.push_back(wxString(line));
+	}
+	m_programListBox->SetItems(lines);
 }
