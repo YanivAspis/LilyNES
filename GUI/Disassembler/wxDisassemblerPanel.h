@@ -11,7 +11,7 @@ class DisassemblerLineData {
 public:
 	DisassemblerLineData(uint16_t beginAddress, int length, InstructionMnemonic mnemonic, AddressingMode addressingMode, uint8_t dataLow, uint8_t dataHigh, size_t listIndex) :
 		m_beginAddress(beginAddress), m_length(length), m_mnemonic(mnemonic), m_addressingMode(addressingMode), m_dataLow(dataLow), m_dataHigh(dataHigh), m_listIndex(listIndex) {}
-	std::string ToString(uint16_t addressOffset);
+	std::string ToString(uint16_t addressOffset) const;
 
 	uint16_t GetAddress() const;
 	int GetLength() const;
@@ -22,19 +22,19 @@ public:
 	size_t GetListIndex() const;
 
 private:
-	std::string ImpliedToString();
-	std::string AccumulatorToString();
-	std::string ImmediateToString();
-	std::string ZeroPageToString();
-	std::string AbsoluteToString();
-	std::string RelativeToString();
-	std::string IndirectToString();
-	std::string ZeroPageIndexedXToString();
-	std::string ZeroPageIndexedYToString();
-	std::string AbsoluteIndexedXToString();
-	std::string AbsoluteIndexedYToString();
-	std::string IndexedIndirectXToString();
-	std::string IndirectIndexedYToString();
+	std::string ImpliedToString() const;
+	std::string AccumulatorToString() const;
+	std::string ImmediateToString() const;
+	std::string ZeroPageToString() const;
+	std::string AbsoluteToString() const;
+	std::string RelativeToString() const;
+	std::string IndirectToString() const;
+	std::string ZeroPageIndexedXToString() const;
+	std::string ZeroPageIndexedYToString() const;
+	std::string AbsoluteIndexedXToString() const;
+	std::string AbsoluteIndexedYToString() const;
+	std::string IndexedIndirectXToString() const;
+	std::string IndirectIndexedYToString() const;
 
 	uint16_t m_beginAddress;
 	int m_length;
@@ -81,11 +81,11 @@ public:
 
 private:
 	void SetupPRGRom(std::vector<uint8_t>& PRGROM);
-	std::map<uint16_t, DisassemblerLineData> DisassembleBank(size_t physicalBankIndex, uint16_t startAddress);
+	std::map<uint16_t, DisassemblerLineData> DisassembleBank(size_t physicalBankIndex, uint16_t startAddress, size_t startIndex);
 	// Returns true if there's more data to read, false if done
 	bool ConsumeNextLine(std::queue<uint8_t>& restOfProgramContent, uint16_t& beginAddress, DisassemblerLineData& lineData);
-	size_t GetAddressPhysicalBankIndex();
-	std::map<uint16_t, DisassemblerLineData> GetDisassembledDataUpToAddress(size_t physicalBankIndex, uint16_t targetAddress);
+	size_t GetAddressPhysicalBankIndex(uint16_t address);
+	std::map<uint16_t, DisassemblerLineData> GetDisassembledDataUpToAddress(size_t physicalBankIndex, uint16_t targetAddress, size_t& lastIndex);
 
 	PRGPhysicalBanks m_PRGROM;
 	std::vector<LogicalBank> m_PRGLogicalBanks;
