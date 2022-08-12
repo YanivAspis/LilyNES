@@ -82,21 +82,23 @@ void wxLargeUnselectableListBox::OnPaint(wxPaintEvent& evt) {
 	dc.SetFont(wxFont(wxFontInfo(m_fontSize)));
 	int itemHeight = m_fontSize + m_marginBetweenLines;
 
-	int i = unscrolledY / itemHeight;
-	float y = unscrolledY;
-	while ((y < unscrolledHeight) && i < m_items.Count()) {
-		if (i == m_selectedItem) {
-			dc.SetFont(wxFont(wxFontInfo(m_fontSize).Bold()));
-			dc.DrawText(m_items[i], wxPoint(m_marginFromLeft, y));
-			dc.SetFont(wxFont(wxFontInfo(m_fontSize)));
+	if (itemHeight > 0) {
+		int i = unscrolledY / itemHeight;
+		float y = unscrolledY;
+		while ((y < unscrolledHeight) && i < m_items.Count()) {
+			if (i == m_selectedItem) {
+				dc.SetFont(wxFont(wxFontInfo(m_fontSize).Bold()));
+				dc.DrawText(m_items[i], wxPoint(m_marginFromLeft, y));
+				dc.SetFont(wxFont(wxFontInfo(m_fontSize)));
+			}
+			else {
+				dc.DrawText(m_items[i], wxPoint(m_marginFromLeft, y));
+			}
+			i++;
+			y += itemHeight;
 		}
-		else {
-			dc.DrawText(m_items[i], wxPoint(m_marginFromLeft, y));
-		}
-		i++;
-		y += itemHeight;
 	}
-
+	
 	evt.Skip();
 }
 

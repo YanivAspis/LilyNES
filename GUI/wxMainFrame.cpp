@@ -134,12 +134,12 @@ void wxMainFrame::OnNESStateThreadUpdate(wxThreadEvent& evt) {
 
     if (!m_disassemblerPanel->IsInitialized()) {
         wxNESStateEvent<DisassemblerInitializeInfo> disassemblerInitializationEvt(EVT_DISASSEMBLER_INITIALIZE);
-        disassemblerInitializationEvt.SetState(DisassemblerInitializeInfo(m_loadedROM->GetPRGROM(), 0x8000, 0xFFFF, state.cpuState.regPC));
+        disassemblerInitializationEvt.SetState(DisassemblerInitializeInfo(m_loadedROM->GetPRGROM(), state.cartridgeState.PRGLogicalBanks, state.cartridgeState.PRGBankMapping, state.cpuState.regPC));
         wxPostEvent(m_disassemblerPanel, disassemblerInitializationEvt);
     }
     else if (state.cpuState.instructionFirstCycle) {
-        wxNESStateEvent<uint16_t> disassemblerNextAddressEvt(EVT_DISASSEMBLER_NEXT_ADDRESS);
-        disassemblerNextAddressEvt.SetState(state.cpuState.currInstruction.instructionAddress);
+        wxNESStateEvent<DisassemblerNextStateInfo> disassemblerNextAddressEvt(EVT_DISASSEMBLER_NEXT_STATE);
+        disassemblerNextAddressEvt.SetState(DisassemblerNextStateInfo(state.cpuState.regPC, state.cartridgeState.PRGBankMapping));
         wxPostEvent(m_disassemblerPanel, disassemblerNextAddressEvt);
     }
 

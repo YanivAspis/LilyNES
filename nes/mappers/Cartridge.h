@@ -50,6 +50,9 @@ struct LogicalBank {
 	uint16_t size;
 };
 
+
+typedef std::map<unsigned int, size_t> BankMapping;
+
 // Each mapper inherits this to define its own specific state information
 struct MapperAdditionalState {
 	virtual ~MapperAdditionalState() = 0;
@@ -58,13 +61,15 @@ struct MapperAdditionalState {
 struct CartridgeState {
 	CartridgeState();
 
+	uint8_t mapperID;
+
 	std::vector<uint8_t> CHRROM;
 	std::vector<uint8_t> PRGRAM;
 
 	std::vector<LogicalBank> PRGLogicalBanks;
 	std::vector<LogicalBank> CHRLogicalBanks;
-	std::map<unsigned int, size_t> PRGBankMapping;
-	std::map<unsigned int, size_t> CHRBankMapping;
+	BankMapping PRGBankMapping;
+	BankMapping CHRBankMapping;
 
 
 	// Additional Mapper-specific state information
@@ -114,8 +119,8 @@ protected:
 
 	std::vector<LogicalBank> m_PRGLogicalBanks;
 	std::vector<LogicalBank> m_CHRLogicalBanks;
-	std::map<unsigned int, size_t> m_PRGBankMapping;
-	std::map<unsigned int, size_t> m_CHRBankMapping;
+	BankMapping m_PRGBankMapping;
+	BankMapping m_CHRBankMapping;
 
 private:
 	// Each mapper implements these to save/load its additional state
@@ -123,4 +128,6 @@ private:
 	virtual void LoadAdditionalState(std::any state) = 0;
 
 	unsigned int GetLogicalBankIndex(std::vector<LogicalBank> logicalBanks, uint16_t address);
+
+	uint8_t m_mapperID;
 };
