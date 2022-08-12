@@ -11,7 +11,7 @@ class DisassemblerLineData {
 public:
 	DisassemblerLineData(uint16_t beginAddress, int length, InstructionMnemonic mnemonic, AddressingMode addressingMode, uint8_t dataLow, uint8_t dataHigh, size_t listIndex) :
 		m_beginAddress(beginAddress), m_length(length), m_mnemonic(mnemonic), m_addressingMode(addressingMode), m_dataLow(dataLow), m_dataHigh(dataHigh), m_listIndex(listIndex) {}
-	std::string ToString();
+	std::string ToString(uint16_t addressOffset);
 
 	uint16_t GetAddress() const;
 	int GetLength() const;

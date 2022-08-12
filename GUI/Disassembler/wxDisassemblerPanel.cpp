@@ -69,9 +69,9 @@ std::map<InstructionMnemonic, std::string> Disassembler::s_mnemonicToString = {
 };
 
 
-std::string DisassemblerLineData::ToString() {
+std::string DisassemblerLineData::ToString(uint16_t addressOffset) {
 	std::string result;
-	result += HexUint16ToString(m_beginAddress) + ": ";
+	result += HexUint16ToString(m_beginAddress + addressOffset) + ": ";
 	result += Disassembler::s_mnemonicToString[m_mnemonic];
 
 	switch (m_addressingMode) {
