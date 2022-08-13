@@ -135,6 +135,13 @@ void NES::RunUntilNextInstruction() {
 	}
 }
 
+void NES::RunUntilNextScanline() {
+	unsigned int currScanline = m_ppu.GetState().scanline;
+	while (m_ppu.GetState().scanline == currScanline) {
+		this->Clock();
+	}
+}
+
 void NES::RunUntilNextFrame() {
 	unsigned int currFrame = m_ppu.GetFrameCount();
 	while (currFrame == m_ppu.GetFrameCount()) {

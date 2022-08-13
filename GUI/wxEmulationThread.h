@@ -23,6 +23,7 @@ enum EMULATION_USER_REQUEST {
 	EMULATION_USER_REQUEST_NONE,
 	EMULATION_USER_REQUEST_NEXT_CYCLE,
 	EMULATION_USER_REQUEST_NEXT_INSTRUCTION,
+	EMULATION_USER_REQUEST_NEXT_SCANLINE,
 	EMULATION_USER_REQUEST_NEXT_FRAME
 };
 
@@ -52,6 +53,7 @@ private:
 
 	void RunUntilNextCycle();
 	void RunUntilNextInstruction();
+	void RunUntilNextScanline();
 	void RunUntilNextFrame();
 	void EmulationWait();
 

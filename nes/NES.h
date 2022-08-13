@@ -52,6 +52,7 @@ public:
 
 	void RunUntilNextCycle();
 	void RunUntilNextInstruction();
+	void RunUntilNextScanline();
 	void RunUntilNextFrame();
 
 	// Functions for debugging

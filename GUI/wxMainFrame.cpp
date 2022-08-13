@@ -228,6 +228,14 @@ void wxMainFrame::RunUntilNextInstruction() {
     }
 }
 
+void wxMainFrame::RunUntilNextScanline() {
+    // Perhaps not thread safen
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_NEXT_SCANLINE);
+    }
+}
+
 void wxMainFrame::RunUntilNextFrame() {
     // Perhaps not thread safen
     if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {

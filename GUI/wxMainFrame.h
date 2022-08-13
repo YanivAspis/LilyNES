@@ -33,6 +33,7 @@ public:
 
 	void RunUntilNextCycle();
 	void RunUntilNextInstruction();
+	void RunUntilNextScanline();
 	void RunUntilNextFrame();
 	void RunContinuously();
 	void ToggleRefreshRate();

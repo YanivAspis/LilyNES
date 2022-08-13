@@ -100,6 +100,10 @@ void wxEmulationThread::RunUntilNextInstruction() {
 	m_nes.RunUntilNextInstruction();
 }
 
+void wxEmulationThread::RunUntilNextScanline() {
+	m_nes.RunUntilNextScanline();
+}
+
 void wxEmulationThread::RunUntilNextFrame() {
 	m_nes.RunUntilNextFrame();
 }
@@ -124,6 +128,10 @@ void wxEmulationThread::DoUserRequestRun() {
 		break;
 	case EMULATION_USER_REQUEST_NEXT_INSTRUCTION:
 		this->RunUntilNextInstruction();
+		this->PostNESUpdate();
+		break;
+	case EMULATION_USER_REQUEST_NEXT_SCANLINE:
+		this->RunUntilNextScanline();
 		this->PostNESUpdate();
 		break;
 	case EMULATION_USER_REQUEST_NEXT_FRAME:
