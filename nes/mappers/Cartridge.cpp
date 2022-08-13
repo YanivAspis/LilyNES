@@ -157,7 +157,7 @@ void Cartridge::CHRROMWrite(uint16_t address, uint8_t data) {
 	m_CHRROM[index] = data;
 }
 
-unsigned int Cartridge::GetLogicalBankIndex(std::vector<LogicalBank> logicalBanks, uint16_t address) {
+unsigned int Cartridge::GetLogicalBankIndex(std::vector<LogicalBank>& logicalBanks, uint16_t address) {
 	for (unsigned int i = 0; i < logicalBanks.size(); i++) {
 		if (address >= logicalBanks[i].startAddress && address < (logicalBanks[i].startAddress + logicalBanks[i].size)) {
 			return i;

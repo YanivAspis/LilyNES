@@ -127,7 +127,7 @@ private:
 	virtual std::any GetAdditionalState() const = 0;
 	virtual void LoadAdditionalState(std::any state) = 0;
 
-	unsigned int GetLogicalBankIndex(std::vector<LogicalBank> logicalBanks, uint16_t address);
+	unsigned int GetLogicalBankIndex(std::vector<LogicalBank>& logicalBanks, uint16_t address);
 
 	uint8_t m_mapperID;
 };

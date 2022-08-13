@@ -21,6 +21,7 @@ public:
 private:
 	NESPicture m_picture;
 	wxCriticalSection m_pictureCritSection;
+	wxImage m_image;
 
 	double m_widthScaleFactor;
 	double m_heightScaleFactor;

@@ -1,7 +1,7 @@
 #include "wxDisplayPanel.h"
 #include "wx/dcbuffer.h"
 
-wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id) {
+wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id), m_image(NES_PICTURE_WIDTH, NES_PICTURE_HEIGHT) {
 	Bind(wxEVT_PAINT, &wxDisplayPanel::Render, this);
 	Bind(wxEVT_SIZE, &wxDisplayPanel::OnSize, this);
 	Bind(wxEVT_ERASE_BACKGROUND, &wxDisplayPanel::OnBackgroundErase, this);
@@ -17,22 +17,19 @@ wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id) {
 void wxDisplayPanel::Render(wxPaintEvent& evt) {
 	wxBufferedPaintDC dc(this);
 
-	wxImage* image = new wxImage(NES_PICTURE_WIDTH, NES_PICTURE_HEIGHT);
 	NESPicture* picture = new NESPicture(this->GetImage());
 	for (unsigned int y = 0; y < NES_PICTURE_HEIGHT; y++) {
 		for (unsigned int x = 0; x < NES_PICTURE_WIDTH; x++) {
-			image->SetRGB(x, y, (* picture)[y][x].red, (*picture)[y][x].green, (*picture)[y][x].blue);
+			m_image.SetRGB(x, y, (* picture)[y][x].red, (*picture)[y][x].green, (*picture)[y][x].blue);
 		}
 	}
 	delete picture;
 	picture = nullptr;
 
 	dc.SetUserScale(m_widthScaleFactor, m_heightScaleFactor);
-	if ((*image).IsOk()) {
-		dc.DrawBitmap(*image, 0, 0, false);
+	if (m_image.IsOk()) {
+		dc.DrawBitmap(m_image, 0, 0, false);
 	}
-	delete image;
-	image = nullptr;
 
 	if (m_displayRefreshRate) {
 		m_frameCount++;
