@@ -7,10 +7,6 @@ using namespace BitwiseUtils;
 
 Environment::Environment() {
 	m_display = nullptr;
-	/*
-	m_controller1Latch = 0;
-	m_controller2Latch = 0;
-	*/
 
 	// Controller 1
 	m_nesKeyTranslator['X'] = std::pair<NES_CONTROLLER_ID, NES_CONTROLLER_KEY>(NES_CONTROLLER_1, NES_KEY_A);
@@ -43,36 +39,7 @@ void Environment::UpdateDisplay(const NESPicture& picture) {
 	m_display->SetImage(picture);
 }
 
-/*
-void Environment::HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
-	wxCriticalSectionLocker enter(m_controllerCritSection);
-	if (controller == NES_CONTROLLER_1) {
-		SetBit8(m_controller1Latch, key);
-	}
-	else {
-		SetBit8(m_controller2Latch, key);
-	}
-}
-
-void Environment::HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
-	wxCriticalSectionLocker enter(m_controllerCritSection);
-	if (controller == NES_CONTROLLER_1) {
-		ClearBit8(m_controller1Latch, key);
-	}
-	else {
-		ClearBit8(m_controller2Latch, key);
-	}
-}
-*/
-
 void Environment::GetControllerInputs(uint8_t& controller1Latch, uint8_t& controller2Latch) {
-	/*
-	{
-		wxCriticalSectionLocker enter(m_controllerCritSection);
-		controller1Latch = m_controller1Latch;
-		controller2Latch = m_controller2Latch;
-	}
-	*/
 	for (std::pair<const int, std::pair<NES_CONTROLLER_ID, NES_CONTROLLER_KEY>>& keyPressInfo : m_nesKeyTranslator) {
 		if (wxGetKeyState((wxKeyCode)keyPressInfo.first)) {
 			keyPressInfo.second.first == NES_CONTROLLER_1 ? SetBit8(controller1Latch, keyPressInfo.second.second) : SetBit8(controller2Latch, keyPressInfo.second.second);

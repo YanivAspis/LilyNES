@@ -15,6 +15,7 @@
 #include "../Environment.h"
 
 class wxEmulationThread;
+enum EMULATION_RUNNING_MODE;
 class wxROMInfoFrame;
 
 class wxMainFrame : public wxFrame
@@ -34,6 +35,9 @@ public:
 	void OnROMInformation(wxCommandEvent& evt);
 	void OnTestCPU(wxCommandEvent& evt);
 	
+	void OnMenuOpen(wxMenuEvent& evt);
+	void OnMenuClose(wxMenuEvent& evt);
+	void OnWindowActivate(wxActivateEvent& evt);
 	void OnClose(wxCloseEvent& evt);
 
 	std::shared_ptr<INESFile> GetLoadedROM() const;
@@ -46,9 +50,6 @@ public:
 	void ToggleRefreshRate();
 	void SelectNextPalette();
 
-	//void HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
-	//void HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
-
 	bool IsClosing() const;
 	
 
@@ -59,6 +60,7 @@ private:
 
 	wxEmulationThread* m_emulationThread;
 	wxSemaphore m_emulationThreadExitNotice;
+	EMULATION_RUNNING_MODE m_lastRunningMode;
 
 	wxMenuBar* m_mainMenuBar;
 	wxMenu* m_fileMenu;

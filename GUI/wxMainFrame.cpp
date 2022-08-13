@@ -31,6 +31,10 @@ enum MenuOptions {
 
 wxBEGIN_EVENT_TABLE(wxMainFrame, wxFrame)
     EVT_CLOSE(wxMainFrame::OnClose)
+    EVT_MENU_OPEN(wxMainFrame::OnMenuOpen)
+    EVT_MENU_CLOSE(wxMainFrame::OnMenuClose)
+    EVT_ACTIVATE(wxMainFrame::OnWindowActivate)
+
     EVT_MENU(wxID_LILYNES_OPEN_ROM, wxMainFrame::OnLoadROM)
     EVT_MENU(wxID_LILYNES_EXIT, wxMainFrame::OnMenuExit)
 
@@ -101,6 +105,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_environment.SetDisplayPanel(m_displayPanel);
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
+    m_lastRunningMode = EMULATION_RUNNING_PAUSED;
     m_closingFlag = false;
 }
 
@@ -230,9 +235,6 @@ void wxMainFrame::OnHardReset(wxCommandEvent& evt) {
     evt.Skip();
 }
 
-
-
-
 void wxMainFrame::OnROMInformation(wxCommandEvent& evt)
 {
     m_ROMInfoFrame = new wxROMInfoFrame(this);
@@ -255,6 +257,35 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
 
     RunCPUTest(romPath, outputPath);
     wxMessageBox("Done!");
+}
+
+void wxMainFrame::OnMenuOpen(wxMenuEvent& evt) {
+    // Perhaps not thread safe
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_lastRunningMode = m_emulationThread->GetRunningMode();
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_PAUSED);
+    }
+    evt.Skip();
+}
+
+void wxMainFrame::OnMenuClose(wxMenuEvent& evt) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(m_lastRunningMode);
+    }
+    evt.Skip();
+}
+
+void wxMainFrame::OnWindowActivate(wxActivateEvent& evt) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        if (evt.GetActive()) {
+            m_emulationThread->SetRunningMode(m_lastRunningMode);
+        }
+        else {
+            m_lastRunningMode = m_emulationThread->GetRunningMode();
+            m_emulationThread->SetRunningMode(EMULATION_RUNNING_PAUSED);
+        }
+    }
+    evt.Skip();
 }
 
 void wxMainFrame::OnClose(wxCloseEvent& evt)
@@ -310,15 +341,6 @@ void wxMainFrame::SelectNextPalette() {
     m_paletteRAMPanel->SelectNextPalette();
     m_patternTablePanel->SelectNextPalette();
 }
-
-/*
-void wxMainFrame::HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
-    m_environment.HandleNESKeyDown(controller, key);
-}
-
-void wxMainFrame::HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
-    m_environment.HandleNESKeyUp(controller, key);
-}*/
 
 bool wxMainFrame::IsClosing() const {
     return m_closingFlag;
