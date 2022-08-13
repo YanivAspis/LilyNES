@@ -251,13 +251,14 @@ void wxMainFrame::SelectNextPalette() {
     m_patternTablePanel->SelectNextPalette();
 }
 
+/*
 void wxMainFrame::HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
     m_environment.HandleNESKeyDown(controller, key);
 }
 
 void wxMainFrame::HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key) {
     m_environment.HandleNESKeyUp(controller, key);
-}
+}*/
 
 bool wxMainFrame::IsClosing() const {
     return m_closingFlag;
