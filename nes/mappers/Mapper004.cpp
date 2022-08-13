@@ -41,6 +41,7 @@ Mapper004::~Mapper004()
 }
 
 void Mapper004::SoftReset() {
+	Cartridge::SoftReset();
 	m_mirroringMode = MIRRORING_VERTICAL;
 	m_bankSelectRegister.value = 0;
 
@@ -52,6 +53,7 @@ void Mapper004::SoftReset() {
 }
 
 void Mapper004::HardReset() {
+	Cartridge::HardReset();
 	m_mirroringMode = MIRRORING_VERTICAL;
 	m_bankSelectRegister.value = 0;
 

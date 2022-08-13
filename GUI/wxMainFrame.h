@@ -24,10 +24,17 @@ public:
 
 	void StartEmulation();
 	void OnNESStateThreadUpdate(wxThreadEvent& evt);
-	void OnClose(wxCloseEvent& evt);
+
 	void OnLoadROM(wxCommandEvent& evt);
-	void OnTestCPU(wxCommandEvent& evt);
+	void OnMenuExit(wxCommandEvent& evt);
+
+	void OnSoftReset(wxCommandEvent& evt);
+	void OnHardReset(wxCommandEvent& evt);
+
 	void OnROMInformation(wxCommandEvent& evt);
+	void OnTestCPU(wxCommandEvent& evt);
+	
+	void OnClose(wxCloseEvent& evt);
 
 	std::shared_ptr<INESFile> GetLoadedROM() const;
 
@@ -39,8 +46,8 @@ public:
 	void ToggleRefreshRate();
 	void SelectNextPalette();
 
-	void HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
-	void HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
+	//void HandleNESKeyDown(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
+	//void HandleNESKeyUp(NES_CONTROLLER_ID controller, NES_CONTROLLER_KEY key);
 
 	bool IsClosing() const;
 	
@@ -55,7 +62,8 @@ private:
 
 	wxMenuBar* m_mainMenuBar;
 	wxMenu* m_fileMenu;
-	wxMenu* m_viewMenu;
+	wxMenu* m_emulationMenu;
+	wxMenu* m_debugMenu;
 
 	wxDisplayPanel* m_displayPanel;
 	wxCPUStatePanel* m_cpuStatePanel;

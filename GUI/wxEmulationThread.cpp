@@ -6,6 +6,7 @@ wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment) {
 	m_continuousRunInitialized = false;
 	m_runningMode = EMULATION_RUNNING_PAUSED;
+	m_userRequest = EMULATION_USER_REQUEST_NONE;
 	m_mainFrame = mainFrame;
 	m_exitNotice = exitNotice;
 }
@@ -14,13 +15,14 @@ void* wxEmulationThread::Entry(){
 	this->Setup();
 	this->PostNESUpdate();
 	while (!this->TestDestroy()) {
+		this->HandleUserRequest();
 		try {
 			switch (this->GetRunningMode()) {
 			case EMULATION_RUNNING_PAUSED:
 				this->DoPause();
 				break;
 			case EMULATION_RUNNING_USER_CONTROLLED:
-				this->DoUserRequestRun();
+				this->DoUserDebugRequestRun();
 				break;
 			case EMULATION_RUNNING_CONTINUOUS:
 				this->DoContinuousRun();
@@ -63,7 +65,13 @@ void wxEmulationThread::SetRunningMode(const EMULATION_RUNNING_MODE& runningMode
 }
 
 void wxEmulationThread::SetUserRequest(const EMULATION_USER_REQUEST& userRequest) {
-	m_userRequestQueue.Post(userRequest);
+	wxCriticalSectionLocker enter(m_userRequestCritSection);
+	m_userRequest = userRequest;
+}
+
+
+void wxEmulationThread::SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& userRequest) {
+	m_userDebugRequestQueue.Post(userRequest);
 }
 
 NESState wxEmulationThread::GetCurrentNESState() {
@@ -86,9 +94,9 @@ void wxEmulationThread::PostNESUpdate() {
 	wxQueueEvent(m_mainFrame, new wxThreadEvent(EVT_NES_STATE_THREAD_UPDATE));
 }
 
-EMULATION_USER_REQUEST wxEmulationThread::GetUserRequest() {
-	EMULATION_USER_REQUEST request = EMULATION_USER_REQUEST_NONE;
-	m_userRequestQueue.ReceiveTimeout(USER_REQUEST_WAIT_TIME_MILLLISECONDS, request);
+EMULATION_USER_DEBUG_REQUEST wxEmulationThread::GetUserDebugRequest() {
+	EMULATION_USER_DEBUG_REQUEST request = EMULATION_USER_DEBUG_REQUEST_NONE;
+	m_userDebugRequestQueue.ReceiveTimeout(USER_REQUEST_WAIT_TIME_MILLLISECONDS, request);
 	return request;
 }
 
@@ -112,29 +120,46 @@ void wxEmulationThread::EmulationWait() {
 	std::this_thread::sleep_until(m_sleepTargetTime);
 }
 
+void wxEmulationThread::HandleUserRequest() {
+	EMULATION_USER_REQUEST userRequest;
+	{
+		wxCriticalSectionLocker enter(m_userRequestCritSection);
+		userRequest = m_userRequest;
+		m_userRequest = EMULATION_USER_REQUEST_NONE;
+	}
+	switch (userRequest) {
+	case EMULATION_USER_REQUEST_SOFT_RESET:
+		m_nes.SoftReset();
+		break;
+	case EMULATION_USER_REQUEST_HARD_RESET:
+		m_nes.HardReset();
+		break;
+	}
+}
+
 void wxEmulationThread::DoPause() {
 	m_continuousRunInitialized = false;
 	this->EmulationWait();
 }
 
-void wxEmulationThread::DoUserRequestRun() {
+void wxEmulationThread::DoUserDebugRequestRun() {
 	m_continuousRunInitialized = false;
-	switch (this->GetUserRequest()) {
-	case EMULATION_USER_REQUEST_NONE:
+	switch (this->GetUserDebugRequest()) {
+	case EMULATION_USER_DEBUG_REQUEST_NONE:
 		break;
-	case EMULATION_USER_REQUEST_NEXT_CYCLE:
+	case EMULATION_USER_DEBUG_REQUEST_NEXT_CYCLE:
 		this->RunUntilNextCycle();
 		this->PostNESUpdate();
 		break;
-	case EMULATION_USER_REQUEST_NEXT_INSTRUCTION:
+	case EMULATION_USER_DEBUG_REQUEST_NEXT_INSTRUCTION:
 		this->RunUntilNextInstruction();
 		this->PostNESUpdate();
 		break;
-	case EMULATION_USER_REQUEST_NEXT_SCANLINE:
+	case EMULATION_USER_DEBUG_REQUEST_NEXT_SCANLINE:
 		this->RunUntilNextScanline();
 		this->PostNESUpdate();
 		break;
-	case EMULATION_USER_REQUEST_NEXT_FRAME:
+	case EMULATION_USER_DEBUG_REQUEST_NEXT_FRAME:
 		this->RunUntilNextFrame();
 		this->PostNESUpdate();
 		break;

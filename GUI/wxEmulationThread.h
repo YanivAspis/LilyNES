@@ -21,10 +21,16 @@ enum EMULATION_RUNNING_MODE {
 
 enum EMULATION_USER_REQUEST {
 	EMULATION_USER_REQUEST_NONE,
-	EMULATION_USER_REQUEST_NEXT_CYCLE,
-	EMULATION_USER_REQUEST_NEXT_INSTRUCTION,
-	EMULATION_USER_REQUEST_NEXT_SCANLINE,
-	EMULATION_USER_REQUEST_NEXT_FRAME
+	EMULATION_USER_REQUEST_SOFT_RESET,
+	EMULATION_USER_REQUEST_HARD_RESET
+};
+
+enum EMULATION_USER_DEBUG_REQUEST {
+	EMULATION_USER_DEBUG_REQUEST_NONE,
+	EMULATION_USER_DEBUG_REQUEST_NEXT_CYCLE,
+	EMULATION_USER_DEBUG_REQUEST_NEXT_INSTRUCTION,
+	EMULATION_USER_DEBUG_REQUEST_NEXT_SCANLINE,
+	EMULATION_USER_DEBUG_REQUEST_NEXT_FRAME,
 };
 
 
@@ -42,12 +48,13 @@ public:
 	EMULATION_RUNNING_MODE GetRunningMode();
 	void SetRunningMode(const EMULATION_RUNNING_MODE& runningMode);
 	void SetUserRequest(const EMULATION_USER_REQUEST& userRequest);
+	void SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& userRequest);
 
 	NESState GetCurrentNESState();
 
 private:
 	void Setup();
-	EMULATION_USER_REQUEST GetUserRequest();
+	EMULATION_USER_DEBUG_REQUEST GetUserDebugRequest();
 
 	void PostNESUpdate();
 
@@ -57,16 +64,19 @@ private:
 	void RunUntilNextFrame();
 	void EmulationWait();
 
+	void HandleUserRequest();
 	void DoPause();
-	void DoUserRequestRun();
+	void DoUserDebugRequestRun();
 	void DoContinuousRun();
 
 	NES m_nes;
 	std::chrono::time_point<std::chrono::steady_clock> m_sleepTargetTime;
 
 	EMULATION_RUNNING_MODE m_runningMode;
+	wxCriticalSection m_userRequestCritSection;
+	EMULATION_USER_REQUEST m_userRequest;
 	wxCriticalSection m_runningModeCritSection;
-	wxMessageQueue<EMULATION_USER_REQUEST> m_userRequestQueue;
+	wxMessageQueue<EMULATION_USER_DEBUG_REQUEST> m_userDebugRequestQueue;
 	NESState m_currentNESState;
 	wxCriticalSection m_currentStateCritSection;
 

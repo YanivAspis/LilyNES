@@ -17,7 +17,6 @@ Mapper001State::Mapper001State() {
 Mapper001::Mapper001(const INESFile& romFile) : Cartridge(romFile)
 {
 	m_numPRGROMBanks = romFile.GetHeader().GetNumPRGRomBanks();
-	//m_numCHRROMBanks = romFile.GetHeader().GetNumCHRRomBanks();
 	m_batteryBackedRAM = romFile.GetHeader().IsPRGRAMBatteryBacked();
 	m_controlRegister.flags.mirroring = MAPPER_001_MIRRORING_SINGLE_SCREEN_LOW;
 	m_controlRegister.flags.PRGBankMode = MAPPER_001_PRG_BANK_16K_HIGH_FIXED;
