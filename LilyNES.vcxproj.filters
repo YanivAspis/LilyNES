@@ -64,7 +64,7 @@
     <Filter Include="Header Files\nes\APU">
       <UniqueIdentifier>{ed29dc02-dc7e-46ab-a37f-0ea3eb11ae59}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\APU">
+    <Filter Include="Source Files\nes\APU">
       <UniqueIdentifier>{3e8a91fc-03fe-466b-8ef9-a728820b111a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -199,10 +199,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="nes\APU\APU2A03.cpp">
-      <Filter>Source Files\APU</Filter>
+      <Filter>Source Files\nes\APU</Filter>
     </ClCompile>
     <ClCompile Include="nes\FrameCounterController2Device.cpp">
       <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APURegisters.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUTiming.cpp">
+      <Filter>Source Files\nes\APU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -168,6 +168,8 @@
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
     <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
     <ClCompile Include="nes\APU\APU2A03.cpp" />
+    <ClCompile Include="nes\APU\APURegisters.cpp" />
+    <ClCompile Include="nes\APU\APUTiming.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
     <ClCompile Include="nes\ControllerDevice.cpp" />

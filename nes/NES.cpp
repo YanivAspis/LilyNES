@@ -8,7 +8,9 @@
 #include "mappers/Mapper004.h"
 
 
-NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment), m_frameCounterController2(&m_apu, &m_controllers) {
+NES::NES(Environment* environment) : m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment), 
+	m_apu(&m_cpu), m_frameCounterController2(&m_apu, &m_controllers) {
+
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpuBus.ConnectDevice(&m_OAMDMA);
@@ -118,6 +120,7 @@ void NES::Clock()
 			m_cpu.Clock();
 		}
 		m_OAMDMA.Clock();
+		m_apu.Clock();
 	}
 	m_ppu.Clock();
 	m_cycleCount++;
