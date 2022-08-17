@@ -4,9 +4,9 @@
 #include "../Environment.h"
 
 constexpr uint16_t CONTROLLER_BEGIN_ADDRESS = 0x4016;
-constexpr uint16_t CONTROLLER_END_ADDRESS = 0x4017;
+constexpr uint16_t CONTROLLER_END_ADDRESS = 0x4016;
 constexpr uint16_t CONTROLLER_1_ADDRESS = CONTROLLER_BEGIN_ADDRESS;
-constexpr uint16_t CONTROLLER_2_ADDRESS = CONTROLLER_END_ADDRESS;
+constexpr uint16_t CONTROLLER_2_ADDRESS = 0x4017;
 constexpr uint8_t CONTROLLER_INITIAL_VALUE = 0xFF;
 
 class Environment;

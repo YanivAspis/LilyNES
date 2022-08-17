@@ -167,11 +167,13 @@
     <ClCompile Include="GUI\wxPPUStatePanel.cpp" />
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
     <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
+    <ClCompile Include="nes\APU\APU2A03.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
     <ClCompile Include="nes\ControllerDevice.cpp" />
     <ClCompile Include="nes\CPU\CPU2A03.cpp" />
     <ClCompile Include="nes\CPU\CPUInstruction.cpp" />
+    <ClCompile Include="nes\FrameCounterController2Device.cpp" />
     <ClCompile Include="nes\mappers\Cartridge.cpp" />
     <ClCompile Include="nes\mappers\Mapper000.cpp" />
     <ClCompile Include="nes\mappers\Mapper001.cpp" />
@@ -213,6 +215,8 @@
     <ClInclude Include="GUI\wxPPUStatePanel.h" />
     <ClInclude Include="GUI\wxRAMStatePanel.h" />
     <ClInclude Include="GUI\wxROMInfoFrame.h" />
+    <ClInclude Include="nes\FrameCounterController2Device.h" />
+    <ClInclude Include="nes\APU\APU2A03.h" />
     <ClInclude Include="nes\Bus.h" />
     <ClInclude Include="nes\BusDevice.h" />
     <ClInclude Include="nes\ControllerDevice.h" />

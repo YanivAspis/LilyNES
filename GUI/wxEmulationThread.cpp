@@ -109,19 +109,13 @@ NESState wxEmulationThread::GetCurrentNESState() {
 }
 
 float wxEmulationThread::GetAudioSample() {
-	static double globalTime = 0;
-	{
-		wxCriticalSectionLocker enter(m_audioCritSection);
-		while (m_cyclesRemainingForAudio > 0.5) {
-			m_nes.Clock();
-			m_cyclesRemainingForAudio--;
-		}
-		m_cyclesRemainingForAudio += NUM_CYCLES_PER_AUDIO_SAMPLE;
+	wxCriticalSectionLocker enter(m_audioCritSection);
+	while (m_cyclesRemainingForAudio > 0.5) {
+		m_nes.Clock();
+		m_cyclesRemainingForAudio--;
 	}
-
-	float sample = 1.0 * sin(2 * M_PI * 440.0 * globalTime);
-	globalTime += 1.0 / 44100;
-	return sample;
+	m_cyclesRemainingForAudio += NUM_CYCLES_PER_AUDIO_SAMPLE;
+	return m_nes.GetAudioSample();
 }
 
 
@@ -219,7 +213,7 @@ void wxEmulationThread::DoContinuousNoSoundRun() {
 		m_sleepTargetTime = std::chrono::steady_clock::now();
 		m_continuousNoSoundRunInitialized = true;
 	}
-	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
+	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS / 2);
 	this->RunUntilNextFrame();
 	this->EmulationWait();
 }

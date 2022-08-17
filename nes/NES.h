@@ -12,6 +12,8 @@
 #include "PPU/NametableDevice.h"
 #include "PPU/OAMDMADevice.h"
 #include "ControllerDevice.h"
+#include "APU/APU2A03.h"
+#include  "FrameCounterController2Device.h"
 #include "ROM/INESFile.h"
 #include "mappers/Cartridge.h"
 
@@ -55,6 +57,8 @@ public:
 	void RunUntilNextScanline();
 	void RunUntilNextFrame();
 
+	float GetAudioSample();
+
 	// Functions for debugging
 	uint8_t ProbeCPUBus(uint16_t address);
 	uint8_t ProbePPUBus(uint16_t address);
@@ -79,6 +83,8 @@ private:
 	NametableDevice m_nametables;
 	OAMDMADevice m_OAMDMA;
 	ControllerDevice m_controllers;
+	APU2A03 m_apu;
+	FrameCounterController2Device m_frameCounterController2;
 	Cartridge* m_cartridge;
 
 	unsigned int m_cycleCount;

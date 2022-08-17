@@ -61,6 +61,12 @@
     <Filter Include="Source Files\nes\PPU">
       <UniqueIdentifier>{dfc92cdf-e7f8-4b79-8f3e-fe55ce6ac50f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\nes\APU">
+      <UniqueIdentifier>{ed29dc02-dc7e-46ab-a37f-0ea3eb11ae59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\APU">
+      <UniqueIdentifier>{3e8a91fc-03fe-466b-8ef9-a728820b111a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nes\Bus.cpp">
@@ -192,6 +198,12 @@
     <ClCompile Include="SoundGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="nes\APU\APU2A03.cpp">
+      <Filter>Source Files\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\FrameCounterController2Device.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -319,6 +331,12 @@
     </ClInclude>
     <ClInclude Include="SoundGenerator.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APU2A03.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\FrameCounterController2Device.h">
+      <Filter>Header Files\nes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -206,7 +206,7 @@ void PPU2C02::ConnectToBus(Bus* ppuBus) {
 }
 
 void PPU2C02::Clock() {
-	for (std::function<void(PPU2C02&)> renderFunc : m_renderFuncs[m_scanline][m_dot]) {
+	for (const std::function<void(PPU2C02&)>& renderFunc : m_renderFuncs[m_scanline][m_dot]) {
 		renderFunc(*this);
 	}
 	this->DecrementIOLatchCounter();

@@ -76,6 +76,7 @@ CPU2A03::CPU2A03(bool decimalAllowed) {
 	m_irqPending = 0;
 	m_nmiRaised = false;
 
+	m_currInstruction = CurrentInstruction();
 	m_instructionFirstCycle = false;
 	m_cycleCount = 0;
 
@@ -195,7 +196,7 @@ void CPU2A03::Clock()
 
 	// Set up next instruction
 	m_instructionFirstCycle = true;
-	m_currInstruction = CurrentInstruction();
+	//m_currInstruction = CurrentInstruction();
 	m_currInstruction.reset = false;
 
 	// Check if an interrupt needs to be handled
@@ -207,7 +208,7 @@ void CPU2A03::Clock()
 	
 	// No interrupt, perform next instruction
 	uint8_t opCode = m_cpuBus->Read(m_regPC);
-	CPUInstruction instruction = s_opCodeTable[opCode];
+	CPUInstruction& instruction = s_opCodeTable[opCode];
 
 	m_currInstruction.interrupt = false;
 	m_currInstruction.mnemonic = instruction.mnemonic;
@@ -220,7 +221,7 @@ void CPU2A03::Clock()
 	m_addressModeFunctions[instruction.addressMode](*this);
 
 	// Fix addressing mode additional cycles for those instructions that don't actually have any
-	for (InstructionMnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
+	for (const InstructionMnemonic& mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
 		if (mnemonic == instruction.mnemonic) {
 			m_currInstruction.cycles = instruction.baseCycleCount;
 			break;

@@ -8,11 +8,13 @@
 #include "mappers/Mapper004.h"
 
 
-NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment) {
+NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment), m_frameCounterController2(&m_apu, &m_controllers) {
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpuBus.ConnectDevice(&m_OAMDMA);
 	m_cpuBus.ConnectDevice(&m_controllers);
+	m_cpuBus.ConnectDevice(&m_apu);
+	m_cpuBus.ConnectDevice(&m_frameCounterController2);
 	m_ppuBus.ConnectDevice(&m_patternTables);
 	m_ppuBus.ConnectDevice(&m_nametables);
 	m_ppuBus.ConnectDevice(&m_paletteRAM);
@@ -147,6 +149,10 @@ void NES::RunUntilNextFrame() {
 	while (currFrame == m_ppu.GetFrameCount()) {
 		this->Clock();
 	}
+}
+
+float NES::GetAudioSample() {
+	return m_apu.GetAudioSample();
 }
 
 uint8_t NES::ProbeCPUBus(uint16_t address) {
