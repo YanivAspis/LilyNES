@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 
+#include <SDL.h>
+
 #include "wxMainFrame.h"
 #include "wxNESStateEvent.h"
 #include "../utils/BitwiseUtils.h"
@@ -107,6 +109,11 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_emulationThread = nullptr;
     m_lastRunningMode = EMULATION_RUNNING_PAUSED;
     m_closingFlag = false;
+
+    // Sound system initialization
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        wxLogError(wxString::Format(wxT("Error opening Audio device. Details: %s"), SDL_GetError()));
+    }
 }
 
 
@@ -136,9 +143,6 @@ void wxMainFrame::StartEmulation()
         return;
     }
 
-    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
-    m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
-
     if (m_emulationThread->Run() != wxTHREAD_NO_ERROR) {
         m_emulationThread->Delete();
         m_emulationThreadExitNotice.Wait();
@@ -146,6 +150,13 @@ void wxMainFrame::StartEmulation()
         m_emulationThread = nullptr;
         return;
     }
+
+    // Provide a bit of time for thread to set up before running the emulation
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
+    m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_SOUND);
 
     m_emulationMenu->Enable(wxID_LILYNES_SOFT_RESET, true);
     m_emulationMenu->Enable(wxID_LILYNES_HARD_RESET, true);
@@ -292,6 +303,7 @@ void wxMainFrame::OnClose(wxCloseEvent& evt)
 {
     m_closingFlag = true;
     this->StopEmulation(false);
+    SDL_Quit();
     Destroy();
 }
 
@@ -326,10 +338,18 @@ void wxMainFrame::RunUntilNextFrame() {
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_FRAME);
     }
 }
-void wxMainFrame::RunContinuously() {
+
+void wxMainFrame::RunContinuouslyWithoutSound() {
     // Perhaps not thread safen
     if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
-        m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS);
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
+    }
+}
+
+void wxMainFrame::RunContinuouslyWithSound() {
+    // Perhaps not thread safen
+    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_SOUND);
     }
 }
 

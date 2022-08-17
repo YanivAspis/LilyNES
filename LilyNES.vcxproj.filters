@@ -189,6 +189,9 @@
     <ClCompile Include="nes\mappers\Mapper004.cpp">
       <Filter>Source Files\nes\mappers</Filter>
     </ClCompile>
+    <ClCompile Include="SoundGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -313,6 +316,9 @@
     </ClInclude>
     <ClInclude Include="nes\mappers\Mapper004.h">
       <Filter>Header Files\nes\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundGenerator.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -7,6 +7,8 @@
 #include "../Bus.h"
 #include "CPUInstruction.h"
 
+constexpr unsigned int CPU_FREQUENCY = 1786830; // Approximately correct
+
 constexpr uint8_t STACK_PAGE = 0x01;
 constexpr uint8_t SP_INITIAL_VALUE = 0xFD;
 
