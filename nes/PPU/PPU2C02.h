@@ -297,7 +297,9 @@ private:
 	void ClearSpritesLine();
 	void RenderToSpriteLine();
 
-	void SecondaryOAMClock();
+	void SecondaryOAMInitialization();
+	void SecondaryOAMSpriteEvaluation();
+	//void SecondaryOAMClock();
 
 	void SetVBlank();
 	void ClearSTATUSFlags();

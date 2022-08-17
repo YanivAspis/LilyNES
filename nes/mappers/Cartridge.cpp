@@ -47,9 +47,11 @@ void Cartridge::HardReset() {
 void Cartridge::Read(uint16_t address, uint8_t& data) {
 	if (address >= PRG_RAM_START_ADDRESS && address <= PRG_RAM_END_ADDRESS) {
 		data = this->PRGRAMRead(address);
+		return;
 	}
 	else if (address >= PRG_ROM_START_ADDRESS && address <= PRG_ROM_END_ADDRESS) {
 		data = this->PRGROMRead(address);
+		return;
 	}
 
 	// Not supposed to reach here

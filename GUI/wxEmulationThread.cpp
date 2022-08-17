@@ -213,7 +213,7 @@ void wxEmulationThread::DoContinuousNoSoundRun() {
 		m_sleepTargetTime = std::chrono::steady_clock::now();
 		m_continuousNoSoundRunInitialized = true;
 	}
-	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS / 2);
+	m_sleepTargetTime += std::chrono::nanoseconds(FRAME_INTERVAL_NANOSECONDS);
 	this->RunUntilNextFrame();
 	this->EmulationWait();
 }
