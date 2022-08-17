@@ -86,7 +86,7 @@ public:
 	virtual void SetupLogicalBanks() = 0;
 	virtual void InitializeBankMapping() = 0;
 
-	virtual uint8_t Read(uint16_t address) override;
+	virtual void Read(uint16_t address, uint8_t& data) override;
 	virtual void Write(uint16_t address, uint8_t data) override;
 
 	virtual uint8_t PPURead(uint16_t address);

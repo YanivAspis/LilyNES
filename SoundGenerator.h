@@ -35,14 +35,12 @@ class SoundGenerator {
 public:
 	SoundGenerator(wxEmulationThread* emulationThread);
 	~SoundGenerator();
-	void PushSample(float sample);
 	void EnableSound();
 	void DisableSound();
 
 	static void AudioCallback(void* userdata, uint8_t* stream, int len);
 
 private:
-	float m_nextSample;
 	wxEmulationThread* m_emulationThread;
 	bool m_soundStopFlag;
 

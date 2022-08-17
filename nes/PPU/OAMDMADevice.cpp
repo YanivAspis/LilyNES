@@ -28,9 +28,8 @@ void OAMDMADevice::HardReset() {
 	m_cpuCycleCount = 0;
 }
 
-uint8_t OAMDMADevice::Read(uint16_t address) {
-	// TODO: Should return open-bus content, I guess, but I don't have access to these
-	return 0;
+void OAMDMADevice::Read(uint16_t address, uint8_t& data) {
+	// Open bus
 }
 
 void OAMDMADevice::Write(uint16_t address, uint8_t data) {

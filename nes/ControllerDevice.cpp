@@ -30,13 +30,13 @@ void ControllerDevice::HardReset()
 	m_latchFillToggle = false;
 }
 
-uint8_t ControllerDevice::Read(uint16_t address)
+void ControllerDevice::Read(uint16_t address, uint8_t& data)
 {
 	if (address == CONTROLLER_1_ADDRESS) {
-		return this->GetLatchBit(NES_CONTROLLER_1);
+		this->GetLatchBit(NES_CONTROLLER_1) ? SetBit8(data, 0) : ClearBit8(data, 0);
 	}
 	else {
-		return this->GetLatchBit(NES_CONTROLLER_2);
+		this->GetLatchBit(NES_CONTROLLER_2) ? SetBit8(data, 0) : ClearBit8(data, 0);
 	}
 }
 

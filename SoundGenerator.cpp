@@ -36,13 +36,6 @@ SoundGenerator::~SoundGenerator()
 	}
 }
 
-
-
-void SoundGenerator::PushSample(float sample)
-{
-	m_nextSample = sample;
-}
-
 void SoundGenerator::EnableSound()
 {
 	m_soundStopFlag = false;

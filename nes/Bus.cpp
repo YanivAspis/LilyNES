@@ -34,18 +34,12 @@ void Bus::HardReset()
 uint8_t Bus::Read(uint16_t address) {
 	BusDevice* device = m_addressToDevice[address];
 	if (device != nullptr) {
-		m_lastReadValue = device->Read(address);
-		return m_lastReadValue;
+		device->Read(address, m_lastReadValue);
+		
 	}
-
-	// Address not claimed by any device (open bus)
-	// Simply returning 0 is useful while developing,
-	// but does not emulate some games correctly
-	return 0;
-
 	// This mimics open bus behaviour of real NES
 	// i.e. Last value read returned
-	//return m_lastReadValue;
+	return m_lastReadValue;
 }
 
 void Bus::Write(uint16_t address, uint8_t data) {
@@ -61,10 +55,12 @@ void Bus::Write(uint16_t address, uint8_t data) {
 
 uint8_t Bus::Probe(uint16_t address) {
 	BusDevice* device = m_addressToDevice[address];
-	return device->Read(address);
+	uint8_t data = 0;
+	if (device != nullptr) {
+		device->Read(address, data);
+	}
 
-	// Address not claimed by any device
-	return 0;
+	return data;
 }
 
 void Bus::ConnectDevice(BusDevice* device) {

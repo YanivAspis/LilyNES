@@ -18,8 +18,8 @@ PatternTableDevice::~PatternTableDevice() {
 void PatternTableDevice::SoftReset() {}
 void PatternTableDevice::HardReset() {}
 
-uint8_t PatternTableDevice::Read(uint16_t address) {
-	return m_cartridge->PPURead(address);
+void PatternTableDevice::Read(uint16_t address, uint8_t& data) {
+	data = m_cartridge->PPURead(address);
 }
 
 void PatternTableDevice::Write(uint16_t address, uint8_t data) {
