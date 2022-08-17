@@ -2,8 +2,11 @@
 
 #include <cstdint>
 #include <list>
+#include <array>
 #include <memory>
 #include "BusDevice.h"
+
+constexpr size_t BUS_NUM_ADDRESSES = 65536;
 
 class Bus {
 public:
@@ -27,5 +30,6 @@ private:
 	bool DoAddressesCollide(BusDevice* device);
 
 	std::list<BusDevice*> m_devices;
+	std::array<BusDevice*, BUS_NUM_ADDRESSES> m_addressToDevice;
 	uint8_t m_lastReadValue; // For open bus behaviour
 };

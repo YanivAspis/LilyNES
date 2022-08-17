@@ -46,6 +46,8 @@ public:
 	bool IsInAddressRanges(uint16_t address);
 	bool DoAddressesCollide(BusDevice* otherDevice);
 
+	std::list<AddressRange> GetAddressRanges() const;
+
 protected:
 	Bus* m_bus;
 

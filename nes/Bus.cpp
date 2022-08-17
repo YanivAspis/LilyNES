@@ -10,6 +10,7 @@
 
 Bus::Bus() {
 	m_lastReadValue = 0;
+	m_addressToDevice.fill(nullptr);
 }
 
 Bus::~Bus() {
@@ -31,11 +32,10 @@ void Bus::HardReset()
 }
 
 uint8_t Bus::Read(uint16_t address) {
-	for (BusDevice* device : m_devices) {
-		if (device->IsInAddressRanges(address)) {
-			m_lastReadValue = device->Read(address);
-			return m_lastReadValue;
-		}
+	BusDevice* device = m_addressToDevice[address];
+	if (device != nullptr) {
+		m_lastReadValue = device->Read(address);
+		return m_lastReadValue;
 	}
 
 	// Address not claimed by any device (open bus)
@@ -49,11 +49,9 @@ uint8_t Bus::Read(uint16_t address) {
 }
 
 void Bus::Write(uint16_t address, uint8_t data) {
-	for (BusDevice* device : m_devices) {
-		if (device->IsInAddressRanges(address)) {
-			device->Write(address, data);
-			return;
-		}
+	BusDevice* device = m_addressToDevice[address];
+	if (device != nullptr) {
+		device->Write(address, data);
 	}
 
 	// Address not claimed by any device (open bus)
@@ -62,11 +60,8 @@ void Bus::Write(uint16_t address, uint8_t data) {
 }
 
 uint8_t Bus::Probe(uint16_t address) {
-	for (BusDevice* device : m_devices) {
-		if (device->IsInAddressRanges(address)) {
-			return device->Probe(address);;
-		}
-	}
+	BusDevice* device = m_addressToDevice[address];
+	return device->Read(address);
 
 	// Address not claimed by any device
 	return 0;
@@ -76,11 +71,21 @@ void Bus::ConnectDevice(BusDevice* device) {
 	assert(!DoAddressesCollide(device));
 	device->ConnectToBus(this);
 	m_devices.push_back(device);
+	for (const AddressRange& addressRange : device->GetAddressRanges()) {
+		for (size_t address = addressRange.first; address <= addressRange.second; address++) {
+			m_addressToDevice[address] = device;
+		}
+	}
 }
 
 void Bus::DisconnectDevice(BusDevice* device) {
 	device->DisconnectFromBus();
 	m_devices.remove(device);
+	for (const AddressRange& addressRange : device->GetAddressRanges()) {
+		for (uint16_t address = addressRange.first; address <= addressRange.second; address++) {
+			m_addressToDevice[address] = nullptr;
+		}
+	}
 }
 
 void Bus::DisconnectAllDevices() {
@@ -88,6 +93,7 @@ void Bus::DisconnectAllDevices() {
 		device->DisconnectFromBus();
 	}
 	m_devices.clear();
+	m_addressToDevice.fill(nullptr);
 }
 
 bool Bus::DoAddressesCollide(BusDevice* device)

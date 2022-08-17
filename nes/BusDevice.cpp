@@ -44,3 +44,7 @@ bool BusDevice::DoAddressesCollide(BusDevice* otherDevice)
 	}
 	return false;
 }
+
+std::list<AddressRange> BusDevice::GetAddressRanges() const {
+	return m_addressRanges;
+}
