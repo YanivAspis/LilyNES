@@ -124,7 +124,7 @@ void APU2A03::IncrementFrameCounter() {
 
 void APU2A03::GenerateFrameInterrupt() {
 	if (!m_frameCounterRegister.flags.irqInhibit && !m_frameIRQSent) {
-		m_cpu->RaiseIRQ();
+		m_cpu->RaiseIRQ("APU_FRAME");
 		m_frameIRQSent = true;
 	}
 }

@@ -8,6 +8,7 @@ void APU2A03::Read(uint16_t address, uint8_t& data)
 	if (address == 0x4015) {
 		if (m_frameIRQSent) {
 			data = 0x4F;
+			m_cpu->AcknowledgeIRQ("APU_FRAME");
 			m_frameIRQSent = false;
 		}
 		else {
@@ -21,6 +22,9 @@ void APU2A03::Read(uint16_t address, uint8_t& data)
 
 void APU2A03::Write(uint16_t address, uint8_t data)
 {
+	if (address == 0x4017) {
+		this->FrameCounterRegisterWrite(data);
+	}
 }
 
 uint8_t APU2A03::Probe(uint16_t address)
@@ -30,6 +34,11 @@ uint8_t APU2A03::Probe(uint16_t address)
 
 void APU2A03::FrameCounterRegisterWrite(uint8_t data) {
 	m_frameCounterRegister.value = ClearLowerBits8(data, 6);
+
+	if (m_frameCounterRegister.flags.irqInhibit) {
+		m_cpu->AcknowledgeIRQ("APU_FRAME");
+		m_frameIRQSent = false;
+	}
 
 	// Frame counter is reset and possibly generate quarter frame and half frame clocks
 	// TODO: Do this after 3 cycles?

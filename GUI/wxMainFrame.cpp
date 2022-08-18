@@ -154,9 +154,9 @@ void wxMainFrame::StartEmulation()
     // Provide a bit of time for thread to set up before running the emulation
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
+    m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
-    m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_SOUND);
+    //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_SOUND);
 
     m_emulationMenu->Enable(wxID_LILYNES_SOFT_RESET, true);
     m_emulationMenu->Enable(wxID_LILYNES_HARD_RESET, true);
