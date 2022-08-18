@@ -168,6 +168,7 @@
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
     <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
     <ClCompile Include="nes\APU\APU2A03.cpp" />
+    <ClCompile Include="nes\APU\APUPulse.cpp" />
     <ClCompile Include="nes\APU\APURegisters.cpp" />
     <ClCompile Include="nes\APU\APUTiming.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
@@ -217,6 +218,8 @@
     <ClInclude Include="GUI\wxPPUStatePanel.h" />
     <ClInclude Include="GUI\wxRAMStatePanel.h" />
     <ClInclude Include="GUI\wxROMInfoFrame.h" />
+    <ClInclude Include="nes\APU\APUPulse.h" />
+    <ClInclude Include="nes\APU\LengthCounter.h" />
     <ClInclude Include="nes\FrameCounterController2Device.h" />
     <ClInclude Include="nes\APU\APU2A03.h" />
     <ClInclude Include="nes\Bus.h" />

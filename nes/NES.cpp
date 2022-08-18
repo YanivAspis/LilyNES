@@ -126,11 +126,6 @@ void NES::Clock()
 	}
 	m_ppu.Clock();
 	m_cycleCount++;
-
-	
-	APUState before = m_apu.GetState();
-	m_apu.Write(0x4017, 0x80);
-	APUState after = m_apu.GetState();
 }
 
 

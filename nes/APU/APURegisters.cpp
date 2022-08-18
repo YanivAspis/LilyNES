@@ -15,15 +15,19 @@ void APU2A03::Write(uint16_t address, uint8_t data)
 {
 	switch (address) {
 	case APU_PULSE_1_PARAMETERS_ADDRESS:
+		m_pulse1.WriteParameters(data);
 		break;
 
 	case APU_PULSE_1_SWEEP_ADDRESS:
+		m_pulse1.WriteSweep(data);
 		break;
 
 	case APU_PULSE_1_TIMER_LOW_ADDRESS:
+		m_pulse1.WriteTimerLow(data);
 		break;
 
 	case APU_PULSE_1_TIMER_HIGH_LENGTH_COUNTER_ADDRESS:
+		m_pulse1.WriteTimerHighLengthCounter(data);
 		break;
 
 	case APU_PULSE_2_PARAMETERS_ADDRESS:
@@ -87,31 +91,30 @@ void APU2A03::ControlRegisterWrite(uint8_t data) {
 	m_controlRegister.value = data;
 	m_controlRegister.flags.unused = 0;
 
-	if (m_controlRegister.flags.silencePulse1) {
-		// Silence Pulse 1
+	if (m_controlRegister.flags.enablePulse1) {
+		m_pulse1.PlayChannel();
 	}
 	else {
-		// Enable Pulse 1
+		m_pulse1.SilenceChannel();
 	}
-	if (m_controlRegister.flags.silencePulse2) {
-		// Silence Pulse 2
-	}
-	else {
+	if (m_controlRegister.flags.enablePulse2) {
 		// Enable Pulse 2
 	}
-	if (m_controlRegister.flags.silenceTriangle) {
-		// Silence Triangle
-	}
 	else {
+		// Silence Pulse 2
+	}
+	if (m_controlRegister.flags.enableTriangle) {
 		// Enable Triangle
 	}
-	if (m_controlRegister.flags.silenceNoise) {
-		// Silence Noise
-	}
 	else {
+		// Silence Triangle
+	}
+	if (m_controlRegister.flags.enableNoise) {
 		// Enable Noise
 	}
-
+	else {
+		// Silence Noise
+	}
 	if (m_controlRegister.flags.enableDMC) {
 		// DMC restarted immediately only if bytes remaining is 0 (1-byte buffer will finish playing)
 	}

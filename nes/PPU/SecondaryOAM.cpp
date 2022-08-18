@@ -78,7 +78,6 @@ void SecondaryOAM::SpriteEvaluation(unsigned int scanline, bool mode8by16) {
 
 	for (; spriteIndex < OAM_NUM_SPRITES; ) {
 		OAMEntry entry = m_primaryOAM->GetEntry(spriteIndex);
-		spriteIndex++;
 		if (this->IsSpriteOnScanline(scanline, entry.y, mode8by16)) {
 			m_entries[entriesAdded].entry.y = entry.y;
 			m_entries[entriesAdded].entry.tileID = entry.tileID;
@@ -87,9 +86,11 @@ void SecondaryOAM::SpriteEvaluation(unsigned int scanline, bool mode8by16) {
 			m_entries[entriesAdded].spriteID = spriteIndex;
 			entriesAdded++;
 			if (entriesAdded == SECONDARY_OAM_SIZE) {
+				spriteIndex++;
 				break;
 			}
 		}
+		spriteIndex++;
 	}
 
 	// Search for sprite overflow if entries are left

@@ -210,6 +210,9 @@
     <ClCompile Include="nes\APU\APUTiming.cpp">
       <Filter>Source Files\nes\APU</Filter>
     </ClCompile>
+    <ClCompile Include="nes\APU\APUPulse.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -343,6 +346,12 @@
     </ClInclude>
     <ClInclude Include="nes\FrameCounterController2Device.h">
       <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\LengthCounter.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUPulse.h">
+      <Filter>Header Files\nes\APU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

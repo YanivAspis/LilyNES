@@ -2,6 +2,7 @@
 
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
+#include "APUPulse.h"
 
 constexpr uint16_t APU_BEGIN_ADDRESS_1 = 0x4000;
 constexpr uint16_t APU_END_ADDRESS_1 = 0x4013;
@@ -52,10 +53,10 @@ constexpr char APU_DMC_IRQ_ID[8] = "APU_DMC";
 
 
 struct APUControlRegisterFlags {
-	uint8_t silencePulse1 : 1;
-	uint8_t silencePulse2 : 1;
-	uint8_t silenceTriangle : 1;
-	uint8_t silenceNoise : 1;
+	uint8_t enablePulse1 : 1;
+	uint8_t enablePulse2 : 1;
+	uint8_t enableTriangle : 1;
+	uint8_t enableNoise : 1;
 	uint8_t enableDMC : 1;
 	uint8_t unused : 3;
 };
@@ -99,6 +100,8 @@ union FrameCounterRegister {
 
 struct APUState {
 	APUState();
+
+	APUPulseState pulse1State;
 
 	unsigned int frameCounter;
 
@@ -146,6 +149,8 @@ private:
 	float MixSamples(uint8_t pulse1Sample, uint8_t pulse2Sample, uint8_t triangleSample, uint8_t noiseSample, uint8_t DMCSample);
 
 	CPU2A03* m_cpu;
+
+	APUPulse m_pulse1;
 
 	unsigned int m_frameCounter;
 

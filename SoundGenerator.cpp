@@ -55,6 +55,7 @@ void SoundGenerator::AudioCallback(void* userdata, uint8_t* stream, int len)
 		if (s_instance->m_soundStopFlag) {
 			return;
 		}
-		resultStream[i] = SOUND_AMPLITUDE_MODIFIER * s_instance->m_emulationThread->GetAudioSample();
+		float sample = SOUND_AMPLITUDE_MODIFIER * s_instance->m_emulationThread->GetAudioSample();
+		resultStream[i] = sample;
 	}
 }
