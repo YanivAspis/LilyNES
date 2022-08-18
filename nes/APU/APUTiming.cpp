@@ -23,7 +23,7 @@ void APU2A03::Clock() {
 	else if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP && m_frameCounter == APU_FRAME_COUNTER_4_STEP_PENULTIMATE_FRAME) {
 		this->DoFrameCounterMode4Penultimate();
 	}
-	else if (!m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP && m_frameCounter == APU_FRAME_COUNTER_4_STEP_LAST_FRAME) {
+	else if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP && m_frameCounter == APU_FRAME_COUNTER_4_STEP_LAST_FRAME) {
 		this->DoFrameCounterMode4Last();
 	}
 	else if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_5_STEP && m_frameCounter == APU_FRAME_COUNTER_5_STEP_LAST_FRAME) {
@@ -43,10 +43,6 @@ void APU2A03::DoFrameCounterZero() {
 	if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP) {
 		this->GenerateFrameInterrupt();
 	}
-}
-
-void APU2A03::DoFrameCounterOne() {
-	//m_frameIRQSent = false;
 }
 
 void APU2A03::DoFrameCounterQuarter() {
@@ -123,8 +119,8 @@ void APU2A03::IncrementFrameCounter() {
 }
 
 void APU2A03::GenerateFrameInterrupt() {
-	if (!m_frameCounterRegister.flags.irqInhibit && !m_frameIRQSent) {
-		m_cpu->RaiseIRQ("APU_FRAME");
-		m_frameIRQSent = true;
+	if (!m_frameCounterRegister.flags.irqInhibit) {
+		m_cpu->RaiseIRQ(APU_FRAME_IRQ_ID);
+		m_statusRegister.flags.frameInterrupt = 1;
 	}
 }

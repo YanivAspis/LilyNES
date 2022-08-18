@@ -89,6 +89,7 @@ NESState NES::GetState() const
 	state.ppuState = m_ppu.GetState();
 	state.oamDMAState = m_OAMDMA.GetState();
 	state.controllerState = m_controllers.GetState();
+	state.apuState = m_apu.GetState();
 	if (m_cartridge != nullptr) {
 		state.patternTableState = m_patternTables.GetState();
 		state.cartridgeState = m_cartridge->GetState();
@@ -105,6 +106,7 @@ void NES::LoadState(NESState& state)
 	m_ppu.LoadState(state.ppuState);
 	m_OAMDMA.LoadState(state.oamDMAState);
 	m_controllers.LoadState(state.controllerState);
+	m_apu.LoadState(state.apuState);
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
 		m_patternTables.LoadState(state.patternTableState);
@@ -124,6 +126,11 @@ void NES::Clock()
 	}
 	m_ppu.Clock();
 	m_cycleCount++;
+
+	
+	APUState before = m_apu.GetState();
+	m_apu.Write(0x4017, 0x80);
+	APUState after = m_apu.GetState();
 }
 
 

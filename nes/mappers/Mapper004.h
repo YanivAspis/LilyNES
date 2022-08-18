@@ -20,11 +20,11 @@ constexpr uint16_t MAPPER_004_IRQ_LATCH_WRITE_END_ADDRESS = 0xDFFF;
 constexpr uint16_t MAPPER_004_IRQ_ENABLE_WRITE_START_ADDRESS = 0xE000;
 constexpr uint16_t MAPPER_004_IRQ_ENABLE_WRITE_END_ADDRESS = 0xFFFF;
 
-
-
 constexpr size_t MAPPER_004_NUM_REGISTERS = 8;
 constexpr uint8_t MAPPER_004_IRQ_COUNTER_INITIAL_VALUE = 0xFF;
 constexpr unsigned int MAPPER_004_PATTERN_TABLE_TEST_BIT = 12;
+constexpr char MAPPER_004_IRQ_ID[5] = "MMC3";
+
 
 struct BankSelectRegisterFlags {
 	uint8_t registerSelect : 3;

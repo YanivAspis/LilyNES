@@ -29,6 +29,7 @@ struct NESState {
 	OAMDMAState oamDMAState;
 	PPUState ppuState;
 	ControllerState controllerState;
+	APUState apuState;
 };
 
 

@@ -8,6 +8,35 @@ constexpr uint16_t APU_END_ADDRESS_1 = 0x4013;
 constexpr uint16_t APU_BEGIN_ADDRESS_2 = 0x4015;
 constexpr uint16_t APU_END_ADDRESS_2 = 0x4015;
 
+constexpr uint16_t APU_PULSE_1_PARAMETERS_ADDRESS = 0x4000;
+constexpr uint16_t APU_PULSE_1_SWEEP_ADDRESS = 0x4001;
+constexpr uint16_t APU_PULSE_1_TIMER_LOW_ADDRESS = 0x4002;
+constexpr uint16_t APU_PULSE_1_TIMER_HIGH_LENGTH_COUNTER_ADDRESS = 0x4003;
+
+constexpr uint16_t APU_PULSE_2_PARAMETERS_ADDRESS = 0x4004;
+constexpr uint16_t APU_PULSE_2_SWEEP_ADDRESS = 0x4005;
+constexpr uint16_t APU_PULSE_2_TIMER_LOW_ADDRESS = 0x4006;
+constexpr uint16_t APU_PULSE_2_TIMER_HIGH_LENGTH_COUNTER_ADDRESS = 0x4007;
+
+constexpr uint16_t APU_TRIANGLE_COUNTER_PARAMETERS_ADDRESS = 0x4008;
+constexpr uint16_t APU_UNUSED_REGISTER_1_ADDRESS = 0x4009;
+constexpr uint16_t APU_TRIANGLE_TIMER_LOW_ADDRESS = 0x400A;
+constexpr uint16_t APU_TRIANGLE_TIMER_HIGH_LENGTH_COUNTER_ADDRESS = 0x400B;
+
+constexpr uint16_t APU_NOISE_PARAMETERS_ADDRESS = 0x400C;
+constexpr uint16_t APU_UNUSED_REGISTER_2_ADDRESS = 0x400D;
+constexpr uint16_t APU_NOISE_PERIOD_LOOP_ADDRESS = 0x400E;
+constexpr uint16_t APU_NOISE_LENGTH_COUNTER_ADDRESS = 0x400F;
+
+constexpr uint16_t APU_DMC_PARAMETERS_ADDRESS = 0x4010;
+constexpr uint16_t APU_DMC_DIRECT_LOAD_ADDRESS = 0x4011;
+constexpr uint16_t APU_DMC_SAMPLE_ADDR_ADDRESS = 0x4012;
+constexpr uint16_t APU_DMC_SAMPLE_LENGTH_ADDRESS = 0x4013;
+
+constexpr uint16_t APU_CONTROL_STATUS_ADDRESS = 0x4015;
+constexpr uint16_t APU_FRAME_COUNTER_ADDRESS = 0x4017;
+
+
 constexpr unsigned int APU_FRAME_COUNTER_QUARTER = 7457; // 2 * 3728.5 APU Cycles
 constexpr unsigned int APU_FRAME_COUNTER_HALF = 14913; // 2 * 7456.5 APU Cycles
 constexpr unsigned int APU_FRAME_COUNTER_THREE_QUARTERS = 22371; // 2 * 11185.5 APU Cycles
@@ -16,6 +45,41 @@ constexpr unsigned int APU_FRAME_COUNTER_4_STEP_LAST_FRAME = 29829; // 2 * 14914
 constexpr unsigned int APU_FRAME_COUNTER_5_STEP_LAST_FRAME = 37281; // 2 * 18640.5 APU Cycles
 constexpr unsigned int APU_FRAME_COUNTER_4_STEP_MAX = 29830; // 2 * 14915 APU Cycles
 constexpr unsigned int APU_FRAME_COUNTER_5_STEP_MAX = 37282; // 2 * 18641 APU Cycles
+
+constexpr char APU_FRAME_IRQ_ID[10] = "APU_FRAME";
+constexpr char APU_DMC_IRQ_ID[8] = "APU_DMC";
+
+
+
+struct APUControlRegisterFlags {
+	uint8_t silencePulse1 : 1;
+	uint8_t silencePulse2 : 1;
+	uint8_t silenceTriangle : 1;
+	uint8_t silenceNoise : 1;
+	uint8_t enableDMC : 1;
+	uint8_t unused : 3;
+};
+
+union APUControlRegister {
+	APUControlRegisterFlags flags;
+	uint8_t value;
+};
+
+struct APUStatusRegisterFlags {
+	uint8_t pulse1LengthPositive : 1;
+	uint8_t pulse2LengthPositive : 1;
+	uint8_t triangleLengthPositive : 1;
+	uint8_t noiseLengthPositive : 1;
+	uint8_t DMCActive : 1;
+	uint8_t unused : 1;
+	uint8_t frameInterrupt : 1;
+	uint8_t DMCInterrupt : 1;
+};
+
+union APUStatusRegister {
+	APUStatusRegisterFlags flags;
+	uint8_t value;
+};
 
 enum FrameCounterMode {
 	FRAME_COUNTER_MODE_4_STEP,
@@ -34,9 +98,12 @@ union FrameCounterRegister {
 };
 
 struct APUState {
-	unsigned int frameCounter;
-	bool frameIRQSent;
+	APUState();
 
+	unsigned int frameCounter;
+
+	APUControlRegister controlRegister;
+	APUStatusRegister statusRegister;
 	FrameCounterRegister frameCounterRegister;
 };
 
@@ -63,7 +130,6 @@ private:
 	void APUClock();
 
 	void DoFrameCounterZero();
-	void DoFrameCounterOne();
 	void DoFrameCounterQuarter();
 	void DoFrameCounterHalf();
 	void DoFrameCounterThreeQuarters();
@@ -73,7 +139,8 @@ private:
 	void IncrementFrameCounter();
 	void GenerateFrameInterrupt();
 	
-
+	void ControlRegisterWrite(uint8_t data);
+	uint8_t StatusRegisterRead();
 	void FrameCounterRegisterWrite(uint8_t data);
 
 	float MixSamples(uint8_t pulse1Sample, uint8_t pulse2Sample, uint8_t triangleSample, uint8_t noiseSample, uint8_t DMCSample);
@@ -81,7 +148,8 @@ private:
 	CPU2A03* m_cpu;
 
 	unsigned int m_frameCounter;
-	bool m_frameIRQSent;
 
+	APUControlRegister m_controlRegister;
+	APUStatusRegister m_statusRegister;
 	FrameCounterRegister m_frameCounterRegister;
 };

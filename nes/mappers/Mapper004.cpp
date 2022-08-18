@@ -230,7 +230,7 @@ void Mapper004::IRQReloadWrite() {
 }
 
 void Mapper004::IRQDisableWrite() {
-	m_cpu->AcknowledgeIRQ("MMC3");
+	m_cpu->AcknowledgeIRQ(MAPPER_004_IRQ_ID);
 	m_irqEnabled = false;
 }
 
@@ -275,7 +275,7 @@ void Mapper004::DecrementIRQCounter()
 		m_irqCounter = m_irqLatchValue;
 		// When IRQ is reloaded with a value of 0, it fires once
 		if (m_irqCounter == 0 && m_irqEnabled) {
-			m_cpu->RaiseIRQ("MMC3");
+			m_cpu->RaiseIRQ(MAPPER_004_IRQ_ID);
 		}
 		// Counter not decremented upon reload
 		return;
@@ -283,7 +283,7 @@ void Mapper004::DecrementIRQCounter()
 
 	// Fire IRQ when decrementing from 1 to 0
 	if (m_irqCounter == 1 && m_irqEnabled) {
-		m_cpu->RaiseIRQ("MMC3");
+		m_cpu->RaiseIRQ(MAPPER_004_IRQ_ID);
 	}
 
 	// Reload IRQ counter only when counter is 0 (so the scanline after firing the IRQ)
