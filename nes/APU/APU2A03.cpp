@@ -12,7 +12,7 @@ APUState::APUState() {
 }
 
 APU2A03::APU2A03(CPU2A03* cpu) : BusDevice(std::list<AddressRange>({AddressRange(APU_BEGIN_ADDRESS_1, APU_END_ADDRESS_1), AddressRange(APU_BEGIN_ADDRESS_2, APU_END_ADDRESS_2) })),
-		m_pulse1(PULSE_SWEEP_BEHAVIOUR_1)
+		m_pulse1(PULSE_SWEEP_BEHAVIOUR_1), m_pulse2(PULSE_SWEEP_BEHAVIOUR_2)
 {
 	m_cpu = cpu;
 	m_frameCounter = 0;
@@ -28,6 +28,7 @@ APU2A03::~APU2A03() {
 void APU2A03::SoftReset()
 {
 	m_pulse1.SoftReset();
+	m_pulse2.SoftReset();
 
 	m_frameCounter = 0; // Not clear if I should reset the frame counter or not
 
@@ -39,6 +40,7 @@ void APU2A03::SoftReset()
 void APU2A03::HardReset()
 {
 	m_pulse1.HardReset();
+	m_pulse2.HardReset();
 
 	m_frameCounter = 0; // Not clear if I should set the frame counter to 15
 
@@ -50,19 +52,11 @@ void APU2A03::HardReset()
 float APU2A03::GetAudioSample()
 {
 	uint8_t pulse1Sample = m_pulse1.GetAudioSample();
-	uint8_t pulse2Sample = 0;
+	uint8_t pulse2Sample = m_pulse2.GetAudioSample();
 	uint8_t triangleSample = 0;
 	uint8_t noiseSample = 0;
 	uint8_t DMCSample = 0;
 	return this->MixSamples(pulse1Sample, pulse2Sample, triangleSample, noiseSample, DMCSample);
-	
-
-	/*
-	static double globalTime = 0;
-	float sample = 1.0 * sin(2 * 3.14159265359 * 440.0 * globalTime);
-	globalTime += 1.0 / 44100;
-	return sample;
-	*/
 }
 
 APUState APU2A03::GetState() const
@@ -70,6 +64,7 @@ APUState APU2A03::GetState() const
 	APUState state;
 
 	state.pulse1State = m_pulse1.GetState();
+	state.pulse2State = m_pulse2.GetState();
 
 	state.frameCounter = m_frameCounter;
 
@@ -83,6 +78,7 @@ APUState APU2A03::GetState() const
 void APU2A03::LoadState(APUState& state)
 {
 	m_pulse1.LoadState(state.pulse1State);
+	m_pulse2.LoadState(state.pulse2State);
 
 	m_frameCounter = state.frameCounter;
 

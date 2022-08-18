@@ -31,15 +31,19 @@ void APU2A03::Write(uint16_t address, uint8_t data)
 		break;
 
 	case APU_PULSE_2_PARAMETERS_ADDRESS:
+		m_pulse2.WriteParameters(data);
 		break;
 
 	case APU_PULSE_2_SWEEP_ADDRESS:
+		m_pulse2.WriteSweep(data);
 		break;
 
 	case APU_PULSE_2_TIMER_LOW_ADDRESS:
+		m_pulse2.WriteTimerLow(data);
 		break;
 
 	case APU_PULSE_2_TIMER_HIGH_LENGTH_COUNTER_ADDRESS:
+		m_pulse2.WriteTimerHighLengthCounter(data);
 		break;
 
 	case APU_TRIANGLE_COUNTER_PARAMETERS_ADDRESS:
@@ -98,10 +102,10 @@ void APU2A03::ControlRegisterWrite(uint8_t data) {
 		m_pulse1.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enablePulse2) {
-		// Enable Pulse 2
+		m_pulse2.PlayChannel();
 	}
 	else {
-		// Silence Pulse 2
+		m_pulse2.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enableTriangle) {
 		// Enable Triangle

@@ -7,6 +7,7 @@
 constexpr size_t APU_PULSE_NUM_DUTYCYCLES = 4;
 constexpr size_t APU_PULSE_WAVEFORM_LENGTH = 8;
 constexpr uint8_t APU_PULSE_MIN_TIMER_VALUE = 8;
+constexpr uint16_t APU_PULSE_MAX_TIMER_VALUE = 0x7FF;
 constexpr std::array<uint8_t, APU_PULSE_NUM_DUTYCYCLES> APU_PULSE_DUTYCYCLE_TO_WAVEFORM = {
 	0b00000001,
 	0b00000011,
@@ -67,6 +68,8 @@ struct APUPulseState {
 	uint8_t lengthCounter;
 	size_t waveformIndex;
 	APUEnvelopeState envelopeState;
+	uint8_t sweepDivider;
+	bool sweepReloadFlag;
 
 	bool silenced;
 };
@@ -98,6 +101,8 @@ public:
 private:
 	void ClockWaveformIndex();
 	uint16_t GetTimerReload();
+	uint16_t GetSweepTargetPeriod();
+	bool IsSweepMuting();
 
 	PulseSweepBehaviour m_sweepBehaviour;
 	
@@ -110,6 +115,8 @@ private:
 	uint8_t m_lengthCounter;
 	size_t m_waveformIndex;
 	APUEnvelope m_envelope;
+	uint8_t m_sweepDivider;
+	bool m_sweepReloadFlag;
 
 	bool m_silenced;
 };

@@ -102,6 +102,7 @@ struct APUState {
 	APUState();
 
 	APUPulseState pulse1State;
+	APUPulseState pulse2State;
 
 	unsigned int frameCounter;
 
@@ -151,6 +152,7 @@ private:
 	CPU2A03* m_cpu;
 
 	APUPulse m_pulse1;
+	APUPulse m_pulse2;
 
 	unsigned int m_frameCounter;
 

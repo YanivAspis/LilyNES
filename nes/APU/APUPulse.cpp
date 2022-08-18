@@ -13,6 +13,8 @@ APUPulseState::APUPulseState() {
 	timer = 0;
 	lengthCounter = 0;
 	waveformIndex = 0;
+	sweepDivider = 0;
+	sweepReloadFlag = false;
 	
 	silenced = true;
 }
@@ -29,6 +31,8 @@ APUPulse::APUPulse(PulseSweepBehaviour sweepBehaviour)
 	m_timer = 0;
 	m_lengthCounter = 0;
 	m_waveformIndex = 0;
+	m_sweepDivider = 0;
+	m_sweepReloadFlag = false;
 
 	m_silenced = true;
 }
@@ -45,6 +49,8 @@ void APUPulse::SoftReset()
 	m_lengthCounter = 0;
 	m_waveformIndex = 0;
 	m_envelope.SoftReset();
+	m_sweepDivider = 0;
+	m_sweepReloadFlag = false;
 
 	m_silenced = true;
 }
@@ -60,6 +66,8 @@ void APUPulse::HardReset()
 	m_lengthCounter = 0;
 	m_waveformIndex = 0;
 	m_envelope.HardReset();
+	m_sweepDivider = 0;
+	m_sweepReloadFlag = false;
 
 	m_silenced = true;
 }
@@ -82,6 +90,18 @@ void APUPulse::ClockEnvelope()
 
 void APUPulse::ClockSweep()
 {
+	if (m_sweepDivider == 0 && m_sweep.flags.enabled && !this->IsSweepMuting()) {
+		uint16_t targetPeriod = this->GetSweepTargetPeriod();
+		m_timerLow = ExtractLowByte(targetPeriod);
+		m_timerHighLengthCounter.flags.timerHigh = ExtractHighByte(targetPeriod);		
+	}
+	if (m_sweepDivider == 0 || m_sweepReloadFlag) {
+		m_sweepReloadFlag = false;
+		m_sweepDivider = m_sweep.flags.period;
+	}
+	else {
+		m_sweepDivider--;
+	}
 }
 
 void APUPulse::ClockLengthCounter()
@@ -101,7 +121,6 @@ uint8_t APUPulse::GetAudioSample()
 	}
 	else { 
 		// Use envelope
-		//return m_parameters.flags.volumePeriod * TestBit8(APU_PULSE_DUTYCYCLE_TO_WAVEFORM[m_parameters.flags.dutyCycle], m_waveformIndex);
 		return m_envelope.GetDecayLevel() * TestBit8(APU_PULSE_DUTYCYCLE_TO_WAVEFORM[m_parameters.flags.dutyCycle], m_waveformIndex);
 	}
 }
@@ -128,6 +147,7 @@ void APUPulse::WriteParameters(uint8_t data)
 void APUPulse::WriteSweep(uint8_t data)
 {
 	m_sweep.value = data;
+	m_sweepReloadFlag = true;
 }
 
 void APUPulse::WriteTimerLow(uint8_t data)
@@ -159,6 +179,8 @@ APUPulseState APUPulse::GetState() const
 	state.lengthCounter = m_lengthCounter;
 	state.waveformIndex = m_waveformIndex;
 	state.envelopeState = m_envelope.GetState();
+	state.sweepDivider = m_sweepDivider;
+	state.sweepReloadFlag = m_sweepReloadFlag;
 
 	state.silenced = m_silenced;
 
@@ -176,6 +198,8 @@ void APUPulse::LoadState(APUPulseState& state)
 	m_lengthCounter = state.lengthCounter;
 	m_waveformIndex = state.waveformIndex;
 	m_envelope.LoadState(state.envelopeState);
+	m_sweepDivider = state.sweepDivider;
+	m_sweepReloadFlag = state.sweepReloadFlag;
 
 	m_silenced = state.silenced;
 }
@@ -193,4 +217,26 @@ void APUPulse::ClockWaveformIndex()
 uint16_t APUPulse::GetTimerReload()
 {
 	return CombineBytes(m_timerLow, m_timerHighLengthCounter.flags.timerHigh);
+}
+
+uint16_t APUPulse::GetSweepTargetPeriod()
+{
+	uint16_t currentPeriod = this->GetTimerReload();
+	uint16_t changeAmount = ShiftRight16(currentPeriod, m_sweep.flags.shift);
+	if (m_sweep.flags.negate) {
+		if (m_sweepBehaviour == PULSE_SWEEP_BEHAVIOUR_1) {
+			return Add16Bit(currentPeriod, ~changeAmount);
+		}
+		else {
+			return Add16Bit(Add16Bit(currentPeriod, ~changeAmount), 1);
+		}
+	}
+	else {
+		return Add16Bit(currentPeriod, changeAmount);
+	}
+}
+
+bool APUPulse::IsSweepMuting()
+{
+	return this->GetTimerReload() < APU_PULSE_MIN_TIMER_VALUE || this->GetSweepTargetPeriod() > APU_PULSE_MAX_TIMER_VALUE;
 }
