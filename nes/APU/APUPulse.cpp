@@ -44,6 +44,7 @@ void APUPulse::SoftReset()
 	m_timer = 0;
 	m_lengthCounter = 0;
 	m_waveformIndex = 0;
+	m_envelope.SoftReset();
 
 	m_silenced = true;
 }
@@ -58,6 +59,7 @@ void APUPulse::HardReset()
 	m_timer = 0;
 	m_lengthCounter = 0;
 	m_waveformIndex = 0;
+	m_envelope.HardReset();
 
 	m_silenced = true;
 }
@@ -75,6 +77,7 @@ void APUPulse::ClockTimer()
 
 void APUPulse::ClockEnvelope()
 {
+	m_envelope.Clock();
 }
 
 void APUPulse::ClockSweep()
@@ -93,9 +96,13 @@ uint8_t APUPulse::GetAudioSample()
 	if (m_lengthCounter == 0 || this->GetTimerReload() < APU_PULSE_MIN_TIMER_VALUE) {
 		return 0;
 	}
-	else {
-		// Assume constant volume for now
+	else if (m_parameters.flags.constantVolume) {
 		return m_parameters.flags.volumePeriod * TestBit8(APU_PULSE_DUTYCYCLE_TO_WAVEFORM[m_parameters.flags.dutyCycle], m_waveformIndex);
+	}
+	else { 
+		// Use envelope
+		//return m_parameters.flags.volumePeriod * TestBit8(APU_PULSE_DUTYCYCLE_TO_WAVEFORM[m_parameters.flags.dutyCycle], m_waveformIndex);
+		return m_envelope.GetDecayLevel() * TestBit8(APU_PULSE_DUTYCYCLE_TO_WAVEFORM[m_parameters.flags.dutyCycle], m_waveformIndex);
 	}
 }
 
@@ -112,7 +119,10 @@ void APUPulse::PlayChannel()
 
 void APUPulse::WriteParameters(uint8_t data)
 {
+	bool oldConstantVolume = m_parameters.flags.constantVolume;
 	m_parameters.value = data;
+	m_envelope.SetDividerLoad(m_parameters.flags.volumePeriod);
+	m_envelope.SetLoop(m_parameters.flags.lengthCounterHalt);
 }
 
 void APUPulse::WriteSweep(uint8_t data)
@@ -134,7 +144,7 @@ void APUPulse::WriteTimerHighLengthCounter(uint8_t data)
 	}
 	
 	m_waveformIndex = 0;
-	// Reset envelope
+	m_envelope.Start();
 }
 
 APUPulseState APUPulse::GetState() const
@@ -148,6 +158,7 @@ APUPulseState APUPulse::GetState() const
 	state.timer = m_timer;
 	state.lengthCounter = m_lengthCounter;
 	state.waveformIndex = m_waveformIndex;
+	state.envelopeState = m_envelope.GetState();
 
 	state.silenced = m_silenced;
 
@@ -164,6 +175,7 @@ void APUPulse::LoadState(APUPulseState& state)
 	m_timer = state.timer;
 	m_lengthCounter = state.lengthCounter;
 	m_waveformIndex = state.waveformIndex;
+	m_envelope.LoadState(state.envelopeState);
 
 	m_silenced = state.silenced;
 }

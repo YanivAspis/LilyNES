@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <array>
+#include "APUEnvelope.h"
 
 constexpr size_t APU_PULSE_NUM_DUTYCYCLES = 4;
 constexpr size_t APU_PULSE_WAVEFORM_LENGTH = 8;
@@ -65,6 +66,7 @@ struct APUPulseState {
 	uint16_t timer;
 	uint8_t lengthCounter;
 	size_t waveformIndex;
+	APUEnvelopeState envelopeState;
 
 	bool silenced;
 };
@@ -107,6 +109,7 @@ private:
 	uint16_t m_timer;
 	uint8_t m_lengthCounter;
 	size_t m_waveformIndex;
+	APUEnvelope m_envelope;
 
 	bool m_silenced;
 };
