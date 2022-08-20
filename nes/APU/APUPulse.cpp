@@ -136,6 +136,10 @@ void APUPulse::PlayChannel()
 	m_silenced = false;
 }
 
+bool APUPulse::IsLengthCounterPositive() const {
+	return m_lengthCounter > 0;
+}
+
 void APUPulse::WriteParameters(uint8_t data)
 {
 	bool oldConstantVolume = m_parameters.flags.constantVolume;

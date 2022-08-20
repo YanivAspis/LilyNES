@@ -89,6 +89,7 @@ public:
 	uint8_t GetAudioSample();
 	void SilenceChannel();
 	void PlayChannel();
+	bool IsLengthCounterPositive() const;
 
 	void WriteParameters(uint8_t data);
 	void WriteSweep(uint8_t data);

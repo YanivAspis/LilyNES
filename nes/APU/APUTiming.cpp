@@ -8,6 +8,8 @@ void APU2A03::Clock() {
 		this->APUClock();
 	}
 
+	m_triangle.ClockTimer();
+
 	if (m_frameCounter == 0) {
 		this->DoFrameCounterZero();
 	}
@@ -48,19 +50,19 @@ void APU2A03::DoFrameCounterZero() {
 void APU2A03::DoFrameCounterQuarter() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
-	// Clock Triangle linear counter
+	m_triangle.ClockLinearCounter();
 	// Clock Noise Envelope
 }
 
 void APU2A03::DoFrameCounterHalf() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
-	// Clock Triangle linear counter
+	m_triangle.ClockLinearCounter();
 	// Clock Noise Envelope
 
 	m_pulse1.ClockLengthCounter();
 	m_pulse2.ClockLengthCounter();
-	// Clock Triangle Length Counter
+	m_triangle.ClockLengthCounter();
 	// Clock Noise Length Counter
 
 	m_pulse1.ClockSweep();
@@ -70,7 +72,7 @@ void APU2A03::DoFrameCounterHalf() {
 void APU2A03::DoFrameCounterThreeQuarters() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
-	// Clock Triangle linear counter
+	m_triangle.ClockLinearCounter();
 	// Clock Noise Envelope
 }
 
@@ -83,12 +85,12 @@ void APU2A03::DoFrameCounterMode4Last() {
 
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
-	// Clock Triangle linear counter
+	m_triangle.ClockLinearCounter();
 	// Clock Noise Envelope
 
 	m_pulse1.ClockLengthCounter();
 	m_pulse2.ClockLengthCounter();
-	// Clock Triangle Length Counter
+	m_triangle.ClockLengthCounter();
 	// Clock Noise Length Counter
 
 	m_pulse1.ClockSweep();
@@ -98,12 +100,12 @@ void APU2A03::DoFrameCounterMode4Last() {
 void APU2A03::DoFrameCounterMode5Last() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
-	// Clock Triangle linear counter
+	m_triangle.ClockLinearCounter();
 	// Clock Noise Envelope
 
 	m_pulse1.ClockLengthCounter();
 	m_pulse2.ClockLengthCounter();
-	// Clock Triangle Length Counter
+	m_triangle.ClockLengthCounter();
 	// Clock Noise Length Counter
 
 	m_pulse1.ClockSweep();

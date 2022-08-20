@@ -172,6 +172,7 @@
     <ClCompile Include="nes\APU\APUPulse.cpp" />
     <ClCompile Include="nes\APU\APURegisters.cpp" />
     <ClCompile Include="nes\APU\APUTiming.cpp" />
+    <ClCompile Include="nes\APU\APUTriangle.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
     <ClCompile Include="nes\ControllerDevice.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="GUI\wxROMInfoFrame.h" />
     <ClInclude Include="nes\APU\APUEnvelope.h" />
     <ClInclude Include="nes\APU\APUPulse.h" />
+    <ClInclude Include="nes\APU\APUTriangle.h" />
     <ClInclude Include="nes\APU\LengthCounter.h" />
     <ClInclude Include="nes\FrameCounterController2Device.h" />
     <ClInclude Include="nes\APU\APU2A03.h" />

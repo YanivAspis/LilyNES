@@ -47,12 +47,15 @@ void APU2A03::Write(uint16_t address, uint8_t data)
 		break;
 
 	case APU_TRIANGLE_COUNTER_PARAMETERS_ADDRESS:
+		m_triangle.WriteCounterParameters(data);
 		break;
 
 	case APU_TRIANGLE_TIMER_LOW_ADDRESS:
+		m_triangle.WriteTimerLow(data);
 		break;
 
 	case APU_TRIANGLE_TIMER_HIGH_LENGTH_COUNTER_ADDRESS:
+		m_triangle.WriteTimerHighLengthCounter(data);
 		break;
 
 	case APU_NOISE_PARAMETERS_ADDRESS:
@@ -108,10 +111,10 @@ void APU2A03::ControlRegisterWrite(uint8_t data) {
 		m_pulse2.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enableTriangle) {
-		// Enable Triangle
+		m_triangle.PlayChannel();
 	}
 	else {
-		// Silence Triangle
+		m_triangle.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enableNoise) {
 		// Enable Noise
@@ -131,6 +134,9 @@ void APU2A03::ControlRegisterWrite(uint8_t data) {
 }
 
 uint8_t APU2A03::StatusRegisterRead() {
+	m_statusRegister.flags.pulse1LengthPositive = m_pulse1.IsLengthCounterPositive();
+	m_statusRegister.flags.pulse2LengthPositive = m_pulse2.IsLengthCounterPositive();
+	m_statusRegister.flags.triangleLengthPositive = m_triangle.IsLengthCounterPositive();
 	// Check if length counters are positive and DMC is active
 
 	uint8_t returnValue = m_statusRegister.value;

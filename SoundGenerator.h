@@ -14,7 +14,7 @@ constexpr int SOUND_SAMPLE_RATE = 44100;
 constexpr size_t SOUND_SAMPLE_UPPER_LIMIT = 512;
 constexpr char* SOUND_DEFAULT_DEVICE = nullptr;
 
-constexpr double SOUND_AMPLITUDE_MODIFIER = 0.1;
+constexpr double SOUND_AMPLITUDE_MODIFIER = 0.5;
 
 class SDLException : public std::exception {
 public:

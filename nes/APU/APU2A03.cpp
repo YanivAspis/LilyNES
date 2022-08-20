@@ -29,6 +29,7 @@ void APU2A03::SoftReset()
 {
 	m_pulse1.SoftReset();
 	m_pulse2.SoftReset();
+	m_triangle.SoftReset();
 
 	m_frameCounter = 0; // Not clear if I should reset the frame counter or not
 
@@ -41,6 +42,7 @@ void APU2A03::HardReset()
 {
 	m_pulse1.HardReset();
 	m_pulse2.HardReset();
+	m_triangle.HardReset();
 
 	m_frameCounter = 0; // Not clear if I should set the frame counter to 15
 
@@ -53,7 +55,7 @@ float APU2A03::GetAudioSample()
 {
 	uint8_t pulse1Sample = m_pulse1.GetAudioSample();
 	uint8_t pulse2Sample = m_pulse2.GetAudioSample();
-	uint8_t triangleSample = 0;
+	uint8_t triangleSample = m_triangle.GetAudioSample();
 	uint8_t noiseSample = 0;
 	uint8_t DMCSample = 0;
 	return this->MixSamples(pulse1Sample, pulse2Sample, triangleSample, noiseSample, DMCSample);
@@ -65,6 +67,7 @@ APUState APU2A03::GetState() const
 
 	state.pulse1State = m_pulse1.GetState();
 	state.pulse2State = m_pulse2.GetState();
+	state.triangleState = m_triangle.GetState();
 
 	state.frameCounter = m_frameCounter;
 
@@ -79,6 +82,7 @@ void APU2A03::LoadState(APUState& state)
 {
 	m_pulse1.LoadState(state.pulse1State);
 	m_pulse2.LoadState(state.pulse2State);
+	m_triangle.LoadState(state.triangleState);
 
 	m_frameCounter = state.frameCounter;
 

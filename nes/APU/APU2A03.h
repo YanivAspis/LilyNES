@@ -3,6 +3,7 @@
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
 #include "APUPulse.h"
+#include "APUTriangle.h"
 
 constexpr uint16_t APU_BEGIN_ADDRESS_1 = 0x4000;
 constexpr uint16_t APU_END_ADDRESS_1 = 0x4013;
@@ -103,6 +104,7 @@ struct APUState {
 
 	APUPulseState pulse1State;
 	APUPulseState pulse2State;
+	APUTriangleState triangleState;
 
 	unsigned int frameCounter;
 
@@ -153,6 +155,7 @@ private:
 
 	APUPulse m_pulse1;
 	APUPulse m_pulse2;
+	APUTriangle m_triangle;
 
 	unsigned int m_frameCounter;
 
