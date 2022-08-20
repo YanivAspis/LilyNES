@@ -59,12 +59,15 @@ void APU2A03::Write(uint16_t address, uint8_t data)
 		break;
 
 	case APU_NOISE_PARAMETERS_ADDRESS:
+		m_noise.WriteParameters(data);
 		break;
 
-	case APU_NOISE_PERIOD_LOOP_ADDRESS:
+	case APU_NOISE_PERIOD_MODE_ADDRESS:
+		m_noise.WritePeriodMode(data);
 		break;
 
-	case APU_NOISE_LENGTH_COUNTER_ADDRESS:
+	case APU_NOISE_LENGTH_COUNTER_LOAD_ADDRESS:
+		m_noise.WriteLengthCounterLoad(data);
 		break;
 
 	case APU_DMC_PARAMETERS_ADDRESS:
@@ -117,10 +120,10 @@ void APU2A03::ControlRegisterWrite(uint8_t data) {
 		m_triangle.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enableNoise) {
-		// Enable Noise
+		m_noise.PlayChannel();
 	}
 	else {
-		// Silence Noise
+		m_noise.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enableDMC) {
 		// DMC restarted immediately only if bytes remaining is 0 (1-byte buffer will finish playing)
@@ -137,7 +140,8 @@ uint8_t APU2A03::StatusRegisterRead() {
 	m_statusRegister.flags.pulse1LengthPositive = m_pulse1.IsLengthCounterPositive();
 	m_statusRegister.flags.pulse2LengthPositive = m_pulse2.IsLengthCounterPositive();
 	m_statusRegister.flags.triangleLengthPositive = m_triangle.IsLengthCounterPositive();
-	// Check if length counters are positive and DMC is active
+	m_statusRegister.flags.noiseLengthPositive = m_noise.IsLengthCounterPositive();
+	// Check if DMC is active
 
 	uint8_t returnValue = m_statusRegister.value;
 

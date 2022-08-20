@@ -219,6 +219,9 @@
     <ClCompile Include="nes\APU\APUTriangle.cpp">
       <Filter>Source Files\nes\APU</Filter>
     </ClCompile>
+    <ClCompile Include="nes\APU\APUNoise.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -363,6 +366,9 @@
       <Filter>Header Files\nes\APU</Filter>
     </ClInclude>
     <ClInclude Include="nes\APU\APUTriangle.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUNoise.h">
       <Filter>Header Files\nes\APU</Filter>
     </ClInclude>
   </ItemGroup>

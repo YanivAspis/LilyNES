@@ -38,32 +38,33 @@ void APU2A03::Clock() {
 void APU2A03::APUClock() {
 	m_pulse1.ClockTimer();
 	m_pulse2.ClockTimer();
-	// Clock Noise Timer
+	m_noise.ClockTimer();
 }
 
 void APU2A03::DoFrameCounterZero() {
 	if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP) {
 		this->GenerateFrameInterrupt();
 	}
+	m_irqSent = false;
 }
 
 void APU2A03::DoFrameCounterQuarter() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
 	m_triangle.ClockLinearCounter();
-	// Clock Noise Envelope
+	m_noise.ClockEnvelope();
 }
 
 void APU2A03::DoFrameCounterHalf() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
 	m_triangle.ClockLinearCounter();
-	// Clock Noise Envelope
+	m_noise.ClockEnvelope();
 
 	m_pulse1.ClockLengthCounter();
 	m_pulse2.ClockLengthCounter();
 	m_triangle.ClockLengthCounter();
-	// Clock Noise Length Counter
+	m_noise.ClockLengthCounter();
 
 	m_pulse1.ClockSweep();
 	m_pulse2.ClockSweep();
@@ -73,7 +74,7 @@ void APU2A03::DoFrameCounterThreeQuarters() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
 	m_triangle.ClockLinearCounter();
-	// Clock Noise Envelope
+	m_noise.ClockEnvelope();
 }
 
 void APU2A03::DoFrameCounterMode4Penultimate() {
@@ -86,12 +87,12 @@ void APU2A03::DoFrameCounterMode4Last() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
 	m_triangle.ClockLinearCounter();
-	// Clock Noise Envelope
+	m_noise.ClockEnvelope();
 
 	m_pulse1.ClockLengthCounter();
 	m_pulse2.ClockLengthCounter();
 	m_triangle.ClockLengthCounter();
-	// Clock Noise Length Counter
+	m_noise.ClockLengthCounter();
 
 	m_pulse1.ClockSweep();
 	m_pulse2.ClockSweep();
@@ -101,12 +102,12 @@ void APU2A03::DoFrameCounterMode5Last() {
 	m_pulse1.ClockEnvelope();
 	m_pulse2.ClockEnvelope();
 	m_triangle.ClockLinearCounter();
-	// Clock Noise Envelope
+	m_noise.ClockEnvelope();
 
 	m_pulse1.ClockLengthCounter();
 	m_pulse2.ClockLengthCounter();
 	m_triangle.ClockLengthCounter();
-	// Clock Noise Length Counter
+	m_noise.ClockLengthCounter();
 
 	m_pulse1.ClockSweep();
 	m_pulse2.ClockSweep();
@@ -121,8 +122,9 @@ void APU2A03::IncrementFrameCounter() {
 }
 
 void APU2A03::GenerateFrameInterrupt() {
-	if (!m_frameCounterRegister.flags.irqInhibit) {
+	if (!m_irqSent && !m_frameCounterRegister.flags.irqInhibit) {
 		m_cpu->RaiseIRQ(APU_FRAME_IRQ_ID);
 		m_statusRegister.flags.frameInterrupt = 1;
+		m_irqSent = true;
 	}
 }

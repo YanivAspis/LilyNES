@@ -4,6 +4,7 @@
 #include "../CPU/CPU2A03.h"
 #include "APUPulse.h"
 #include "APUTriangle.h"
+#include "APUNoise.h"
 
 constexpr uint16_t APU_BEGIN_ADDRESS_1 = 0x4000;
 constexpr uint16_t APU_END_ADDRESS_1 = 0x4013;
@@ -27,8 +28,8 @@ constexpr uint16_t APU_TRIANGLE_TIMER_HIGH_LENGTH_COUNTER_ADDRESS = 0x400B;
 
 constexpr uint16_t APU_NOISE_PARAMETERS_ADDRESS = 0x400C;
 constexpr uint16_t APU_UNUSED_REGISTER_2_ADDRESS = 0x400D;
-constexpr uint16_t APU_NOISE_PERIOD_LOOP_ADDRESS = 0x400E;
-constexpr uint16_t APU_NOISE_LENGTH_COUNTER_ADDRESS = 0x400F;
+constexpr uint16_t APU_NOISE_PERIOD_MODE_ADDRESS = 0x400E;
+constexpr uint16_t APU_NOISE_LENGTH_COUNTER_LOAD_ADDRESS = 0x400F;
 
 constexpr uint16_t APU_DMC_PARAMETERS_ADDRESS = 0x4010;
 constexpr uint16_t APU_DMC_DIRECT_LOAD_ADDRESS = 0x4011;
@@ -105,12 +106,14 @@ struct APUState {
 	APUPulseState pulse1State;
 	APUPulseState pulse2State;
 	APUTriangleState triangleState;
+	APUNoiseState noiseState;
 
 	unsigned int frameCounter;
 
 	APUControlRegister controlRegister;
 	APUStatusRegister statusRegister;
 	FrameCounterRegister frameCounterRegister;
+	bool irqSent;
 };
 
 class APU2A03 : public BusDevice {
@@ -156,10 +159,12 @@ private:
 	APUPulse m_pulse1;
 	APUPulse m_pulse2;
 	APUTriangle m_triangle;
+	APUNoise m_noise;
 
 	unsigned int m_frameCounter;
 
 	APUControlRegister m_controlRegister;
 	APUStatusRegister m_statusRegister;
 	FrameCounterRegister m_frameCounterRegister;
+	bool m_irqSent;
 };
