@@ -31,11 +31,17 @@ void Bus::HardReset()
 	}
 }
 
-uint8_t Bus::Read(uint16_t address) {
+uint8_t Bus::Read(uint16_t address, bool overrideOpenBus) {
 	BusDevice* device = m_addressToDevice[address];
 	if (device != nullptr) {
-		device->Read(address, m_lastReadValue);
-		
+		if (overrideOpenBus) {
+			uint8_t data;
+			device->Read(address, data);
+			return data;
+		}
+		else {
+			device->Read(address, m_lastReadValue);
+		}
 	}
 	// This mimics open bus behaviour of real NES
 	// i.e. Last value read returned

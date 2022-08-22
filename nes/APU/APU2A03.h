@@ -5,6 +5,7 @@
 #include "APUPulse.h"
 #include "APUTriangle.h"
 #include "APUNoise.h"
+#include "APUDMC.h"
 
 constexpr uint16_t APU_BEGIN_ADDRESS_1 = 0x4000;
 constexpr uint16_t APU_END_ADDRESS_1 = 0x4013;
@@ -50,7 +51,6 @@ constexpr unsigned int APU_FRAME_COUNTER_4_STEP_MAX = 29830; // 2 * 14915 APU Cy
 constexpr unsigned int APU_FRAME_COUNTER_5_STEP_MAX = 37282; // 2 * 18641 APU Cycles
 
 constexpr char APU_FRAME_IRQ_ID[10] = "APU_FRAME";
-constexpr char APU_DMC_IRQ_ID[8] = "APU_DMC";
 
 
 
@@ -107,6 +107,7 @@ struct APUState {
 	APUPulseState pulse2State;
 	APUTriangleState triangleState;
 	APUNoiseState noiseState;
+	APUDMCState dmcState;
 
 	unsigned int frameCounter;
 
@@ -121,6 +122,9 @@ public:
 	APU2A03(CPU2A03* cpu);
 	~APU2A03();
 
+	void DMCConnectToBus(Bus* bus);
+	void DMCDisconnectFromBus();
+
 	void SoftReset() override;
 	void HardReset() override;
 
@@ -131,6 +135,8 @@ public:
 
 	void Clock();
 	float GetAudioSample();
+
+	bool IsDMCRequestingSample();
 
 	APUState GetState() const;
 	void LoadState(APUState& state);
@@ -160,6 +166,7 @@ private:
 	APUPulse m_pulse2;
 	APUTriangle m_triangle;
 	APUNoise m_noise;
+	APUDMC m_dmc;
 
 	unsigned int m_frameCounter;
 

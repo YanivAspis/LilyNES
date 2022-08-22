@@ -222,6 +222,9 @@
     <ClCompile Include="nes\APU\APUNoise.cpp">
       <Filter>Source Files\nes\APU</Filter>
     </ClCompile>
+    <ClCompile Include="nes\APU\APUDMC.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -369,6 +372,9 @@
       <Filter>Header Files\nes\APU</Filter>
     </ClInclude>
     <ClInclude Include="nes\APU\APUNoise.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUDMC.h">
       <Filter>Header Files\nes\APU</Filter>
     </ClInclude>
   </ItemGroup>

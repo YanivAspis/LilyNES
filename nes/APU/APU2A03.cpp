@@ -13,7 +13,7 @@ APUState::APUState() {
 }
 
 APU2A03::APU2A03(CPU2A03* cpu) : BusDevice(std::list<AddressRange>({AddressRange(APU_BEGIN_ADDRESS_1, APU_END_ADDRESS_1), AddressRange(APU_BEGIN_ADDRESS_2, APU_END_ADDRESS_2) })),
-		m_pulse1(PULSE_SWEEP_BEHAVIOUR_1), m_pulse2(PULSE_SWEEP_BEHAVIOUR_2)
+		m_pulse1(PULSE_SWEEP_BEHAVIOUR_1), m_pulse2(PULSE_SWEEP_BEHAVIOUR_2), m_dmc(cpu)
 {
 	m_cpu = cpu;
 	m_frameCounter = 0;
@@ -27,12 +27,21 @@ APU2A03::~APU2A03() {
 	m_cpu = nullptr;
 }
 
+void APU2A03::DMCConnectToBus(Bus* bus) {
+	m_dmc.ConnectToBus(bus);
+}
+
+void APU2A03::DMCDisconnectFromBus() {
+	m_dmc.DisconnectFromBus();
+}
+
 void APU2A03::SoftReset()
 {
 	m_pulse1.SoftReset();
 	m_pulse2.SoftReset();
 	m_triangle.SoftReset();
 	m_noise.SoftReset();
+	m_dmc.SoftReset();
 
 	m_frameCounter = 0; // Not clear if I should reset the frame counter or not
 
@@ -48,6 +57,7 @@ void APU2A03::HardReset()
 	m_pulse2.HardReset();
 	m_triangle.HardReset();
 	m_noise.HardReset();
+	m_dmc.HardReset();
 
 	m_frameCounter = 0; // Not clear if I should set the frame counter to 15
 
@@ -63,8 +73,12 @@ float APU2A03::GetAudioSample()
 	uint8_t pulse2Sample = m_pulse2.GetAudioSample();
 	uint8_t triangleSample = m_triangle.GetAudioSample();
 	uint8_t noiseSample = m_noise.GetAudioSample();
-	uint8_t DMCSample = 0;
+	uint8_t DMCSample = m_dmc.GetAudioSample();
 	return this->MixSamples(pulse1Sample, pulse2Sample, triangleSample, noiseSample, DMCSample);
+}
+
+bool APU2A03::IsDMCRequestingSample() {
+	return m_dmc.IsRequestingSample();
 }
 
 APUState APU2A03::GetState() const
@@ -75,6 +89,7 @@ APUState APU2A03::GetState() const
 	state.pulse2State = m_pulse2.GetState();
 	state.triangleState = m_triangle.GetState();
 	state.noiseState = m_noise.GetState();
+	state.dmcState = m_dmc.GetState();
 
 	state.frameCounter = m_frameCounter;
 
@@ -92,6 +107,7 @@ void APU2A03::LoadState(APUState& state)
 	m_pulse2.LoadState(state.pulse2State);
 	m_triangle.LoadState(state.triangleState);
 	m_noise.LoadState(state.noiseState);
+	m_dmc.LoadState(state.dmcState);
 
 	m_frameCounter = state.frameCounter;
 

@@ -30,6 +30,7 @@ struct NESState {
 	PPUState ppuState;
 	ControllerState controllerState;
 	APUState apuState;
+	uint8_t DMCDMACycles;
 };
 
 
@@ -74,6 +75,8 @@ private:
 	void ConnectCartridge();
 	void DisconnectCartridge();
 
+	void SetupDMCDMA();
+
 	Bus m_cpuBus;
 	Bus m_ppuBus;
 	RAMDevice m_RAM;
@@ -87,6 +90,8 @@ private:
 	APU2A03 m_apu;
 	FrameCounterController2Device m_frameCounterController2;
 	Cartridge* m_cartridge;
+
+	uint8_t m_DMCDMACycles;
 
 	unsigned int m_cycleCount;
 };

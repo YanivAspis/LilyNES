@@ -86,20 +86,7 @@ void PPU2C02::setupRenderFunctions() {
 	for (unsigned int scanline = PPU_VISIBLE_SCANLINES_BEGIN; scanline < PPU_VISIBLE_SCANLINES_END; scanline++) {
 		m_renderFuncs[scanline][SECONDARY_OAM_INTERNAL_INITIALIZATION_DOT].push_back(&PPU2C02::SecondaryOAMInitialization);
 		m_renderFuncs[scanline][SECONDARY_OAM_EVALUATION_END_DOT].push_back(&PPU2C02::SecondaryOAMSpriteEvaluation);
-		/*
-		for (unsigned int dot = 0; dot < PPU_NUM_DOTS_PER_SCANLINE; dot++) {
-			m_renderFuncs[scanline][dot].push_back(&PPU2C02::SecondaryOAMClock);
-		}
-		*/
 	}
-	m_renderFuncs[PPU_PRERENDER_LINE][SECONDARY_OAM_INTERNAL_INITIALIZATION_DOT].push_back(&PPU2C02::SecondaryOAMInitialization);
-	m_renderFuncs[PPU_PRERENDER_LINE][SECONDARY_OAM_EVALUATION_END_DOT].push_back(&PPU2C02::SecondaryOAMSpriteEvaluation);
-	/*
-	m_renderFuncs[PPU_PRERENDER_LINE][SECONDARY_OAM_INTERNAL_INITIALIZATION_DOT].push_back(&PPU2C02::SecondaryOAMClock);
-	for (unsigned int dot = PPU_VISIBLE_DOT_END; dot < PPU_NUM_DOTS_PER_SCANLINE; dot++) {
-		m_renderFuncs[PPU_PRERENDER_LINE][dot].push_back(&PPU2C02::SecondaryOAMClock);
-	}
-	*/
 
 	// Fetching sprite data
 	this->setupFetchFunctionTiming(PPU_GARBAGE_TILE_ID_FETCH_BEGIN, PPU_GARBAGE_TILE_ID_FETCH_END, std::vector<unsigned int>(), &PPU2C02::GarbageFetchTileIDFromNametable);

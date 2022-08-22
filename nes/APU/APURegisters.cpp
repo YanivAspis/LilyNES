@@ -71,15 +71,19 @@ void APU2A03::Write(uint16_t address, uint8_t data)
 		break;
 
 	case APU_DMC_PARAMETERS_ADDRESS:
+		m_dmc.WriteParameters(data);
 		break;
 
 	case APU_DMC_DIRECT_LOAD_ADDRESS:
+		m_dmc.WriteDirectLoad(data);
 		break;
 
 	case APU_DMC_SAMPLE_ADDR_ADDRESS:
+		m_dmc.WriteSampleAddress(data);
 		break;
 
 	case APU_DMC_SAMPLE_LENGTH_ADDRESS:
+		m_dmc.WriteSampleLength(data);
 		break;
 
 	case APU_CONTROL_STATUS_ADDRESS:
@@ -126,14 +130,15 @@ void APU2A03::ControlRegisterWrite(uint8_t data) {
 		m_noise.SilenceChannel();
 	}
 	if (m_controlRegister.flags.enableDMC) {
-		// DMC restarted immediately only if bytes remaining is 0 (1-byte buffer will finish playing)
+		m_dmc.PlayChannel();
 	}
 	else {
-		// Set DMC bytes remaining to 0
+		m_dmc.SilenceChannel();
 	}
 
 	// For some reasong, writing to this register clears the DMC Interrupt flag
 	m_statusRegister.flags.DMCInterrupt = 0;
+	m_dmc.ClearInterruptFlag();
 }
 
 uint8_t APU2A03::StatusRegisterRead() {
@@ -141,7 +146,8 @@ uint8_t APU2A03::StatusRegisterRead() {
 	m_statusRegister.flags.pulse2LengthPositive = m_pulse2.IsLengthCounterPositive();
 	m_statusRegister.flags.triangleLengthPositive = m_triangle.IsLengthCounterPositive();
 	m_statusRegister.flags.noiseLengthPositive = m_noise.IsLengthCounterPositive();
-	// Check if DMC is active
+	m_statusRegister.flags.DMCActive = m_dmc.IsDMCActive();
+	m_statusRegister.flags.DMCInterrupt = m_dmc.IsInterruptAsserted();
 
 	uint8_t returnValue = m_statusRegister.value;
 

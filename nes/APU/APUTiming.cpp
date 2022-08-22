@@ -9,6 +9,7 @@ void APU2A03::Clock() {
 	}
 
 	m_triangle.ClockTimer();
+	m_dmc.ClockTimer();
 
 	if (m_frameCounter == 0) {
 		this->DoFrameCounterZero();
