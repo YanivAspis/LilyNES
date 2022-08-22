@@ -905,10 +905,8 @@ void CPU2A03::HandleInterrupt(bool initiatedByBrk) {
 	else {
 		vectorLow = ADDR_IRQ_BRK_VECTOR_LOW;
 		vectorHigh = ADDR_IRQ_BRK_VECTOR_HIGH;
-		// If there are IRQ pending, assume we are handling those. The programmer might handle the BRK instead
-		if (!m_regP.flags.I && m_irqPending > 0) {
-			m_irqPending--;
-		}
+		// If there are IRQ pending, we are handling those. The programmer might expect BRK instead
+		if (!m_regP.flags.I && m_irqPending.size() > 0) {}
 		else if (!initiatedByBrk) {
 			// Can't handle IRQ and BRK was not initiated, so don't do anything
 			return;

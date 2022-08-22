@@ -2,11 +2,11 @@
 
 SecondaryOAMState::SecondaryOAMState() {
 	internalBuffer = OAM_INITIAL_VALUE;
-	byteIndex = 0;
-	spriteIndex = 0;
-	entriesAdded = 0;
-	evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
-	overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
+	//byteIndex = 0;
+	//spriteIndex = 0;
+	//entriesAdded = 0;
+	//evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
+	//overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 	spriteOverflowDetected = false;
 
 	for (SecondaryOAMEntry& entry : entries) {
@@ -18,11 +18,11 @@ SecondaryOAM::SecondaryOAM(OAM* primaryOAM)
 {
 	m_primaryOAM = primaryOAM;
 	m_internalBuffer = OAM_INITIAL_VALUE;
-	m_byteIndex = 0;
-	m_spriteIndex = 0;
-	m_entriesAdded = 0;
-	m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
-	m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
+	//m_byteIndex = 0;
+	//m_spriteIndex = 0;
+	//m_entriesAdded = 0;
+	//m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
+	//m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 	m_spriteOverflowDetected = false;
 
 	for (SecondaryOAMEntry& entry : m_entries) {
@@ -32,11 +32,11 @@ SecondaryOAM::SecondaryOAM(OAM* primaryOAM)
 
 void SecondaryOAM::SoftReset() {
 	m_internalBuffer = OAM_INITIAL_VALUE;
-	m_byteIndex = 0;
-	m_spriteIndex = 0;
-	m_entriesAdded = 0;
-	m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
-	m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
+	//m_byteIndex = 0;
+	//m_spriteIndex = 0;
+	//m_entriesAdded = 0;
+	//m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
+	//m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 	m_spriteOverflowDetected = false;
 
 	for (SecondaryOAMEntry& entry : m_entries) {
@@ -46,11 +46,11 @@ void SecondaryOAM::SoftReset() {
 
 void SecondaryOAM::HardReset() {
 	m_internalBuffer = OAM_INITIAL_VALUE;
-	m_byteIndex = 0;
-	m_spriteIndex = 0;
-	m_entriesAdded = 0;
-	m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
-	m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
+	//m_byteIndex = 0;
+	//m_spriteIndex = 0;
+	//m_entriesAdded = 0;
+	//m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
+	//m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 	m_spriteOverflowDetected = false;
 
 	for (SecondaryOAMEntry& entry : m_entries) {
@@ -58,6 +58,60 @@ void SecondaryOAM::HardReset() {
 	}
 }
 
+void SecondaryOAM::SecondaryOAMInitialization() {
+	for (SecondaryOAMEntry& entry : m_entries) {
+		entry.entry.y = OAM_INITIAL_VALUE;
+		entry.entry.tileID = OAM_INITIAL_VALUE;
+		entry.entry.attribute.value = OAM_INITIAL_VALUE & OAM_ATTRIBUTE_UNUSED_MASK;
+		entry.entry.x = OAM_INITIAL_VALUE;
+		entry.spriteID = OAM_NO_SPRITE_ID;
+	}
+
+	m_internalBuffer = OAM_INITIAL_VALUE;
+	m_spriteOverflowDetected = false;
+}
+
+void SecondaryOAM::SpriteEvaluation(unsigned int scanline, bool mode8by16) {
+	// Search for up to 8 sprites in scanline
+	unsigned int spriteIndex = 0;
+	unsigned int entriesAdded = 0;
+
+	for (; spriteIndex < OAM_NUM_SPRITES; ) {
+		OAMEntry entry = m_primaryOAM->GetEntry(spriteIndex);
+		if (this->IsSpriteOnScanline(scanline, entry.y, mode8by16)) {
+			m_entries[entriesAdded].entry.y = entry.y;
+			m_entries[entriesAdded].entry.tileID = entry.tileID;
+			m_entries[entriesAdded].entry.attribute.value = entry.attribute.value;
+			m_entries[entriesAdded].entry.x = entry.x;
+			m_entries[entriesAdded].spriteID = spriteIndex;
+			entriesAdded++;
+			if (entriesAdded == SECONDARY_OAM_SIZE) {
+				spriteIndex++;
+				break;
+			}
+		}
+		spriteIndex++;
+	}
+
+	// Search for sprite overflow if entries are left
+	unsigned int byteIndex = 0;
+	while (spriteIndex < OAM_NUM_SPRITES) {
+		uint8_t effectiveY = this->ReadPrimaryOAM(spriteIndex, byteIndex);
+		if (this->IsSpriteOnScanline(scanline, effectiveY, mode8by16)) {
+			m_spriteOverflowDetected = true;
+			break;
+		}
+		spriteIndex++;
+		byteIndex++; // Sprite overflow bug
+		if (byteIndex == OAM_ENTRY_SIZE) {
+			byteIndex = 0;
+		}
+	}
+
+	// TODO: deal with internal buffer?
+}
+
+/*
 void SecondaryOAM::Clock(unsigned int scanline, unsigned int dot, bool mode8by16)
 {
 	if (dot == SECONDARY_OAM_INTERNAL_INITIALIZATION_DOT) {
@@ -86,6 +140,7 @@ void SecondaryOAM::Clock(unsigned int scanline, unsigned int dot, bool mode8by16
 		this->BackgroundRenderRead();
 	}
 }
+*/
 
 SecondaryOAMEntry& SecondaryOAM::GetEntry(unsigned int entryIndex)
 {
@@ -96,6 +151,7 @@ uint8_t SecondaryOAM::GetInternalBuffer() const {
 	return m_internalBuffer;
 }
 
+
 bool SecondaryOAM::SpriteOverflowDetected() const
 {
 	return m_spriteOverflowDetected;
@@ -105,11 +161,11 @@ SecondaryOAMState SecondaryOAM::GetState() const {
 	SecondaryOAMState state;
 	state.entries = m_entries;
 	state.internalBuffer = m_internalBuffer;
-	state.byteIndex = m_byteIndex;
-	state.spriteIndex = m_spriteIndex;
-	state.entriesAdded = m_entriesAdded;
-	state.evaluationStep = m_evaluationStep;
-	state.overflowFoundReadsLeft = m_overflowFoundReadsLeft;
+	//state.byteIndex = m_byteIndex;
+	//state.spriteIndex = m_spriteIndex;
+	//state.entriesAdded = m_entriesAdded;
+	//state.evaluationStep = m_evaluationStep;
+	//state.overflowFoundReadsLeft = m_overflowFoundReadsLeft;
 	state.spriteOverflowDetected = m_spriteOverflowDetected;
 	return state;
 }
@@ -117,14 +173,15 @@ SecondaryOAMState SecondaryOAM::GetState() const {
 void SecondaryOAM::LoadState(SecondaryOAMState& state) {
 	m_entries = state.entries;
 	m_internalBuffer = state.internalBuffer;
-	m_byteIndex = m_byteIndex;
-	m_spriteIndex = m_spriteIndex;
-	m_entriesAdded = state.entriesAdded;
-	m_evaluationStep = state.evaluationStep;
-	m_overflowFoundReadsLeft = state.overflowFoundReadsLeft;
+	//m_byteIndex = m_byteIndex;
+	//m_spriteIndex = m_spriteIndex;
+	//m_entriesAdded = state.entriesAdded;
+	//m_evaluationStep = state.evaluationStep;
+	//m_overflowFoundReadsLeft = state.overflowFoundReadsLeft;
 	m_spriteOverflowDetected = state.spriteOverflowDetected;
 }
 
+/*
 void SecondaryOAM::Initialize()
 {
 	m_internalBuffer = m_entries[0].entry.y;
@@ -135,6 +192,7 @@ void SecondaryOAM::Initialize()
 	m_spriteOverflowDetected = false;
 	m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 }
+*/
 
 uint8_t SecondaryOAM::ReadPrimaryOAM(unsigned int entryIndex, unsigned int byteIndex)
 {
@@ -152,6 +210,7 @@ uint8_t SecondaryOAM::ReadPrimaryOAM(unsigned int entryIndex, unsigned int byteI
 	return 0;
 }
 
+/*
 void SecondaryOAM::WriteToEntry(unsigned int entryIndex, unsigned int byteIndex, uint8_t data)
 {
 	switch (byteIndex) {
@@ -373,7 +432,7 @@ void SecondaryOAM::SpriteFetchRead(unsigned int dot)
 void SecondaryOAM::BackgroundRenderRead()
 {
 	m_internalBuffer = m_entries[0].entry.y;
-}
+}*/
 
 bool SecondaryOAM::IsSpriteOnScanline(unsigned int scanline, uint8_t y, bool mode8by16) const {
 	unsigned int yOffset = mode8by16 ? 16 : 8;

@@ -7,6 +7,8 @@
 #include "../Bus.h"
 #include "CPUInstruction.h"
 
+constexpr unsigned int CPU_FREQUENCY = 1786830; // Approximately correct
+
 constexpr uint8_t STACK_PAGE = 0x01;
 constexpr uint8_t SP_INITIAL_VALUE = 0xFD;
 
@@ -72,7 +74,7 @@ struct CPUState {
 	CPUStatusRegister regP;
 
 	unsigned int cyclesRemaining;
-	int irqPending;
+	std::vector<std::string> irqPending;
 	bool nmiRaised;
 
 	bool instructionFirstCycle;
@@ -103,7 +105,8 @@ public:
 
 	void Clock();
 
-	void RaiseIRQ();
+	void RaiseIRQ(std::string irqID);
+	void AcknowledgeIRQ(std::string irqID);
 	void RaiseNMI();
 
 	std::vector<uint8_t> GetCurrentInstructionBytes();
@@ -229,7 +232,7 @@ private:
 	CPUStatusRegister m_regP;
 
 	unsigned int m_cyclesRemaining;
-	int m_irqPending;
+	std::vector<std::string> m_irqPending;
 	bool m_nmiRaised;
 
 	// True if this is the first cycle for the current instruction. Needed for debugging

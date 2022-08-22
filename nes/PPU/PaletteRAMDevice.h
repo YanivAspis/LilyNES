@@ -29,7 +29,7 @@ public:
 	virtual void SoftReset() override;
 	virtual void HardReset() override;
 
-	virtual uint8_t Read(uint16_t address) override;
+	virtual void Read(uint16_t address, uint8_t& data) override;
 	virtual void Write(uint16_t address, uint8_t data)  override;
 
 	virtual uint8_t Probe(uint16_t address) override;

@@ -78,9 +78,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SDLDir)/include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(SDLDir)/lib/x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SDLDir)/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SDLDir)/lib/x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -124,7 +128,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>wxmsw32ud_core.lib;wxbase32ud.lib;wxpngd.lib;wxzlibd.lib;wxjpegd.lib;wxtiffd.lib;%(AdditionalDependencies);comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;wxmsw32ud_core.lib;wxbase32ud.lib;wxpngd.lib;wxzlibd.lib;wxjpegd.lib;wxtiffd.lib;%(AdditionalDependencies);comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -144,7 +148,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;wxmsw32u_core.lib;wxbase32u.lib;wxpng.lib;wxzlib.lib;wxjpeg.lib;wxtiff.lib;%(AdditionalDependencies);comctl32.lib;rpcrt4.lib;winmm.lib;wsock32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;wxmsw32u_core.lib;wxbase32u.lib;wxpng.lib;wxzlib.lib;wxjpeg.lib;wxtiff.lib;%(AdditionalDependencies);comctl32.lib;rpcrt4.lib;winmm.lib;wsock32.lib</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -163,11 +167,20 @@
     <ClCompile Include="GUI\wxPPUStatePanel.cpp" />
     <ClCompile Include="GUI\wxRAMStatePanel.cpp" />
     <ClCompile Include="GUI\wxROMInfoFrame.cpp" />
+    <ClCompile Include="nes\APU\APU2A03.cpp" />
+    <ClCompile Include="nes\APU\APUDMC.cpp" />
+    <ClCompile Include="nes\APU\APUEnvelope.cpp" />
+    <ClCompile Include="nes\APU\APUNoise.cpp" />
+    <ClCompile Include="nes\APU\APUPulse.cpp" />
+    <ClCompile Include="nes\APU\APURegisters.cpp" />
+    <ClCompile Include="nes\APU\APUTiming.cpp" />
+    <ClCompile Include="nes\APU\APUTriangle.cpp" />
     <ClCompile Include="nes\Bus.cpp" />
     <ClCompile Include="nes\BusDevice.cpp" />
     <ClCompile Include="nes\ControllerDevice.cpp" />
     <ClCompile Include="nes\CPU\CPU2A03.cpp" />
     <ClCompile Include="nes\CPU\CPUInstruction.cpp" />
+    <ClCompile Include="nes\FrameCounterController2Device.cpp" />
     <ClCompile Include="nes\mappers\Cartridge.cpp" />
     <ClCompile Include="nes\mappers\Mapper000.cpp" />
     <ClCompile Include="nes\mappers\Mapper001.cpp" />
@@ -189,6 +202,7 @@
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />
+    <ClCompile Include="SoundGenerator.cpp" />
     <ClCompile Include="utils\BitwiseUtils.cpp" />
     <ClCompile Include="utils\NESUtils.cpp" />
   </ItemGroup>
@@ -208,6 +222,14 @@
     <ClInclude Include="GUI\wxPPUStatePanel.h" />
     <ClInclude Include="GUI\wxRAMStatePanel.h" />
     <ClInclude Include="GUI\wxROMInfoFrame.h" />
+    <ClInclude Include="nes\APU\APUDMC.h" />
+    <ClInclude Include="nes\APU\APUEnvelope.h" />
+    <ClInclude Include="nes\APU\APUNoise.h" />
+    <ClInclude Include="nes\APU\APUPulse.h" />
+    <ClInclude Include="nes\APU\APUTriangle.h" />
+    <ClInclude Include="nes\APU\LengthCounter.h" />
+    <ClInclude Include="nes\FrameCounterController2Device.h" />
+    <ClInclude Include="nes\APU\APU2A03.h" />
     <ClInclude Include="nes\Bus.h" />
     <ClInclude Include="nes\BusDevice.h" />
     <ClInclude Include="nes\ControllerDevice.h" />
@@ -232,6 +254,7 @@
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />
     <ClInclude Include="nes\ROM\INESHeader.h" />
+    <ClInclude Include="SoundGenerator.h" />
     <ClInclude Include="utils\BitwiseUtils.h" />
     <ClInclude Include="utils\NESUtils.h" />
   </ItemGroup>

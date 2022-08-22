@@ -35,11 +35,11 @@ struct SecondaryOAMState {
 	SecondaryOAMState();
 	std::array<SecondaryOAMEntry, SECONDARY_OAM_SIZE> entries;
 	uint8_t internalBuffer;
-	unsigned int byteIndex;
-	unsigned int spriteIndex;
-	unsigned int entriesAdded;
-	SpriteEvaluationStep evaluationStep;
-	unsigned int overflowFoundReadsLeft;
+	//unsigned int byteIndex;
+	//unsigned int spriteIndex;
+	//unsigned int entriesAdded;
+	//SpriteEvaluationStep evaluationStep;
+	//unsigned int overflowFoundReadsLeft;
 	bool spriteOverflowDetected;
 };
 
@@ -50,7 +50,10 @@ public:
 	void SoftReset();
 	void HardReset();
 
-	void Clock(unsigned int scanline, unsigned int dot, bool mode8by16);
+	void SecondaryOAMInitialization();
+	void SpriteEvaluation(unsigned int scanline, bool mode8by16);
+
+	//void Clock(unsigned int scanline, unsigned int dot, bool mode8by16);
 
 	SecondaryOAMEntry& GetEntry(unsigned int entryIndex);
 	uint8_t GetInternalBuffer() const;
@@ -60,9 +63,12 @@ public:
 	void LoadState(SecondaryOAMState& state);
 
 private:
-	void Initialize();
+
+
+	//void Initialize();
 
 	uint8_t ReadPrimaryOAM(unsigned int entryIndex, unsigned int byteIndex);
+	/*
 	void WriteToEntry(unsigned int entryIndex, unsigned int byteIndex, uint8_t data);
 
 	void SecondaryOAMInitializationRead();
@@ -88,6 +94,7 @@ private:
 
 	void SpriteFetchRead(unsigned int dot);
 	void BackgroundRenderRead();
+	*/
 
 	bool IsSpriteOnScanline(unsigned int scanline, uint8_t y, bool mode8by16) const;
 
@@ -95,10 +102,10 @@ private:
 	OAM* m_primaryOAM;
 
 	uint8_t m_internalBuffer; 
-	unsigned int m_byteIndex; // Index of byte in OAM entry (0 - 3)
-	unsigned int m_spriteIndex; // Index of sprite in primary OAM (0 - 63, 64 == overflow back to 0)
-	unsigned int m_entriesAdded; // 0-8.
-	SpriteEvaluationStep m_evaluationStep;
-	unsigned int m_overflowFoundReadsLeft;
+	//unsigned int m_byteIndex; // Index of byte in OAM entry (0 - 3)
+	//unsigned int m_spriteIndex; // Index of sprite in primary OAM (0 - 63, 64 == overflow back to 0)
+	//unsigned int m_entriesAdded; // 0-8.
+	//SpriteEvaluationStep m_evaluationStep;
+	//unsigned int m_overflowFoundReadsLeft;
 	bool m_spriteOverflowDetected;
 };

@@ -41,14 +41,14 @@ void PaletteRAMDevice::HardReset() {
 	}
 }
 
-uint8_t PaletteRAMDevice::Read(uint16_t address) {
-	uint8_t valueToReturn = *(this->GetColourPointer(address, false));
+void PaletteRAMDevice::Read(uint16_t address, uint8_t& data) {
+	data = *(this->GetColourPointer(address, false));
 	if (m_greyscaleMode) {
 		// Change colour to grey
-		valueToReturn &= PALETTE_GREY_MODIFIER;
+		data &= PALETTE_GREY_MODIFIER;
 	}
 	// Top two bits should always be 0
-	return ClearUpperBits8(valueToReturn, 6);
+	data = ClearUpperBits8(data, 6);
 }
 
 void PaletteRAMDevice::Write(uint16_t address, uint8_t data) {
@@ -57,7 +57,9 @@ void PaletteRAMDevice::Write(uint16_t address, uint8_t data) {
 }
 
 uint8_t PaletteRAMDevice::Probe(uint16_t address) {
-	return this->Read(address);
+	uint8_t data = 0;
+	this->Read(address, data);
+	return data;
 }
 
 PaletteRAMState PaletteRAMDevice::GetState() const {

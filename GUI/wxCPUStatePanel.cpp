@@ -203,6 +203,6 @@ void wxCPUStatePanel::OnGUIUpdate(wxNESStateEvent<CPUState>& evt) {
 	m_flagCVal->SetLabel(wxString::Format(wxT("%d"), state.regP.flags.C));
 
 	m_cyclesVal->SetLabel(wxString::Format(wxT("%d"), state.cyclesRemaining));
-	m_irqPendingVal->SetLabel(wxString::Format(wxT("%d"), state.irqPending));
+	m_irqPendingVal->SetLabel(wxString::Format(wxT("%d"), (int)state.irqPending.size()));
 	m_nmiRaisedVal->SetLabel(wxString::Format(wxT("%d"), state.nmiRaised));
 }

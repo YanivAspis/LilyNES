@@ -44,17 +44,18 @@ void Cartridge::HardReset() {
 }
 
 // Standard PRGROM mapping
-uint8_t Cartridge::Read(uint16_t address) {
+void Cartridge::Read(uint16_t address, uint8_t& data) {
 	if (address >= PRG_RAM_START_ADDRESS && address <= PRG_RAM_END_ADDRESS) {
-		return this->PRGRAMRead(address);
+		data = this->PRGRAMRead(address);
+		return;
 	}
 	else if (address >= PRG_ROM_START_ADDRESS && address <= PRG_ROM_END_ADDRESS) {
-		return this->PRGROMRead(address);
+		data = this->PRGROMRead(address);
+		return;
 	}
 
 	// Not supposed to reach here
 	assert(false);
-	return 0;
 }
 
 void Cartridge::Write(uint16_t address, uint8_t data) {
@@ -84,7 +85,9 @@ void Cartridge::PPUWrite(uint16_t address, uint8_t data) {
 }
 
 uint8_t Cartridge::Probe(uint16_t address) {
-	return this->Read(address);
+	uint8_t data = 0;
+	this->Read(address, data);
+	return data;
 }
 
 uint8_t Cartridge::ProbePPU(uint16_t address) {

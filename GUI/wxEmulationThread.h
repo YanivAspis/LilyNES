@@ -7,7 +7,7 @@
 #include "wxMainFrame.h"
 #include "../Environment.h"
 #include "../nes/NES.h"
-
+#include "../SoundGenerator.h"
 
 
 constexpr unsigned int FRAME_INTERVAL_NANOSECONDS = 16666667;
@@ -16,7 +16,8 @@ constexpr unsigned int USER_REQUEST_WAIT_TIME_MILLLISECONDS = 100;
 enum EMULATION_RUNNING_MODE {
 	EMULATION_RUNNING_PAUSED,
 	EMULATION_RUNNING_USER_CONTROLLED,
-	EMULATION_RUNNING_CONTINUOUS
+	EMULATION_RUNNING_CONTINUOUS_NO_SOUND,
+	EMULATION_RUNNING_CONTINUOUS_SOUND,
 };
 
 enum EMULATION_USER_REQUEST {
@@ -35,12 +36,14 @@ enum EMULATION_USER_DEBUG_REQUEST {
 
 
 class wxMainFrame;
+class SoundGenerator;
 wxDECLARE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
 
 class wxEmulationThread : public wxThread {
 public:
 	wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment);
+	~wxEmulationThread();
 	virtual void* Entry() wxOVERRIDE;
 	virtual void OnExit() wxOVERRIDE;
 	void LoadROM(const INESFile& romFile);
@@ -51,6 +54,7 @@ public:
 	void SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& userRequest);
 
 	NESState GetCurrentNESState();
+	float GetAudioSample();
 
 private:
 	void Setup();
@@ -67,10 +71,15 @@ private:
 	void HandleUserRequest();
 	void DoPause();
 	void DoUserDebugRequestRun();
-	void DoContinuousRun();
+	void DoContinuousNoSoundRun();
+	void DoContinuousSoundRun();
 
 	NES m_nes;
 	std::chrono::time_point<std::chrono::steady_clock> m_sleepTargetTime;
+	SoundGenerator* m_soundGenerator;
+	double m_cyclesRemainingForAudio;
+	wxCriticalSection m_audioCritSection;
+	bool m_soundModeReady;
 
 	EMULATION_RUNNING_MODE m_runningMode;
 	wxCriticalSection m_userRequestCritSection;
@@ -80,7 +89,7 @@ private:
 	NESState m_currentNESState;
 	wxCriticalSection m_currentStateCritSection;
 
-	bool m_continuousRunInitialized;
+	bool m_continuousNoSoundRunInitialized;
 	wxMainFrame* m_mainFrame;
 	wxSemaphore* m_exitNotice;
 };

@@ -122,10 +122,10 @@ void PPU2C02::HardReset() {
 	ResetNESPicture(m_picture);
 }
 
-uint8_t PPU2C02::Read(uint16_t address) {
+void PPU2C02::Read(uint16_t address, uint8_t& data) {
 	// This handles mirroring by squashing 0x2000 - 0x3FFF into 0x0 - 0x7
 	uint8_t regSelect = ClearUpperBits16(address, 3);
-	return m_registerReadFuncs[regSelect](*this);
+	data = m_registerReadFuncs[regSelect](*this);
 }
 
 void PPU2C02::Write(uint16_t address, uint8_t data) {
@@ -206,7 +206,7 @@ void PPU2C02::ConnectToBus(Bus* ppuBus) {
 }
 
 void PPU2C02::Clock() {
-	for (std::function<void(PPU2C02&)> renderFunc : m_renderFuncs[m_scanline][m_dot]) {
+	for (const std::function<void(PPU2C02&)>& renderFunc : m_renderFuncs[m_scanline][m_dot]) {
 		renderFunc(*this);
 	}
 	this->DecrementIOLatchCounter();

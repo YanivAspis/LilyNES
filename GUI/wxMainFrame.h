@@ -46,7 +46,8 @@ public:
 	void RunUntilNextInstruction();
 	void RunUntilNextScanline();
 	void RunUntilNextFrame();
-	void RunContinuously();
+	void RunContinuouslyWithoutSound();
+	void RunContinuouslyWithSound();
 	void ToggleRefreshRate();
 	void SelectNextPalette();
 

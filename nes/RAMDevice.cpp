@@ -26,8 +26,8 @@ void RAMDevice::HardReset() {
 	m_RAMContent.fill(0);
 }
 
-uint8_t RAMDevice::Read(uint16_t address) {
-	return m_RAMContent[BitwiseUtils::ClearUpperBits16(address - RAM_ADDRESS_START, 11)];
+void RAMDevice::Read(uint16_t address, uint8_t& data) {
+	data = m_RAMContent[BitwiseUtils::ClearUpperBits16(address - RAM_ADDRESS_START, 11)];
 }
 
 void RAMDevice::Write(uint16_t address, uint8_t data) {
@@ -35,7 +35,7 @@ void RAMDevice::Write(uint16_t address, uint8_t data) {
 }
 
 uint8_t RAMDevice::Probe(uint16_t address) {
-	return this->Read(address);
+	return m_RAMContent[BitwiseUtils::ClearUpperBits16(address - RAM_ADDRESS_START, 11)];
 }
 
 RAMState RAMDevice::GetState() const {

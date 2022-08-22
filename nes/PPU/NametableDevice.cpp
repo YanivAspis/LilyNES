@@ -25,9 +25,9 @@ void NametableDevice::HardReset() {
 	m_nametable1.fill(0);
 }
 
-uint8_t NametableDevice::Read(uint16_t address) {
+void NametableDevice::Read(uint16_t address, uint8_t& data) {
 	uint8_t* dataAddress = this->GetDataPointer(address);
-	return *dataAddress;
+	data = *dataAddress;
 }
 
 void NametableDevice::Write(uint16_t address, uint8_t data) {
@@ -36,7 +36,9 @@ void NametableDevice::Write(uint16_t address, uint8_t data) {
 }
 
 uint8_t NametableDevice::Probe(uint16_t address) {
-	return this->Read(address);
+	uint8_t data = 0;
+	this->Read(address, data);
+	return data;
 }
 
 NametableState NametableDevice::GetState() const {

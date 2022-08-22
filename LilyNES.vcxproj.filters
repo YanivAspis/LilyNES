@@ -61,6 +61,12 @@
     <Filter Include="Source Files\nes\PPU">
       <UniqueIdentifier>{dfc92cdf-e7f8-4b79-8f3e-fe55ce6ac50f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\nes\APU">
+      <UniqueIdentifier>{ed29dc02-dc7e-46ab-a37f-0ea3eb11ae59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\nes\APU">
+      <UniqueIdentifier>{3e8a91fc-03fe-466b-8ef9-a728820b111a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="nes\Bus.cpp">
@@ -189,6 +195,36 @@
     <ClCompile Include="nes\mappers\Mapper004.cpp">
       <Filter>Source Files\nes\mappers</Filter>
     </ClCompile>
+    <ClCompile Include="SoundGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APU2A03.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\FrameCounterController2Device.cpp">
+      <Filter>Source Files\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APURegisters.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUTiming.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUPulse.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUEnvelope.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUTriangle.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUNoise.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
+    <ClCompile Include="nes\APU\APUDMC.cpp">
+      <Filter>Source Files\nes\APU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -313,6 +349,33 @@
     </ClInclude>
     <ClInclude Include="nes\mappers\Mapper004.h">
       <Filter>Header Files\nes\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APU2A03.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\FrameCounterController2Device.h">
+      <Filter>Header Files\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\LengthCounter.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUPulse.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUEnvelope.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUTriangle.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUNoise.h">
+      <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="nes\APU\APUDMC.h">
+      <Filter>Header Files\nes\APU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

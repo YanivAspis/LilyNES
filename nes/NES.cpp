@@ -8,22 +8,29 @@
 #include "mappers/Mapper004.h"
 
 
-NES::NES(Environment* environment): m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment) {
+NES::NES(Environment* environment) : m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment), 
+	m_apu(&m_cpu), m_frameCounterController2(&m_apu, &m_controllers) {
+
 	m_cpuBus.ConnectDevice(&m_RAM);
 	m_cpuBus.ConnectDevice(&m_ppu);
 	m_cpuBus.ConnectDevice(&m_OAMDMA);
 	m_cpuBus.ConnectDevice(&m_controllers);
+	m_cpuBus.ConnectDevice(&m_apu);
+	m_apu.DMCConnectToBus(&m_cpuBus);
+	m_cpuBus.ConnectDevice(&m_frameCounterController2);
 	m_ppuBus.ConnectDevice(&m_patternTables);
 	m_ppuBus.ConnectDevice(&m_nametables);
 	m_ppuBus.ConnectDevice(&m_paletteRAM);
 	m_cpu.ConnectToBus(&m_cpuBus);
 	m_ppu.ConnectToBus(&m_ppuBus);
 	m_cartridge = nullptr;
+	m_DMCDMACycles = 0;
 	m_cycleCount = 0;
 }
 
 NES::~NES() {
 	m_ppuBus.DisconnectAllDevices();
+	m_apu.DMCDisconnectFromBus();
 	m_cpuBus.DisconnectAllDevices();
 	if (m_cartridge != nullptr) {
 		delete m_cartridge;
@@ -72,6 +79,7 @@ void NES::HardReset()
 	m_cpuBus.HardReset();
 	m_ppuBus.HardReset();
 	m_cpu.HardReset();
+	m_DMCDMACycles = 0;
 	m_cycleCount = 0;
 }
 
@@ -85,6 +93,8 @@ NESState NES::GetState() const
 	state.ppuState = m_ppu.GetState();
 	state.oamDMAState = m_OAMDMA.GetState();
 	state.controllerState = m_controllers.GetState();
+	state.apuState = m_apu.GetState();
+	state.DMCDMACycles = m_DMCDMACycles;
 	if (m_cartridge != nullptr) {
 		state.patternTableState = m_patternTables.GetState();
 		state.cartridgeState = m_cartridge->GetState();
@@ -101,6 +111,8 @@ void NES::LoadState(NESState& state)
 	m_ppu.LoadState(state.ppuState);
 	m_OAMDMA.LoadState(state.oamDMAState);
 	m_controllers.LoadState(state.controllerState);
+	m_apu.LoadState(state.apuState);
+	m_DMCDMACycles = state.DMCDMACycles;
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);
 		m_patternTables.LoadState(state.patternTableState);
@@ -111,11 +123,20 @@ void NES::Clock()
 {
 	// CPU runs every 3 PPU cycles. Running when mod 3 = 2 matches nestest log
 	if (m_cycleCount % 3 == 2) {
-		// CPU is suspended while OAM DMA transfer is occuring
-		if (m_OAMDMA.GetCyclesRemaining() == 0) {
-			m_cpu.Clock();
+		if (m_DMCDMACycles > 0) {
+			m_DMCDMACycles--;
 		}
-		m_OAMDMA.Clock();
+		else {
+			// CPU is suspended while OAM DMA transfer is occuring
+			if (m_OAMDMA.GetCyclesRemaining() == 0) {
+				m_cpu.Clock();
+			}
+			m_OAMDMA.Clock();
+		}
+		m_apu.Clock();
+		if (m_apu.IsDMCRequestingSample()) {
+			this->SetupDMCDMA();
+		}
 	}
 	m_ppu.Clock();
 	m_cycleCount++;
@@ -147,6 +168,10 @@ void NES::RunUntilNextFrame() {
 	while (currFrame == m_ppu.GetFrameCount()) {
 		this->Clock();
 	}
+}
+
+float NES::GetAudioSample() {
+	return m_apu.GetAudioSample();
 }
 
 uint8_t NES::ProbeCPUBus(uint16_t address) {
@@ -196,5 +221,21 @@ void NES::DisconnectCartridge() {
 		m_cpuBus.DisconnectDevice(m_cartridge);
 		delete m_cartridge;
 		m_cartridge = nullptr;
+	}
+}
+
+void NES::SetupDMCDMA() {
+	switch (m_OAMDMA.GetCyclesRemaining()) {
+	case 0:
+		m_DMCDMACycles = 4;
+		break;
+	case 1:
+		m_DMCDMACycles = 3;
+		break;
+	case 2:
+		m_DMCDMACycles = 1;
+		break;
+	default:
+		m_DMCDMACycles = 2;
 	}
 }

@@ -50,7 +50,6 @@ CPUState::CPUState() {
 	regP.value = 0;
 
 	cyclesRemaining = 0;
-	irqPending = 0;
 	nmiRaised = false;
 
 	instructionFirstCycle = false;
@@ -73,9 +72,9 @@ CPU2A03::CPU2A03(bool decimalAllowed) {
 	m_regP.value = 0;
 
 	m_cyclesRemaining = 0;
-	m_irqPending = 0;
 	m_nmiRaised = false;
 
+	m_currInstruction = CurrentInstruction();
 	m_instructionFirstCycle = false;
 	m_cycleCount = 0;
 
@@ -103,7 +102,7 @@ void CPU2A03::SoftReset() {
 	m_regP.flags.SoftReset();
 
 	m_cyclesRemaining = NUM_RESET_CYCLES;
-	m_irqPending = 0;
+	m_irqPending.clear();
 	m_nmiRaised = false;
 
 	m_instructionFirstCycle = false;
@@ -124,7 +123,7 @@ void CPU2A03::HardReset() {
 	m_regP.flags.HardReset();
 
 	m_cyclesRemaining = NUM_RESET_CYCLES;
-	m_irqPending = 0;
+	m_irqPending.clear();
 	m_nmiRaised = false;
 
 	m_instructionFirstCycle = false;
@@ -195,11 +194,11 @@ void CPU2A03::Clock()
 
 	// Set up next instruction
 	m_instructionFirstCycle = true;
-	m_currInstruction = CurrentInstruction();
+	//m_currInstruction = CurrentInstruction();
 	m_currInstruction.reset = false;
 
 	// Check if an interrupt needs to be handled
-	if (m_nmiRaised || (!m_regP.flags.I && m_irqPending > 0)) {
+	if (m_nmiRaised || (!m_regP.flags.I && m_irqPending.size() > 0)) {
 		m_currInstruction.interrupt = true;
 		m_cyclesRemaining = NUM_INTERRUPT_CYCLES;
 		return;
@@ -207,7 +206,7 @@ void CPU2A03::Clock()
 	
 	// No interrupt, perform next instruction
 	uint8_t opCode = m_cpuBus->Read(m_regPC);
-	CPUInstruction instruction = s_opCodeTable[opCode];
+	CPUInstruction& instruction = s_opCodeTable[opCode];
 
 	m_currInstruction.interrupt = false;
 	m_currInstruction.mnemonic = instruction.mnemonic;
@@ -220,7 +219,7 @@ void CPU2A03::Clock()
 	m_addressModeFunctions[instruction.addressMode](*this);
 
 	// Fix addressing mode additional cycles for those instructions that don't actually have any
-	for (InstructionMnemonic mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
+	for (const InstructionMnemonic& mnemonic : CPU2A03::s_mnemonicsWithoutAdditionalCycles) {
 		if (mnemonic == instruction.mnemonic) {
 			m_currInstruction.cycles = instruction.baseCycleCount;
 			break;
@@ -237,8 +236,17 @@ void CPU2A03::Clock()
 	m_cyclesRemaining = m_currInstruction.cycles;
 }
 
-void CPU2A03::RaiseIRQ() {
-	m_irqPending += 1;
+void CPU2A03::RaiseIRQ(std::string irqID) {
+	if (std::find(m_irqPending.begin(), m_irqPending.end(), irqID) == m_irqPending.end()) {
+		m_irqPending.push_back(irqID);
+	}
+}
+
+void CPU2A03::AcknowledgeIRQ(std::string irqID) {
+	std::vector<std::string>::iterator it = std::find(m_irqPending.begin(), m_irqPending.end(), irqID);
+	if (it != m_irqPending.end()) {
+		m_irqPending.erase(it);
+	}
 }
 
 void CPU2A03::RaiseNMI() {
