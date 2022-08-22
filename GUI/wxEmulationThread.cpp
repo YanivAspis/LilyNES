@@ -109,13 +109,17 @@ NESState wxEmulationThread::GetCurrentNESState() {
 }
 
 float wxEmulationThread::GetAudioSample() {
+	float sampleSum = 0;
+	unsigned int samplesCollected = 0;
 	wxCriticalSectionLocker enter(m_audioCritSection);
 	while (m_cyclesRemainingForAudio > 0.5) {
 		m_nes.Clock();
 		m_cyclesRemainingForAudio--;
+		sampleSum += m_nes.GetAudioSample();
+		samplesCollected++;
 	}
 	m_cyclesRemainingForAudio += NUM_CYCLES_PER_AUDIO_SAMPLE;
-	return m_nes.GetAudioSample();
+	return sampleSum / samplesCollected;
 }
 
 

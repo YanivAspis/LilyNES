@@ -9,6 +9,7 @@ void APU2A03::Clock() {
 	}
 
 	m_triangle.ClockTimer();
+	m_noise.ClockTimer();
 	m_dmc.ClockTimer();
 
 	if (m_frameCounter == 0) {
@@ -39,7 +40,6 @@ void APU2A03::Clock() {
 void APU2A03::APUClock() {
 	m_pulse1.ClockTimer();
 	m_pulse2.ClockTimer();
-	m_noise.ClockTimer();
 }
 
 void APU2A03::DoFrameCounterZero() {

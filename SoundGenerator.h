@@ -36,7 +36,7 @@ class HighPassFilter {
 public:
 	HighPassFilter(float cutoffFrequency, float sampleRate);
 	void Restart();
-	float Resample(float sample);
+	float Filter(float sample);
 
 private:
 	float m_alpha;
@@ -49,7 +49,7 @@ class LowPassFilter {
 public:
 	LowPassFilter(float cutoffFrequency, float sampleRate);
 	void Restart();
-	float Resample(float sample);
+	float Filter(float sample);
 
 private:
 	float m_alpha;

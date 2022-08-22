@@ -15,7 +15,7 @@ void HighPassFilter::Restart() {
 	m_lastResampled = 0;
 }
 
-float HighPassFilter::Resample(float sample) {
+float HighPassFilter::Filter(float sample) {
 	if (m_firstSampleReceived) {
 		m_lastResampled = m_alpha * (m_lastResampled + sample - m_lastOriginalSample);
 		m_lastOriginalSample = sample;
@@ -39,7 +39,7 @@ void LowPassFilter::Restart() {
 	m_lastSample = 0;
 }
 
-float LowPassFilter::Resample(float sample) {
+float LowPassFilter::Filter(float sample) {
 	m_lastSample += m_alpha * (sample - m_lastSample);
 	return m_lastSample;
 }
@@ -103,9 +103,9 @@ void SoundGenerator::AudioCallback(void* userdata, uint8_t* stream, int len)
 			return;
 		}
 		float sample = SOUND_AMPLITUDE_MODIFIER * s_instance->m_emulationThread->GetAudioSample();
-		sample = s_instance->m_highPassFilter1.Resample(sample);
-		sample = s_instance->m_highPassFilter2.Resample(sample);
-		sample = s_instance->m_lowPassFilter.Resample(sample);
+		sample = s_instance->m_highPassFilter1.Filter(sample);
+		sample = s_instance->m_highPassFilter2.Filter(sample);
+		sample = s_instance->m_lowPassFilter.Filter(sample);
 		resultStream[i] = sample;
 	}
 }
