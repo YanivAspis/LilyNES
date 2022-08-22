@@ -171,10 +171,22 @@ void wxEmulationThread::HandleUserRequest() {
 	}
 	switch (userRequest) {
 	case EMULATION_USER_REQUEST_SOFT_RESET:
+		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
+			m_soundGenerator->DisableSound();
+		}
 		m_nes.SoftReset();
+		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
+			m_soundGenerator->EnableSound();
+		}
 		break;
 	case EMULATION_USER_REQUEST_HARD_RESET:
+		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
+			m_soundGenerator->DisableSound();
+		}
 		m_nes.HardReset();
+		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
+			m_soundGenerator->EnableSound();
+		}
 		break;
 	}
 }

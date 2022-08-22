@@ -121,7 +121,7 @@ void APU2A03::LoadState(APUState& state)
 float APU2A03::MixSamples(uint8_t pulse1Sample, uint8_t pulse2Sample, uint8_t triangleSample, uint8_t noiseSample, uint8_t DMCSample) {
 	float pulseFactor = pulse1Sample + pulse2Sample;
 	float pulse_out = 95.88 * pulseFactor / (8128 + 100 * pulseFactor);
-	float tndFactor = (float)triangleSample / 8227 + (float)noiseSample / 12241 + (float)DMCSample / 22638;
+	float tndFactor = triangleSample / 8227.0 + noiseSample / 12241.0 + DMCSample / 22638.0;
 	float tnd_out = 159.79 * tndFactor / (1 + 100 * tndFactor);
 	return pulse_out + tnd_out;
 }
