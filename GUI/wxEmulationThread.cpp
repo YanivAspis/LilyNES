@@ -6,7 +6,8 @@ constexpr double NUM_CYCLES_PER_AUDIO_SAMPLE = 3 * (double)CPU_FREQUENCY / SOUND
 
 wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
-wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment) {
+wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment), 
+		m_highPassFilter1(HIGH_PASS_FILTER_1_CUTOFF, AUDIO_FILTERING_DT), m_highPassFilter2(HIGH_PASS_FILTER_2_CUTOFF, AUDIO_FILTERING_DT), m_lowPassFilter(LOW_PASS_FILTER_CUTOFF, AUDIO_FILTERING_DT) {
 	m_continuousNoSoundRunInitialized = false;
 	m_runningMode = EMULATION_RUNNING_PAUSED;
 	m_userRequest = EMULATION_USER_REQUEST_NONE;
@@ -84,6 +85,9 @@ void wxEmulationThread::SetRunningMode(const EMULATION_RUNNING_MODE& runningMode
 	}
 	if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
 		m_cyclesRemainingForAudio = NUM_CYCLES_PER_AUDIO_SAMPLE;
+		m_highPassFilter1.Restart();
+		m_highPassFilter2.Restart();
+		m_lowPassFilter.Restart();
 		m_soundGenerator->EnableSound();
 	}
 	else {
@@ -115,7 +119,11 @@ float wxEmulationThread::GetAudioSample() {
 	while (m_cyclesRemainingForAudio > 0.5) {
 		m_nes.Clock();
 		m_cyclesRemainingForAudio--;
-		sampleSum += m_nes.GetAudioSample();
+		float sample = m_nes.GetAudioSample();
+		sample = m_highPassFilter1.Filter(sample);
+		//sample = m_highPassFilter2.Filter(sample);
+		sample = m_lowPassFilter.Filter(sample);
+		sampleSum += sample;
 		samplesCollected++;
 	}
 	m_cyclesRemainingForAudio += NUM_CYCLES_PER_AUDIO_SAMPLE;
@@ -180,6 +188,9 @@ void wxEmulationThread::HandleUserRequest() {
 		}
 		m_nes.SoftReset();
 		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
+			m_highPassFilter1.Restart();
+			m_highPassFilter2.Restart();
+			m_lowPassFilter.Restart();
 			m_soundGenerator->EnableSound();
 		}
 		break;
@@ -189,6 +200,9 @@ void wxEmulationThread::HandleUserRequest() {
 		}
 		m_nes.HardReset();
 		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
+			m_highPassFilter1.Restart();
+			m_highPassFilter2.Restart();
+			m_lowPassFilter.Restart();
 			m_soundGenerator->EnableSound();
 		}
 		break;

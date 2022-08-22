@@ -80,4 +80,27 @@ namespace NESUtils {
         size_t m_size;
     };
 
+    class HighPassFilter {
+    public:
+        HighPassFilter(float cutoffFrequency, float sampleRate);
+        void Restart();
+        float Filter(float sample);
+
+    private:
+        float m_alpha;
+        bool m_firstSampleReceived;
+        float m_lastOriginalSample;
+        float m_lastResampled;
+    };
+
+    class LowPassFilter {
+    public:
+        LowPassFilter(float cutoffFrequency, float sampleRate);
+        void Restart();
+        float Filter(float sample);
+
+    private:
+        float m_alpha;
+        float m_lastSample;
+    };
 }

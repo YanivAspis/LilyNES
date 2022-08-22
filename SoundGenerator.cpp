@@ -1,52 +1,10 @@
 #include "SoundGenerator.h"
 
-HighPassFilter::HighPassFilter(float cutoffFrequency, float sampleRate) {
-	float RC = 1.0 / (2 * M_PI * cutoffFrequency);
-	float dt = 1.0 / sampleRate;
-	m_alpha = RC / (RC + dt);
-	m_firstSampleReceived = false;
-	m_lastOriginalSample = 0;
-	m_lastResampled = 0;
-}
 
-void HighPassFilter::Restart() {
-	m_firstSampleReceived = false;
-	m_lastOriginalSample = 0;
-	m_lastResampled = 0;
-}
-
-float HighPassFilter::Filter(float sample) {
-	if (m_firstSampleReceived) {
-		m_lastResampled = m_alpha * (m_lastResampled + sample - m_lastOriginalSample);
-		m_lastOriginalSample = sample;
-	}
-	else {
-		m_lastResampled = sample;
-		m_lastOriginalSample = sample;
-		m_firstSampleReceived = true;
-	}
-	return m_lastResampled;
-}
-
-LowPassFilter::LowPassFilter(float cutoffFrequency, float sampleRate) {
-	float RC = 1.0 / (2 * M_PI * cutoffFrequency);
-	float dt = 1.0 / sampleRate;
-	m_alpha = dt / (RC + dt);
-	m_lastSample = 0;
-}
-
-void LowPassFilter::Restart() {
-	m_lastSample = 0;
-}
-
-float LowPassFilter::Filter(float sample) {
-	m_lastSample += m_alpha * (sample - m_lastSample);
-	return m_lastSample;
-}
 
 static SoundGenerator* s_instance;
 
-SoundGenerator::SoundGenerator(wxEmulationThread* emulationThread) : m_highPassFilter1(HIGH_PASS_FILTER_1_CUTOFF, SOUND_SAMPLE_RATE), m_highPassFilter2(HIGH_PASS_FILTER_2_CUTOFF, SOUND_SAMPLE_RATE), m_lowPassFilter(LOW_PASS_FILTER_CUTOFF, SOUND_SAMPLE_RATE)
+SoundGenerator::SoundGenerator(wxEmulationThread* emulationThread) 
 {
 	s_instance = this;
 	m_emulationThread = emulationThread;
@@ -83,9 +41,6 @@ SoundGenerator::~SoundGenerator()
 void SoundGenerator::EnableSound()
 {
 	m_soundStopFlag = false;
-	m_highPassFilter1.Restart();
-	m_highPassFilter2.Restart();
-	m_lowPassFilter.Restart();
 	SDL_PauseAudioDevice(m_deviceID, 0);
 }
 
@@ -103,9 +58,6 @@ void SoundGenerator::AudioCallback(void* userdata, uint8_t* stream, int len)
 			return;
 		}
 		float sample = SOUND_AMPLITUDE_MODIFIER * s_instance->m_emulationThread->GetAudioSample();
-		sample = s_instance->m_highPassFilter1.Filter(sample);
-		sample = s_instance->m_highPassFilter2.Filter(sample);
-		sample = s_instance->m_lowPassFilter.Filter(sample);
 		resultStream[i] = sample;
 	}
 }

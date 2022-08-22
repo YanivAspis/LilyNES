@@ -13,6 +13,11 @@
 constexpr unsigned int FRAME_INTERVAL_NANOSECONDS = 16666667;
 constexpr unsigned int USER_REQUEST_WAIT_TIME_MILLLISECONDS = 100;
 
+constexpr float HIGH_PASS_FILTER_1_CUTOFF = 90;
+constexpr float HIGH_PASS_FILTER_2_CUTOFF = 440;
+constexpr float LOW_PASS_FILTER_CUTOFF = 14000;
+constexpr float AUDIO_FILTERING_DT = 3 * CPU_FREQUENCY;
+
 enum EMULATION_RUNNING_MODE {
 	EMULATION_RUNNING_PAUSED,
 	EMULATION_RUNNING_USER_CONTROLLED,
@@ -88,6 +93,10 @@ private:
 	wxMessageQueue<EMULATION_USER_DEBUG_REQUEST> m_userDebugRequestQueue;
 	NESState m_currentNESState;
 	wxCriticalSection m_currentStateCritSection;
+
+	HighPassFilter m_highPassFilter1;
+	HighPassFilter m_highPassFilter2;
+	LowPassFilter m_lowPassFilter;
 
 	bool m_continuousNoSoundRunInitialized;
 	wxMainFrame* m_mainFrame;
