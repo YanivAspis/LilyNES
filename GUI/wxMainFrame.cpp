@@ -119,7 +119,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
 
 void wxMainFrame::StartEmulation()
 {
-    if (m_emulationThread != nullptr) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning()) {
         wxLogError("Emulation already running!");
         return;
     }
@@ -232,7 +232,7 @@ void wxMainFrame::OnMenuExit(wxCommandEvent& evt) {
 
 void wxMainFrame::OnSoftReset(wxCommandEvent& evt) {
     // Perhaps not thread safe
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_SOFT_RESET);
     }
     evt.Skip();
@@ -240,7 +240,7 @@ void wxMainFrame::OnSoftReset(wxCommandEvent& evt) {
 
 void wxMainFrame::OnHardReset(wxCommandEvent& evt) {
     // Perhaps not thread safe
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_HARD_RESET);
     }
     evt.Skip();
@@ -272,7 +272,7 @@ void wxMainFrame::OnTestCPU(wxCommandEvent& evt) {
 
 void wxMainFrame::OnMenuOpen(wxMenuEvent& evt) {
     // Perhaps not thread safe
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_lastRunningMode = m_emulationThread->GetRunningMode();
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_PAUSED);
     }
@@ -280,14 +280,14 @@ void wxMainFrame::OnMenuOpen(wxMenuEvent& evt) {
 }
 
 void wxMainFrame::OnMenuClose(wxMenuEvent& evt) {
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(m_lastRunningMode);
     }
     evt.Skip();
 }
 
 void wxMainFrame::OnWindowActivate(wxActivateEvent& evt) {
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         if (evt.GetActive()) {
             m_emulationThread->SetRunningMode(m_lastRunningMode);
         }
@@ -309,7 +309,7 @@ void wxMainFrame::OnClose(wxCloseEvent& evt)
 
 void wxMainFrame::RunUntilNextCycle() {
     // Perhaps not thread safe
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_CYCLE);
     }
@@ -317,7 +317,7 @@ void wxMainFrame::RunUntilNextCycle() {
 
 void wxMainFrame::RunUntilNextInstruction() {
     // Perhaps not thread safen
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_INSTRUCTION);
     }
@@ -325,7 +325,7 @@ void wxMainFrame::RunUntilNextInstruction() {
 
 void wxMainFrame::RunUntilNextScanline() {
     // Perhaps not thread safen
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_SCANLINE);
     }
@@ -333,7 +333,7 @@ void wxMainFrame::RunUntilNextScanline() {
 
 void wxMainFrame::RunUntilNextFrame() {
     // Perhaps not thread safen
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_FRAME);
     }
@@ -341,14 +341,14 @@ void wxMainFrame::RunUntilNextFrame() {
 
 void wxMainFrame::RunContinuouslyWithoutSound() {
     // Perhaps not thread safen
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
     }
 }
 
 void wxMainFrame::RunContinuouslyWithSound() {
     // Perhaps not thread safen
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_SOUND);
     }
 }
@@ -367,7 +367,7 @@ bool wxMainFrame::IsClosing() const {
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {
-    if (m_emulationThread != nullptr && m_emulationThread->IsRunning()) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->Delete();
         if (wait) {
             m_emulationThreadExitNotice.Wait();

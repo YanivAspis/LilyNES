@@ -27,6 +27,7 @@ enum EMULATION_RUNNING_MODE {
 
 enum EMULATION_USER_REQUEST {
 	EMULATION_USER_REQUEST_NONE,
+	EMULATION_USER_REQUEST_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION,
 	EMULATION_USER_REQUEST_SOFT_RESET,
 	EMULATION_USER_REQUEST_HARD_RESET
 };
@@ -57,9 +58,12 @@ public:
 	void SetRunningMode(const EMULATION_RUNNING_MODE& runningMode);
 	void SetUserRequest(const EMULATION_USER_REQUEST& userRequest);
 	void SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& userRequest);
+	void RethrowIllegalInstructionException(IllegalInstructionException ex);
 
 	NESState GetCurrentNESState();
 	float GetAudioSample();
+
+	bool IsEmulationRunning() const;
 
 private:
 	void Setup();
@@ -101,4 +105,7 @@ private:
 	bool m_continuousNoSoundRunInitialized;
 	wxMainFrame* m_mainFrame;
 	wxSemaphore* m_exitNotice;
+
+	IllegalInstructionException m_illegalEx;
+	
 };

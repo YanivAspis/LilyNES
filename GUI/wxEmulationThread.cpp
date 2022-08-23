@@ -3,16 +3,18 @@
 
 constexpr double NUM_CYCLES_PER_AUDIO_SAMPLE = 3 * (double)CPU_FREQUENCY / SOUND_SAMPLE_RATE;
 
+std::atomic<bool> s_emulationRunning;
 
 wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
-wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment), 
+wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment), m_illegalEx(0, 0),
 		m_highPassFilter1(HIGH_PASS_FILTER_1_CUTOFF, AUDIO_FILTERING_DT), m_highPassFilter2(HIGH_PASS_FILTER_2_CUTOFF, AUDIO_FILTERING_DT), m_lowPassFilter(LOW_PASS_FILTER_CUTOFF, AUDIO_FILTERING_DT) {
 	m_continuousNoSoundRunInitialized = false;
 	m_runningMode = EMULATION_RUNNING_PAUSED;
 	m_userRequest = EMULATION_USER_REQUEST_NONE;
 	m_mainFrame = mainFrame;
 	m_exitNotice = exitNotice;
+	s_emulationRunning = false;
 
 	m_soundGenerator = new SoundGenerator(this);
 	m_cyclesRemainingForAudio = NUM_CYCLES_PER_AUDIO_SAMPLE;
@@ -24,14 +26,15 @@ wxEmulationThread::~wxEmulationThread() {
 }
 
 void* wxEmulationThread::Entry(){
+	s_emulationRunning = true;
 	this->Setup();
 	this->PostNESUpdate();
 	while (!this->TestDestroy()) {
-		{
-			wxCriticalSectionLocker enter(m_audioCritSection);
-			this->HandleUserRequest();
-		}
 		try {
+			{
+				wxCriticalSectionLocker enter(m_audioCritSection);
+				this->HandleUserRequest();
+			}
 			switch (this->GetRunningMode()) {
 			case EMULATION_RUNNING_PAUSED:
 				this->DoPause();
@@ -58,6 +61,7 @@ void* wxEmulationThread::Entry(){
 
 
 void wxEmulationThread::OnExit() {
+	s_emulationRunning = false;
 	m_soundGenerator->DisableSound();
 	m_exitNotice->Post();
 }
@@ -105,6 +109,11 @@ void wxEmulationThread::SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& 
 	m_userDebugRequestQueue.Post(userRequest);
 }
 
+void wxEmulationThread::RethrowIllegalInstructionException(IllegalInstructionException ex) {
+	m_illegalEx = ex;
+	this->SetUserRequest(EMULATION_USER_REQUEST_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION);
+}
+
 NESState wxEmulationThread::GetCurrentNESState() {
 	{
 		wxCriticalSectionLocker enter(m_currentStateCritSection);
@@ -130,6 +139,9 @@ float wxEmulationThread::GetAudioSample() {
 	return sampleSum / samplesCollected;
 }
 
+bool wxEmulationThread::IsEmulationRunning() const {
+	return s_emulationRunning;
+}
 
 void wxEmulationThread::Setup() {
 	m_nes.HardReset();
@@ -182,6 +194,9 @@ void wxEmulationThread::HandleUserRequest() {
 		m_userRequest = EMULATION_USER_REQUEST_NONE;
 	}
 	switch (userRequest) {
+	case EMULATION_USER_REQUEST_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION:
+		throw m_illegalEx;
+		break;
 	case EMULATION_USER_REQUEST_SOFT_RESET:
 		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
 			m_soundGenerator->DisableSound();

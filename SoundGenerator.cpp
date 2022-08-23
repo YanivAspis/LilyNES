@@ -50,12 +50,18 @@ void SoundGenerator::DisableSound()
 
 void SoundGenerator::AudioCallback(void* userdata, uint8_t* stream, int len)
 {
-	float* resultStream = (float*)stream;
-	for (int i = 0; i < (len / sizeof(float)); i++) {
-		if (s_instance->m_soundStopFlag) {
-			return;
+	try {
+		float* resultStream = (float*)stream;
+		for (int i = 0; i < (len / sizeof(float)); i++) {
+			if (s_instance->m_soundStopFlag) {
+				return;
+			}
+			float sample = SOUND_AMPLITUDE_MODIFIER * s_instance->m_emulationThread->GetAudioSample();
+			resultStream[i] = sample;
 		}
-		float sample = SOUND_AMPLITUDE_MODIFIER * s_instance->m_emulationThread->GetAudioSample();
-		resultStream[i] = sample;
+	}
+	catch (IllegalInstructionException ex) {
+		s_instance->DisableSound();
+		s_instance->m_emulationThread->RethrowIllegalInstructionException(ex);
 	}
 }

@@ -59,7 +59,7 @@ void APU2A03::HardReset()
 	m_noise.HardReset();
 	m_dmc.HardReset();
 
-	m_frameCounter = 0; // Not clear if I should set the frame counter to 15
+	m_frameCounter = 0;
 	m_frameCounterWriteCycles = 0;
 
 	this->ControlRegisterWrite(0); // Silence all channels
