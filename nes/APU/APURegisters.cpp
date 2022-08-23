@@ -169,10 +169,5 @@ void APU2A03::FrameCounterRegisterWrite(uint8_t data) {
 		m_cpu->AcknowledgeIRQ(APU_FRAME_IRQ_ID);
 	}
 
-	// Frame counter is reset and possibly generate quarter and half frame signals
-	// TODO: Do this after 3 cycles?
-	m_frameCounter = 0;
-	if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_5_STEP) {
-		this->DoFrameCounterHalf();
-	}
+	m_frameCounterWriteCycles = (m_frameCounter % 2 == 0) ? APU_FRAME_COUNTER_WRITE_CYCLES_EVEN : APU_FRAME_COUNTER_WRITE_CYCLES_ODD;	
 }

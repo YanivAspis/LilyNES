@@ -50,6 +50,9 @@ constexpr unsigned int APU_FRAME_COUNTER_5_STEP_LAST_FRAME = 37281; // 2 * 18640
 constexpr unsigned int APU_FRAME_COUNTER_4_STEP_MAX = 29830; // 2 * 14915 APU Cycles
 constexpr unsigned int APU_FRAME_COUNTER_5_STEP_MAX = 37282; // 2 * 18641 APU Cycles
 
+constexpr unsigned int APU_FRAME_COUNTER_WRITE_CYCLES_EVEN = 3;
+constexpr unsigned int APU_FRAME_COUNTER_WRITE_CYCLES_ODD = 4;
+
 constexpr char APU_FRAME_IRQ_ID[10] = "APU_FRAME";
 
 
@@ -110,11 +113,11 @@ struct APUState {
 	APUDMCState dmcState;
 
 	unsigned int frameCounter;
+	unsigned int frameCounterWriteCycles;
 
 	APUControlRegister controlRegister;
 	APUStatusRegister statusRegister;
 	FrameCounterRegister frameCounterRegister;
-	bool irqSent;
 };
 
 class APU2A03 : public BusDevice {
@@ -142,13 +145,9 @@ public:
 	void LoadState(APUState& state);
 
 private:
-	void APUClock();
-
-	void DoFrameCounterZero();
 	void DoFrameCounterQuarter();
 	void DoFrameCounterHalf();
 	void DoFrameCounterThreeQuarters();
-	void DoFrameCounterMode4Penultimate();
 	void DoFrameCounterMode4Last();
 	void DoFrameCounterMode5Last();
 	void IncrementFrameCounter();
@@ -169,9 +168,9 @@ private:
 	APUDMC m_dmc;
 
 	unsigned int m_frameCounter;
+	unsigned int m_frameCounterWriteCycles;
 
 	APUControlRegister m_controlRegister;
 	APUStatusRegister m_statusRegister;
 	FrameCounterRegister m_frameCounterRegister;
-	bool m_irqSent;
 };

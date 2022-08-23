@@ -35,14 +35,6 @@ APUTriangle::APUTriangle()
 
 void APUTriangle::SoftReset()
 {
-	// Not clear if these should be reset
-	m_counterParameters.value = 0;
-	m_timerLow = 0;
-	m_timerHighLengthCounter.value = 0;
-
-	m_timer = 0;
-	m_linearCounter = 0;
-	m_linearCounterReloadFlag = true;
 	m_lengthCounter = 0;
 	m_waveformIndex = 0; // Phase reset
 
@@ -99,7 +91,7 @@ void APUTriangle::ClockLengthCounter()
 uint8_t APUTriangle::GetAudioSample()
 {
 	// Silence the channel on extreme frequencies to protect speakers
-	// Would be made redundant with high-pass/low-pass filtering
+	// Possibly redundant due to high-pass/low-pass filtering
 	uint16_t timerLoad = this->GetTimerReload();
 	if (timerLoad < APU_TRIANGLE_MIN_TIMER_VALUE || timerLoad > APU_TRIANGLE_MAX_TIMER_VALUE) {
 		return 0;

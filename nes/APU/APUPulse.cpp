@@ -39,18 +39,8 @@ APUPulse::APUPulse(PulseSweepBehaviour sweepBehaviour)
 
 void APUPulse::SoftReset()
 {
-	// Not clear if these should be reset
-	m_parameters.value = 0;
-	m_sweep.value = 0;
-	m_timerLow = 0;
-	m_timerHighLengthCounter.value = 0;
-
-	m_timer = 0;
 	m_lengthCounter = 0;
-	m_waveformIndex = 0;
 	m_envelope.SoftReset();
-	m_sweepDivider = 0;
-	m_sweepReloadFlag = false;
 
 	m_silenced = true;
 }
@@ -142,7 +132,6 @@ bool APUPulse::IsLengthCounterPositive() const {
 
 void APUPulse::WriteParameters(uint8_t data)
 {
-	//bool oldConstantVolume = m_parameters.flags.constantVolume;
 	m_parameters.value = data;
 	m_envelope.SetDividerLoad(m_parameters.flags.volumePeriod);
 	m_envelope.SetLoop(m_parameters.flags.lengthCounterHalt);

@@ -5,11 +5,11 @@ using namespace BitwiseUtils;
 
 APUState::APUState() {
 	frameCounter = 0;
+	frameCounterWriteCycles = 0;
 
 	controlRegister.value = 0;
 	statusRegister.value = 0;
 	frameCounterRegister.value = 0;
-	irqSent = false;
 }
 
 APU2A03::APU2A03(CPU2A03* cpu) : BusDevice(std::list<AddressRange>({AddressRange(APU_BEGIN_ADDRESS_1, APU_END_ADDRESS_1), AddressRange(APU_BEGIN_ADDRESS_2, APU_END_ADDRESS_2) })),
@@ -17,10 +17,10 @@ APU2A03::APU2A03(CPU2A03* cpu) : BusDevice(std::list<AddressRange>({AddressRange
 {
 	m_cpu = cpu;
 	m_frameCounter = 0;
+	m_frameCounterWriteCycles = 0;
 	m_controlRegister.value = 0;
 	m_statusRegister.value = 0;
 	m_frameCounterRegister.value = 0;
-	m_irqSent = false;
 }
 
 APU2A03::~APU2A03() {
@@ -44,11 +44,11 @@ void APU2A03::SoftReset()
 	m_dmc.SoftReset();
 
 	m_frameCounter = 0; // Not clear if I should reset the frame counter or not
+	m_frameCounterWriteCycles = 0;
 
 	this->ControlRegisterWrite(0); // Silence all channels
 	m_statusRegister.value = 0;
 	m_frameCounterRegister.flags.irqInhibit = 0; // I think I'm only supposed to allow IRQ's, but not change the mode
-	m_irqSent = false;
 }
 
 void APU2A03::HardReset()
@@ -60,11 +60,11 @@ void APU2A03::HardReset()
 	m_dmc.HardReset();
 
 	m_frameCounter = 0; // Not clear if I should set the frame counter to 15
+	m_frameCounterWriteCycles = 0;
 
 	this->ControlRegisterWrite(0); // Silence all channels
 	m_statusRegister.value = 0;
 	m_frameCounterRegister.value = 0;
-	m_irqSent = false;
 }
 
 float APU2A03::GetAudioSample()
@@ -92,11 +92,11 @@ APUState APU2A03::GetState() const
 	state.dmcState = m_dmc.GetState();
 
 	state.frameCounter = m_frameCounter;
+	state.frameCounterWriteCycles = m_frameCounterWriteCycles;
 
 	state.controlRegister.value = m_controlRegister.value;
 	state.statusRegister.value = m_statusRegister.value;
 	state.frameCounterRegister.value = m_frameCounterRegister.value;
-	state.irqSent = m_irqSent;
 
 	return state;
 }
@@ -110,18 +110,19 @@ void APU2A03::LoadState(APUState& state)
 	m_dmc.LoadState(state.dmcState);
 
 	m_frameCounter = state.frameCounter;
+	m_frameCounterWriteCycles = state.frameCounterWriteCycles;
 
 	m_controlRegister.value = state.controlRegister.value;
 	m_statusRegister.value = state.statusRegister.value;
 	m_frameCounterRegister.value = ClearLowerBits8(state.frameCounterRegister.value, 6);
-	m_irqSent = state.irqSent;
+	//m_irqSent = state.irqSent;
 }
 
 
 float APU2A03::MixSamples(uint8_t pulse1Sample, uint8_t pulse2Sample, uint8_t triangleSample, uint8_t noiseSample, uint8_t DMCSample) {
-	float pulseFactor = pulse1Sample + pulse2Sample;
+	uint8_t pulseFactor = pulse1Sample + pulse2Sample;
 	float pulse_out = 95.88 * pulseFactor / (8128 + 100 * pulseFactor);
-	float tndFactor = triangleSample / 8227.0 + noiseSample / 12241.0 + DMCSample / 22638.0;
-	float tnd_out = 159.79 * tndFactor / (1 + 100 * tndFactor);
+	float tndFactor = triangleSample / 82.27 + noiseSample / 122.41 + DMCSample / 226.38;
+	float tnd_out = 1.5979 * tndFactor / (1 + tndFactor);
 	return pulse_out + tnd_out;
 }

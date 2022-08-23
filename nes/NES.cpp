@@ -123,7 +123,14 @@ void NES::Clock()
 {
 	// CPU runs every 3 PPU cycles. Running when mod 3 = 2 matches nestest log
 	if (m_cycleCount % 3 == 2) {
+
+		m_apu.Clock();
+		if (m_apu.IsDMCRequestingSample()) {
+			this->SetupDMCDMA();
+		}
+
 		if (m_DMCDMACycles > 0) {
+			// CPU and OAM DMA are suspended due to DMC DMA
 			m_DMCDMACycles--;
 		}
 		else {
@@ -133,10 +140,7 @@ void NES::Clock()
 			}
 			m_OAMDMA.Clock();
 		}
-		m_apu.Clock();
-		if (m_apu.IsDMCRequestingSample()) {
-			this->SetupDMCDMA();
-		}
+
 	}
 	m_ppu.Clock();
 	m_cycleCount++;

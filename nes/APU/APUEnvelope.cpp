@@ -17,14 +17,7 @@ APUEnvelope::APUEnvelope()
 	m_loop = false;
 }
 
-void APUEnvelope::SoftReset()
-{
-	m_startFlag = false;
-	m_divider = 0;
-	m_dividerLoad = 0;
-	m_decayLevel = APU_ENVELOPE_DECAY_LOAD;
-	m_loop = false;
-}
+void APUEnvelope::SoftReset() {}
 
 void APUEnvelope::HardReset()
 {

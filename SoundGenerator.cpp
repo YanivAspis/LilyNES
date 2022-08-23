@@ -1,7 +1,5 @@
 #include "SoundGenerator.h"
 
-
-
 static SoundGenerator* s_instance;
 
 SoundGenerator::SoundGenerator(wxEmulationThread* emulationThread) 

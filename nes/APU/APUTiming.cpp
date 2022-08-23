@@ -4,18 +4,27 @@
 using namespace BitwiseUtils;
 
 void APU2A03::Clock() {
+	if (m_frameCounterWriteCycles > 0) {
+		m_frameCounterWriteCycles--;
+		if (m_frameCounterWriteCycles == 0) {
+			// Frame counter is reset and possibly generate quarter and half frame signals
+			m_frameCounter = 0;
+			if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_5_STEP) {
+				this->DoFrameCounterHalf();
+			}
+		}
+	}
+
 	if (m_frameCounter % 2 == 0) {
-		this->APUClock();
+		m_pulse1.ClockTimer();
+		m_pulse2.ClockTimer();
 	}
 
 	m_triangle.ClockTimer();
 	m_noise.ClockTimer();
 	m_dmc.ClockTimer();
 
-	if (m_frameCounter == 0) {
-		this->DoFrameCounterZero();
-	}
-	else if (m_frameCounter == APU_FRAME_COUNTER_QUARTER) {
+	if (m_frameCounter == APU_FRAME_COUNTER_QUARTER) {
 		this->DoFrameCounterQuarter();
 	}
 	else if (m_frameCounter == APU_FRAME_COUNTER_HALF) {
@@ -23,9 +32,6 @@ void APU2A03::Clock() {
 	}
 	else if (m_frameCounter == APU_FRAME_COUNTER_THREE_QUARTERS) {
 		this->DoFrameCounterThreeQuarters();
-	}
-	else if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP && m_frameCounter == APU_FRAME_COUNTER_4_STEP_PENULTIMATE_FRAME) {
-		this->DoFrameCounterMode4Penultimate();
 	}
 	else if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP && m_frameCounter == APU_FRAME_COUNTER_4_STEP_LAST_FRAME) {
 		this->DoFrameCounterMode4Last();
@@ -35,18 +41,6 @@ void APU2A03::Clock() {
 	}
 
 	this->IncrementFrameCounter();
-}
-
-void APU2A03::APUClock() {
-	m_pulse1.ClockTimer();
-	m_pulse2.ClockTimer();
-}
-
-void APU2A03::DoFrameCounterZero() {
-	if (m_frameCounterRegister.flags.mode == FRAME_COUNTER_MODE_4_STEP) {
-		this->GenerateFrameInterrupt();
-	}
-	m_irqSent = false;
 }
 
 void APU2A03::DoFrameCounterQuarter() {
@@ -76,10 +70,6 @@ void APU2A03::DoFrameCounterThreeQuarters() {
 	m_pulse2.ClockEnvelope();
 	m_triangle.ClockLinearCounter();
 	m_noise.ClockEnvelope();
-}
-
-void APU2A03::DoFrameCounterMode4Penultimate() {
-	this->GenerateFrameInterrupt();
 }
 
 void APU2A03::DoFrameCounterMode4Last() {
@@ -123,9 +113,8 @@ void APU2A03::IncrementFrameCounter() {
 }
 
 void APU2A03::GenerateFrameInterrupt() {
-	if (!m_irqSent && !m_frameCounterRegister.flags.irqInhibit) {
+	if (!m_frameCounterRegister.flags.irqInhibit) {
 		m_cpu->RaiseIRQ(APU_FRAME_IRQ_ID);
 		m_statusRegister.flags.frameInterrupt = 1;
-		m_irqSent = true;
 	}
 }

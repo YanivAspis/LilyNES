@@ -33,16 +33,11 @@ APUNoise::APUNoise()
 
 void APUNoise::SoftReset()
 {
-	// Not clear if these should be reset
-	m_parameters.value = 0;
-	m_periodMode.value = 0;
-	m_lengthCounterLoad.value = 0;
-
-	m_timer = 0;
 	m_lengthCounter = 0;
 
+	m_envelope.SoftReset();
+
 	m_silenced = true;
-	m_powerup = false;
 }
 
 void APUNoise::HardReset()
@@ -54,6 +49,8 @@ void APUNoise::HardReset()
 	m_timer = 0;
 	m_linearFeedbackShiftRegister = 0;
 	m_lengthCounter = 0;
+
+	m_envelope.HardReset();
 
 	m_silenced = true;
 	m_powerup = true;
