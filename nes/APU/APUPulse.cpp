@@ -87,7 +87,7 @@ void APUPulse::ClockSweep()
 	}
 	if (m_sweepDivider == 0 || m_sweepReloadFlag) {
 		m_sweepReloadFlag = false;
-		m_sweepDivider = m_sweep.flags.period;
+		m_sweepDivider = m_sweep.flags.period+1;
 	}
 	else {
 		m_sweepDivider--;
