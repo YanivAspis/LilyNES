@@ -5,8 +5,25 @@
 #include <vector>
 #include <deque>
 
+#include <SDL.h>
+
 
 namespace NESUtils {
+    class SDLException : public std::exception {
+    public:
+        SDLException(std::string message) : m_message(message) {
+            m_message = message + " Details: " + std::string(SDL_GetError());
+        }
+        const char* what() const noexcept override {
+            return m_message.c_str();
+        }
+
+    private:
+        std::string m_message;
+    };
+
+
+
 	std::string HexUint8ToString(uint8_t num);
 	std::string DecUint8ToString(uint8_t num);
 	std::string HexUint16ToString(uint16_t num);

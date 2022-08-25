@@ -20,6 +20,7 @@ LilyNESApp::LilyNESApp() {
 
 bool LilyNESApp::OnInit() {
 	m_mainFrame->Show();
+	m_mainFrame->ClearDisplay();
 	return true;
 }
 

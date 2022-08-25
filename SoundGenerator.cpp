@@ -9,9 +9,6 @@ SoundGenerator::SoundGenerator(wxEmulationThread* emulationThread)
 	m_deviceID = 0;
 	m_soundStopFlag = true;
 
-	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-		throw SDLException("Error opening Audio device.");
-	}
 	SDL_memset(&m_audioSpecDesired, 0, sizeof(m_audioSpecDesired));
 
 	m_audioSpecDesired.freq = SOUND_SAMPLE_RATE;

@@ -51,6 +51,10 @@ wxEND_EVENT_TABLE()
 wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_loadedROM(nullptr) {
     Bind(EVT_NES_STATE_THREAD_UPDATE, &wxMainFrame::OnNESStateThreadUpdate, this);
 
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+        throw SDLException("Error opening Video or Audio device.");
+    }
+
     m_mainMenuBar = new wxMenuBar();
 
     m_fileMenu = new wxMenu();
@@ -360,6 +364,10 @@ void wxMainFrame::ToggleRefreshRate() {
 void wxMainFrame::SelectNextPalette() {
     m_paletteRAMPanel->SelectNextPalette();
     m_patternTablePanel->SelectNextPalette();
+}
+
+void wxMainFrame::ClearDisplay() {
+    m_displayPanel->ClearDisplay();
 }
 
 bool wxMainFrame::IsClosing() const {

@@ -17,21 +17,6 @@ constexpr char* SOUND_DEFAULT_DEVICE = nullptr;
 constexpr double SOUND_AMPLITUDE_MODIFIER = 1.0;
 
 
-class SDLException : public std::exception {
-public:
-	SDLException(std::string message) : m_message(message) {
-		m_message = message + " Details: " + std::string(SDL_GetError());
-	}
-	const char* what() const noexcept override {
-		return m_message.c_str();
-	}
-
-private:
-	std::string m_message;
-};
-
-
-
 class wxEmulationThread;
 
 class SoundGenerator {

@@ -50,6 +50,7 @@ public:
 	void RunContinuouslyWithSound();
 	void ToggleRefreshRate();
 	void SelectNextPalette();
+	void ClearDisplay();
 
 	bool IsClosing() const;
 	

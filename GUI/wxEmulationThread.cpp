@@ -63,6 +63,7 @@ void* wxEmulationThread::Entry(){
 void wxEmulationThread::OnExit() {
 	s_emulationRunning = false;
 	m_soundGenerator->DisableSound();
+	m_mainFrame->ClearDisplay();
 	m_exitNotice->Post();
 }
 
