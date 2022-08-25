@@ -67,6 +67,7 @@ public:
 	void HardReset();
 
 	void ClockTimer();
+	void ResetTimer();
 
 	uint8_t GetAudioSample();
 	void SilenceChannel();

@@ -23,6 +23,7 @@ void APU2A03::Clock() {
 	m_triangle.ClockTimer();
 	m_noise.ClockTimer();
 	m_dmc.ClockTimer();
+	
 
 	if (m_frameCounter == APU_FRAME_COUNTER_QUARTER) {
 		this->DoFrameCounterQuarter();

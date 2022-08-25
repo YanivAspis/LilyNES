@@ -7,8 +7,8 @@ using namespace BitwiseUtils;
 
 APUDMCState::APUDMCState() {
 	paraemters.value = 0;
-	sampleAddress = 0;
-	sampleLength = 0;
+	sampleAddress = APU_DMC_SAMPLE_BASE_ADDRESS;
+	sampleLength = 1;
 
 	timer = 0;
 	irqFlag = false;
@@ -16,7 +16,7 @@ APUDMCState::APUDMCState() {
 	sampleBuffer = 0;
 	sampleBufferEmpty = true;
 	bytesRemaining = 0;
-	currentSampleAddress = 0;
+	currentSampleAddress = APU_DMC_SAMPLE_BASE_ADDRESS;
 	sampleNeeded = false;
 
 	outputLevel = 0;
@@ -33,8 +33,8 @@ APUDMC::APUDMC(CPU2A03* cpu)
 	m_bus = nullptr;
 
 	m_paraemters.value = 0;
-	m_sampleAddress = 0;
-	m_sampleLength = 0;
+	m_sampleAddress = APU_DMC_SAMPLE_BASE_ADDRESS;
+	m_sampleLength = 1;
 
 	m_timer = 0;
 	m_irqFlag = false;
@@ -42,7 +42,7 @@ APUDMC::APUDMC(CPU2A03* cpu)
 	m_sampleBuffer = 0;
 	m_sampleBufferEmpty = true;
 	m_bytesRemaining = 0;
-	m_currentSampleAddress = 0;
+	m_currentSampleAddress = APU_DMC_SAMPLE_BASE_ADDRESS;
 	m_sampleNeeded = false;
 
 	m_outputLevel = 0;
@@ -79,8 +79,8 @@ void APUDMC::SoftReset()
 void APUDMC::HardReset()
 {
 	m_paraemters.value = 0;
-	m_sampleAddress = 0;
-	m_sampleLength = 0;
+	m_sampleAddress = APU_DMC_SAMPLE_BASE_ADDRESS;
+	m_sampleLength = 1;
 
 	m_timer = 0;
 	m_irqFlag = false;
@@ -88,7 +88,7 @@ void APUDMC::HardReset()
 	m_sampleBuffer = 0;
 	m_sampleBufferEmpty = true;
 	m_bytesRemaining = 0;
-	m_currentSampleAddress = 0;
+	m_currentSampleAddress = APU_DMC_SAMPLE_BASE_ADDRESS;
 	m_sampleNeeded = false;
 
 	m_outputLevel = 0;
@@ -108,6 +108,10 @@ void APUDMC::ClockTimer()
 	else {
 		m_timer--;
 	}
+}
+
+void APUDMC::ResetTimer() {
+	m_timer = APU_DMC_TIMER_RELOAD_VALUES[m_paraemters.flags.rate];
 }
 
 uint8_t APUDMC::GetAudioSample()
@@ -156,6 +160,7 @@ void APUDMC::WriteSampleAddress(uint8_t data)
 void APUDMC::WriteSampleLength(uint8_t data)
 {
 	m_sampleLength = ShiftLeft16(data, APU_DMC_SAMPLE_LENGTH_SHIFT_AMOUNT);
+	Inc16Bit(m_sampleLength);
 }
 
 bool APUDMC::IsDMCActive() const

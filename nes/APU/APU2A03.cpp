@@ -115,7 +115,6 @@ void APU2A03::LoadState(APUState& state)
 	m_controlRegister.value = state.controlRegister.value;
 	m_statusRegister.value = state.statusRegister.value;
 	m_frameCounterRegister.value = ClearLowerBits8(state.frameCounterRegister.value, 6);
-	//m_irqSent = state.irqSent;
 }
 
 
