@@ -11,6 +11,12 @@ wxROMInfoFrame::wxROMInfoFrame(wxMainFrame* parent) : wxFrame(parent, wxID_ANY, 
 
 	wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
 
+	wxBoxSizer* checksumSizer = new wxBoxSizer(wxHORIZONTAL);
+	m_checksumName = new wxStaticText(this, wxID_ANY, "Checksum: ");
+	m_checksumVal = new wxStaticText(this, wxID_ANY, "0000000000000000");
+	checksumSizer->Add(m_checksumName, 0, wxLEFT);
+	checksumSizer->Add(m_checksumVal, 0, wxLEFT);
+
 	wxBoxSizer* fileFormatSizer = new wxBoxSizer(wxHORIZONTAL);
 	m_fileFormatName = new wxStaticText(this, wxID_ANY, "File Format: ");
 	m_fileFormatVal = new wxStaticText(this, wxID_ANY, "iNES");
@@ -65,6 +71,7 @@ wxROMInfoFrame::wxROMInfoFrame(wxMainFrame* parent) : wxFrame(parent, wxID_ANY, 
 	fourScreenVRAMSizer->Add(m_fourScreenVRAMName, 0, wxLEFT);
 	fourScreenVRAMSizer->Add(m_fourScreenVRAMVal, 0, wxLEFT);
 
+	topSizer->Add(checksumSizer);
 	topSizer->Add(fileFormatSizer);
 	topSizer->Add(mapperIDSizer);
 	topSizer->Add(PRGROMBankSizer);
@@ -80,6 +87,7 @@ wxROMInfoFrame::wxROMInfoFrame(wxMainFrame* parent) : wxFrame(parent, wxID_ANY, 
 
 void wxROMInfoFrame::OnShow(wxShowEvent& evt) {
 	std::shared_ptr<INESFile> ROMFile = m_parent->GetLoadedROM();
+	m_checksumVal->SetLabel(MD5::ChecksumToString(ROMFile->GetChecksum()));
 	m_fileFormatVal->SetLabel(this->GetFileFormatLabel(ROMFile->GetHeader().GetFileFormat()));
 	m_mapperIDVal->SetLabel(this->GetMapperIDLabel(ROMFile->GetHeader().GetMapperId()));
 	m_PRGROMBanksVal->SetLabel(this->GetPRGROMBanksLabel(ROMFile->GetHeader().GetNumPRGRomBanks()));

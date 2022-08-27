@@ -25,6 +25,9 @@ private:
 
 	wxMainFrame* m_parent;
 
+	wxStaticText* m_checksumName;
+	wxStaticText* m_checksumVal;
+
 	wxStaticText* m_fileFormatName;
 	wxStaticText* m_fileFormatVal;
 

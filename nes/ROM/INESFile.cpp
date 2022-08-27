@@ -7,6 +7,8 @@ INESFile::INESFile(std::string romFilePath) {
 	std::vector<uint8_t> fileContent;
 	this->readFile(romFilePath, fileContent);
 
+	m_checksum = MD5::ComputeChecksum(fileContent);
+
 	// Read header content
 	std::array<uint8_t, HEADER_SIZE> headerContent;
 	std::copy_n(fileContent.begin(), HEADER_SIZE, headerContent.begin());
@@ -16,6 +18,11 @@ INESFile::INESFile(std::string romFilePath) {
 	this->loadPRGROM(fileContent);
 	this->loadCHRROM(fileContent);
 }
+
+std::array<uint8_t, MD5::CHECKSUM_SIZE> INESFile::GetChecksum() const {
+	return m_checksum;
+}
+
 
 INESHeader INESFile::GetHeader() const {
 	return m_header;
