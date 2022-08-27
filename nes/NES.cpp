@@ -7,6 +7,10 @@
 #include "mappers/Mapper003.h"
 #include "mappers/Mapper004.h"
 
+NESState::NESState() {
+	cycleCount = 0;
+	DMCDMACycles = 0;
+}
 
 NES::NES(Environment* environment) : m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment), 
 	m_apu(&m_cpu), m_frameCounterController2(&m_apu, &m_controllers) {
@@ -94,6 +98,7 @@ NESState NES::GetState() const
 	state.oamDMAState = m_OAMDMA.GetState();
 	state.controllerState = m_controllers.GetState();
 	state.apuState = m_apu.GetState();
+	state.cycleCount = m_cycleCount;
 	state.DMCDMACycles = m_DMCDMACycles;
 	if (m_cartridge != nullptr) {
 		state.patternTableState = m_patternTables.GetState();
@@ -112,6 +117,7 @@ void NES::LoadState(NESState& state)
 	m_OAMDMA.LoadState(state.oamDMAState);
 	m_controllers.LoadState(state.controllerState);
 	m_apu.LoadState(state.apuState);
+	m_cycleCount = state.cycleCount;
 	m_DMCDMACycles = state.DMCDMACycles;
 	if (m_cartridge != nullptr) {
 		m_cartridge->LoadState(state.cartridgeState);

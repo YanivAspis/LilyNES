@@ -19,6 +19,7 @@ constexpr unsigned int NAMETABLE_ATTRIBUTE_OFFSET = 0x3C0;
 constexpr unsigned int NAMETABLE_ATTRIBUTE_NUM_TILES_PER_BYTE = 4;
 
 struct NametableState {
+	NametableState();
 	std::array<uint8_t, NAMETABLE_SIZE> nametable0;
 	std::array<uint8_t, NAMETABLE_SIZE> nametable1;
 };

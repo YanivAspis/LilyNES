@@ -20,6 +20,7 @@
 
 
 struct NESState {
+	NESState();
 	CPUState cpuState;
 	RAMState ramState;
 	CartridgeState cartridgeState;
@@ -30,6 +31,7 @@ struct NESState {
 	PPUState ppuState;
 	ControllerState controllerState;
 	APUState apuState;
+	unsigned int cycleCount;
 	uint8_t DMCDMACycles;
 };
 

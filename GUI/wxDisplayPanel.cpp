@@ -37,6 +37,14 @@ wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id) {
 	m_refreshRateRect.y = 0;
 	m_refreshRateRect.w = 0;
 	m_refreshRateRect.h = 0;
+
+	m_userMessageFont = TTF_OpenFont("fonts/FreeSansBold.ttf", 18);
+	m_userMessageColour = { 0, 255, 0, 255 };
+	m_userMessageRect.x = 1;
+	m_userMessageRect.y = 0;
+	m_userMessageRect.w = 0;
+	m_userMessageRect.h = 0;
+	m_userMessageFramesLeft = 0;
 }
 
 wxDisplayPanel::~wxDisplayPanel() {
@@ -59,6 +67,8 @@ void wxDisplayPanel::OnSize(wxSizeEvent& evt) {
 	wxSize size = evt.GetSize();
 	m_refreshRateRect.w = size.GetWidth() / 6;
 	m_refreshRateRect.h = size.GetHeight() / 8;
+	m_userMessageRect.w = size.GetWidth() * m_userMessage.size() / 30.0;
+	m_userMessageRect.h = size.GetHeight() / 10;
 	evt.Skip();
 }
 
@@ -86,6 +96,19 @@ void wxDisplayPanel::OnImageUpdate(wxThreadEvent& evt) {
 		SDL_RenderCopy(m_renderer, refreshRateTexture, nullptr, &m_refreshRateRect);
 		SDL_DestroyTexture(refreshRateTexture);
 		SDL_FreeSurface(refreshRateSurface);
+	}
+
+	if (m_userMessageFramesLeft != 0) {
+		SDL_Surface* userMessageSurface = TTF_RenderText_Solid(m_userMessageFont, m_userMessage.c_str(), m_userMessageColour);
+		SDL_Texture* userMessageTexture = SDL_CreateTextureFromSurface(m_renderer, userMessageSurface);
+
+		SDL_RenderCopy(m_renderer, userMessageTexture, nullptr, &m_userMessageRect);
+		SDL_DestroyTexture(userMessageTexture);
+		SDL_FreeSurface(userMessageSurface);
+	}
+
+	if (m_userMessageFramesLeft > 0) {
+		m_userMessageFramesLeft--;
 	}
 
 	SDL_RenderPresent(m_renderer);
@@ -116,4 +139,20 @@ void wxDisplayPanel::ToggleRefreshRate() {
 	m_displayRefreshRate = !m_displayRefreshRate;
 	m_frameCount = 0;
 	m_startTime = m_clock.now();
+}
+
+void wxDisplayPanel::SetUserMessage(std::string message, double duration) {
+	m_userMessage = message;
+	m_userMessageRect.w = this->GetSize().GetWidth() * m_userMessage.size() / 30.0;
+	if (duration > 0) {
+		m_userMessageFramesLeft = duration * DISPLAY_TARGET_REFRESH_RATE;
+	}
+	else {
+		m_userMessageFramesLeft = -1;
+	}
+
+}
+
+void wxDisplayPanel::ClearUserMessage() {
+	m_userMessageFramesLeft = 0;
 }

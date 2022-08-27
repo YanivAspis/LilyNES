@@ -1,5 +1,10 @@
 #include "NametableDevice.h"
 
+NametableState::NametableState() {
+	nametable0.fill(0);
+	nametable1.fill(0);
+}
+
 NametableDevice::NametableDevice() : BusDevice(std::list<AddressRange>({ AddressRange(NAMETABLE_BEGIN_ADDRESS, NAMETABLE_END_ADDRESS) })),
 	m_cartridge(nullptr) {
 

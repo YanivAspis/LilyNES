@@ -9,6 +9,7 @@ constexpr unsigned int OAMDMA_CYCLES_ODD = 514;
 constexpr unsigned int OAMDMA_TRANSFER_BEGIN_CYCLE = 512;
 
 struct OAMDMAState {
+	OAMDMAState();
 	uint8_t page;
 	uint8_t readAddressLow;
 	uint8_t loadedOAMData;

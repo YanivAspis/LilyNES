@@ -16,6 +16,7 @@ constexpr unsigned int PATTERN_TABLE_TILE_HEIGHT = PATTERN_TABLE_TILE_WIDTH;
 constexpr unsigned int PATTERN_TABLE_MSB_OFFSET = PATTERN_TABLE_TILE_HEIGHT;
 
 struct PatternTableState {
+	PatternTableState();
 	std::array<uint8_t, PATTERN_TABLE_SIZE> patternTable0;
 	std::array<uint8_t, PATTERN_TABLE_SIZE> patternTable1;
 };

@@ -5,6 +5,11 @@
 
 using namespace BitwiseUtils;
 
+PatternTableState::PatternTableState() {
+	patternTable0.fill(0);
+	patternTable1.fill(0);
+}
+
 PatternTableDevice::PatternTableDevice() : BusDevice(std::list({AddressRange(PATTERN_TABLE_BEGIN_ADDRESS, PATTERN_TABLE_END_ADDRESS)})) {
 	m_cartridge = nullptr;
 }

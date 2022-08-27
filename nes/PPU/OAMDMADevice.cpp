@@ -4,6 +4,14 @@
 
 using namespace BitwiseUtils;
 
+OAMDMAState::OAMDMAState() {
+	page = 0;
+	readAddressLow = 0;
+	loadedOAMData = 0;
+	cyclesRemaining = 0;
+	cpuCycleCount = 0;
+}
+
 OAMDMADevice::OAMDMADevice() : BusDevice(std::list<AddressRange>({AddressRange(OAMDMA_ADDRESS, OAMDMA_ADDRESS)})) {
 	m_page = 0;
 	m_readAddressLow = 0;
