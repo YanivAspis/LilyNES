@@ -170,4 +170,7 @@ namespace NESUtils {
 
 
     }
+
+    void SaveBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t> PRGRAMContent);
+    bool LoadBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t>& PRGRAMContent);
 }

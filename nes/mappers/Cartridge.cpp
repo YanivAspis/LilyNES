@@ -19,7 +19,8 @@ CartridgeState::CartridgeState() {
 
 Cartridge::Cartridge(const INESFile& romFile) : BusDevice(std::list<AddressRange>({
 	AddressRange(PRG_RAM_START_ADDRESS, PRG_RAM_END_ADDRESS), AddressRange(PRG_ROM_START_ADDRESS, PRG_ROM_END_ADDRESS)
-	})), m_PRGROM(romFile.GetPRGROM()), m_CHRROM(romFile.GetCHRROM()), m_CHRRAMEnabled(romFile.GetHeader().UsesCHRRam()) 
+	})), m_PRGROM(romFile.GetPRGROM()), m_CHRROM(romFile.GetCHRROM()), m_CHRRAMEnabled(romFile.GetHeader().UsesCHRRam()), 
+	m_batteryBackedRAM(romFile.GetHeader().IsPRGRAMBatteryBacked()), m_PRGRAMUpdated(false)
 {
 	m_PRGRAM = std::vector<uint8_t>(PRG_RAM_BANK_SIZE * romFile.GetHeader().GetPRGRAMSize(), 0);
 	if (m_CHRRAMEnabled) {
@@ -37,8 +38,10 @@ void Cartridge::SoftReset() {
 
 
 void Cartridge::HardReset() {
-	// Perhaps should be set to random values?
-	m_PRGRAM = std::vector<uint8_t>(m_PRGRAM.size(), 0);
+	if (!m_batteryBackedRAM) {
+		// Perhaps should be set to random values?
+		m_PRGRAM = std::vector<uint8_t>(m_PRGRAM.size(), 0);
+	}
 
 	this->InitializeBankMapping();
 }
@@ -94,6 +97,18 @@ uint8_t Cartridge::ProbePPU(uint16_t address) {
 	return this->PPURead(address);
 }
 
+bool Cartridge::PRGRAMNeedsSaving() {
+	bool returnValue = m_batteryBackedRAM && m_PRGRAMUpdated;
+	m_PRGRAMUpdated = false;
+	return returnValue;
+}
+
+std::vector<uint8_t>& Cartridge::GetPRGRAM() {
+	return m_PRGRAM;
+}
+void Cartridge::LoadPRGRAM(const std::vector<uint8_t>& PRGRAMContent) {
+	m_PRGRAM = PRGRAMContent;
+}
 
 CartridgeState Cartridge::GetState() const {
 	CartridgeState state;
@@ -145,6 +160,7 @@ void Cartridge::PRGRAMWrite(uint16_t address, uint8_t data) {
 	// If address out of range, ignore
 	if (address < (uint16_t)m_PRGRAM.size()) {
 		m_PRGRAM[address] = data;
+		m_PRGRAMUpdated = true;
 	}
 }
 

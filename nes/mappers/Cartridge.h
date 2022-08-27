@@ -97,6 +97,11 @@ public:
 
 	virtual MirroringMode GetCurrentMirroringMode() = 0;
 
+	bool PRGRAMNeedsSaving();
+	std::vector<uint8_t>& GetPRGRAM();
+	void LoadPRGRAM(const std::vector<uint8_t>& PRGRAMContent);
+
+
 	CartridgeState GetState() const;
 	void LoadState(CartridgeState& state);
 
@@ -116,6 +121,8 @@ protected:
 	std::vector<uint8_t> m_PRGRAM;
 
 	bool m_CHRRAMEnabled;
+	bool m_batteryBackedRAM;
+	bool m_PRGRAMUpdated;
 
 	std::vector<LogicalBank> m_PRGLogicalBanks;
 	std::vector<LogicalBank> m_CHRLogicalBanks;

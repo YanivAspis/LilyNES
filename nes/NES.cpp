@@ -184,6 +184,20 @@ float NES::GetAudioSample() {
 	return m_apu.GetAudioSample();
 }
 
+bool NES::PRGRAMNeedsSaving() {
+	return m_cartridge != nullptr && m_cartridge->PRGRAMNeedsSaving();
+}
+
+std::vector<uint8_t>& NES::GetPRGRAM() {
+	assert(m_cartridge != nullptr);
+	return m_cartridge->GetPRGRAM();
+}
+
+void NES::LoadPRGRAM(const std::vector<uint8_t>& PRGRAMContent) {
+	assert(m_cartridge != nullptr);
+	m_cartridge->LoadPRGRAM(PRGRAMContent);
+}
+
 uint8_t NES::ProbeCPUBus(uint16_t address) {
 	return m_cpuBus.Probe(address);
 }

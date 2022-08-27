@@ -62,6 +62,9 @@ public:
 	void RunUntilNextFrame();
 
 	float GetAudioSample();
+	bool PRGRAMNeedsSaving();
+	std::vector<uint8_t>& GetPRGRAM();
+	void LoadPRGRAM(const std::vector<uint8_t>& PRGRAMContent);
 
 	// Functions for debugging
 	uint8_t ProbeCPUBus(uint16_t address);

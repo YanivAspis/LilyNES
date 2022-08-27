@@ -282,4 +282,24 @@ namespace NESUtils {
 			}
 		}
 	}
+
+	void SaveBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t> PRGRAMContent) {
+		std::string savePath = "save/battery/" + MD5::ChecksumToString(checksum) + ".sav";
+		std::ofstream saveFile(savePath, std::ios::binary);
+		std::ostream_iterator<char> saveFileIterator(saveFile);
+		std::copy(PRGRAMContent.begin(), PRGRAMContent.end(), saveFileIterator);
+	}
+
+	bool LoadBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t>& PRGRAMContent) {
+		std::string loadPath = "save/battery/" + MD5::ChecksumToString(checksum) + ".sav";
+		std::ifstream loadFile(loadPath, std::ios::binary);
+		if (loadFile.fail()) {
+			return false;
+		}
+
+		std::istreambuf_iterator<char> loadFileIterator(loadFile);
+		PRGRAMContent = std::vector<uint8_t>(loadFileIterator, {});
+
+		return true;
+	}
 }

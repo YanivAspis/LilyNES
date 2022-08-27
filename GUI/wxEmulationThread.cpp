@@ -61,6 +61,9 @@ void* wxEmulationThread::Entry(){
 
 
 void wxEmulationThread::OnExit() {
+	if (m_nes.PRGRAMNeedsSaving()) {
+		SaveBatteryBackedRAM(m_mainFrame->GetLoadedROM()->GetChecksum(), m_nes.GetPRGRAM());
+	}
 	s_emulationRunning = false;
 	m_soundGenerator->DisableSound();
 	m_mainFrame->ClearDisplay();
@@ -69,6 +72,12 @@ void wxEmulationThread::OnExit() {
 
 void wxEmulationThread::LoadROM(const INESFile& romFile) {
 	m_nes.LoadROM(romFile);
+	if (romFile.GetHeader().IsPRGRAMBatteryBacked()) {
+		std::vector<uint8_t> PRGRAMContent;
+		if (LoadBatteryBackedRAM(romFile.GetChecksum(), PRGRAMContent)) {
+			m_nes.LoadPRGRAM(PRGRAMContent);
+		}
+	}
 }
 
 EMULATION_RUNNING_MODE wxEmulationThread::GetRunningMode() {
