@@ -160,6 +160,33 @@ namespace BitwiseUtils {
 		return ExtractHighByte(word1) == ExtractHighByte(word2);
 	}
 
+	uint32_t Add32Bit(uint32_t num1, uint32_t num2) {
+		return (num1 + num2) & 0xFFFFFFFF;
+	}
+
+	// Little endian inputs (a LSB, d MSB)
+	uint32_t CombineBytes32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+		return a | b << 8 | c << 16 | d << 24;
+	}
+
+	std::array<uint8_t, 4> SplitBytes32(uint32_t num) {
+		std::array<uint8_t, 4> result;
+		result[0] = num & 0xFF;
+		result[1] = (num & 0xFF00) >> 8;
+		result[2] = (num & 0xFF0000) >> 16;
+		result[3] = (num & 0xFF000000) >> 24;
+		return result;
+	}
+
+	uint32_t RotateLeft32Bit(uint32_t num, unsigned int numBits) {
+		assert(numBits >= 0 && numBits <= 32);
+		uint64_t expandedNum = num;
+		expandedNum <<= numBits;
+		uint64_t remainder = expandedNum & 0xFFFFFFFF00000000;
+		uint32_t result = (expandedNum & 0xFFFFFFFF) | (remainder >> 32);
+		return result;
+	}
+
 }
 
 

@@ -155,4 +155,131 @@ namespace NESUtils {
 		m_lastSample += m_alpha * (sample - m_lastSample);
 		return m_lastSample;
 	}
+
+	namespace MD5 {
+		std::array<uint8_t, CHECKSUM_SIZE> ComputeChecksum(const std::vector<uint8_t>& message) {
+			std::vector<uint8_t> paddedMessage = PadMessage(message);
+			uint32_t a0 = INIT_A0;
+			uint32_t b0 = INIT_B0;
+			uint32_t c0 = INIT_C0;
+			uint32_t d0 = INIT_D0;
+			for (unsigned int chunkIndex = 0; chunkIndex < paddedMessage.size() / CHUNK_SIZE; chunkIndex++) {
+				size_t beginIndex = chunkIndex * CHUNK_SIZE;
+				size_t endIndex = beginIndex + CHUNK_SIZE;
+				std::array<uint8_t, CHUNK_SIZE> chunk;
+				std::copy(paddedMessage.begin() + beginIndex, paddedMessage.begin() + endIndex, chunk.begin());
+				ComputeChunkHash(chunk, a0, b0, c0, d0);
+			}
+
+			std::array<uint8_t, CHECKSUM_SIZE> result;
+
+			std::array<uint8_t, 4> split = SplitBytes32(a0);
+			for (unsigned int i = 0; i < 4; i++) {
+				result[i] = split[i];
+			}
+
+			split = SplitBytes32(b0);
+			for (unsigned int i = 0; i < 4; i++) {
+				result[4 + i] = split[i];
+			}
+
+			split = SplitBytes32(c0);
+			for (unsigned int i = 0; i < 4; i++) {
+				result[8 + i] = split[i];
+			}
+
+			split = SplitBytes32(d0);
+			for (unsigned int i = 0; i < 4; i++) {
+				result[12 + i] = split[i];
+			}
+
+			return result;
+		}
+
+		std::string ChecksumToString(const std::array<uint8_t, CHECKSUM_SIZE>& checksum) {
+			std::string resultStr(32, '0');
+			for (unsigned int i = 0; i < 16; i++) {
+				std::string byteStr = HexUint8ToString(checksum[i]);
+				std::copy(byteStr.begin() + 2, byteStr.end(), resultStr.begin() + 2 * i);
+			}
+			return resultStr;
+		}
+
+		std::vector<uint8_t> PadMessage(const std::vector<uint8_t>& message) {
+			uint64_t messageLength = message.size() * 8;
+			size_t extraPadding = CHUNK_SIZE - (message.size() + MESSAGE_LENGTH_BYTES + 1) % CHUNK_SIZE;
+			if (extraPadding == CHUNK_SIZE) {
+				extraPadding = 0;
+			}
+			std::vector<uint8_t> paddedMessage = message;
+			paddedMessage.push_back(0x80);
+			while (extraPadding > 0) {
+				paddedMessage.push_back(0);
+				extraPadding--;
+			}
+
+			for (uint8_t& num : SplitBytes32(messageLength & 0xFFFFFFFF)) {
+				paddedMessage.push_back(num);
+			}
+			for (uint8_t& num : SplitBytes32((messageLength & 0xFFFFFFFF00000000) >> 32)) {
+				paddedMessage.push_back(num);
+			}
+
+			return paddedMessage;
+		}
+
+		void ComputeChunkHash(std::array<uint8_t, CHUNK_SIZE>& chunk, uint32_t& a0, uint32_t& b0, uint32_t& c0, uint32_t& d0) {
+			std::array<uint32_t, CHUNK_NUM_DWORDS> DWORDArray = GetDWORDArray(chunk);
+
+			uint32_t A = a0;
+			uint32_t B = b0;
+			uint32_t C = c0;
+			uint32_t D = d0;
+			uint32_t F = 0;
+			size_t g = 0;
+
+			for (unsigned int round = 0; round < MD5_ROUNDS; round++) {
+				ComputeFgValues(round, A, B, C, D, F, g);
+				F = Add32Bit(F, Add32Bit(A, Add32Bit(CONSTANTS[round], DWORDArray[g])));
+				A = D;
+				D = C;
+				C = B;
+				B = Add32Bit(B, RotateLeft32Bit(F, SHIFT_AMOUNTS[round]));
+			}
+
+			a0 = Add32Bit(a0, A);
+			b0 = Add32Bit(b0, B);
+			c0 = Add32Bit(c0, C);
+			d0 = Add32Bit(d0, D);
+
+		}
+
+		std::array<uint32_t, CHUNK_NUM_DWORDS> GetDWORDArray(std::array<uint8_t, CHUNK_SIZE>& chunk) {
+			std::array<uint32_t, CHUNK_NUM_DWORDS> DWORDArray;
+			for (unsigned int DWORDIndex = 0; DWORDIndex < CHUNK_NUM_DWORDS; DWORDIndex++) {
+				DWORDArray[DWORDIndex] = CombineBytes32(chunk[DWORDIndex * 4], chunk[DWORDIndex * 4 + 1], chunk[DWORDIndex * 4 + 2], chunk[DWORDIndex * 4 + 3]);
+			}
+
+			return DWORDArray;
+		}
+
+		void ComputeFgValues(unsigned int round, uint32_t A, uint32_t B, uint32_t C, uint32_t D, uint32_t& F, size_t& g) {
+			if (round >= 0 && round < 16) {
+				F = (B & C) | (~B & D);
+				g = round;
+			}
+			else if (round >= 16 && round < 32) {
+				F = (D & B) | (~D & C);
+				g = (5*round + 1) % 16;
+			}
+			else if (round >= 32 && round < 48) {
+				F = B ^ C ^ D;
+				g = (3*round + 5) % 16;
+			}
+			else if (round >= 48 && round < 64) {
+				F = C ^ (B | ~D);
+				g = (7 * round) % 16;
+			}
+		}
+	}
 }

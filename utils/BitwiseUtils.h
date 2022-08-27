@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <array>
+
 
 
 namespace BitwiseUtils {
@@ -34,5 +36,10 @@ uint8_t ExtractHighByte(uint16_t word);
 
 uint16_t AddRelativeAddress(uint16_t baseAddress, uint8_t signedRelativeAddress);
 bool IsUpperByteTheSame(uint16_t word1, uint16_t word2);
+
+uint32_t Add32Bit(uint32_t num1, uint32_t num2);
+uint32_t CombineBytes32(uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+std::array<uint8_t, 4> SplitBytes32(uint32_t num);
+uint32_t RotateLeft32Bit(uint32_t num, unsigned int numBits);
 
 }
