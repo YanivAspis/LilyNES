@@ -50,6 +50,7 @@ wxEND_EVENT_TABLE()
 
 wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_loadedROM(nullptr) {
     Bind(EVT_NES_STATE_THREAD_UPDATE, &wxMainFrame::OnNESStateThreadUpdate, this);
+    Bind(wxEVT_TIMER, &wxMainFrame::OnPRGRAMSaveTick, this);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         throw SDLException("Error opening Video or Audio device.");
@@ -112,6 +113,7 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
     m_lastRunningMode = EMULATION_RUNNING_PAUSED;
+    m_savePRGRAMTimer = new wxTimer(this);
     m_closingFlag = false;
 
     // Sound system initialization
@@ -157,6 +159,9 @@ void wxMainFrame::StartEmulation()
 
     // Provide a bit of time for thread to set up before running the emulation
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    // Start periodic saving of battery-backed PRGRAM
+    m_savePRGRAMTimer->Start(PERIOD_BATTERY_BACKED_RAM_SAVE_MILLISECONDS);
 
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
@@ -370,11 +375,18 @@ void wxMainFrame::ClearDisplay() {
     m_displayPanel->ClearDisplay();
 }
 
+void wxMainFrame::OnPRGRAMSaveTick(wxTimerEvent& evt) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        m_emulationThread->HandlePRGRAMSave();
+    }
+}
+
 bool wxMainFrame::IsClosing() const {
     return m_closingFlag;
 }
 
 void wxMainFrame::StopEmulation(bool wait = false) {
+    m_savePRGRAMTimer->Stop();
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->Delete();
         if (wait) {

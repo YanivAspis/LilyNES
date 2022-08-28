@@ -9,6 +9,7 @@ wxDEFINE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
 wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment) : m_nes(enviroment), m_illegalEx(0, 0),
 		m_highPassFilter1(HIGH_PASS_FILTER_1_CUTOFF, AUDIO_FILTERING_DT), m_highPassFilter2(HIGH_PASS_FILTER_2_CUTOFF, AUDIO_FILTERING_DT), m_lowPassFilter(LOW_PASS_FILTER_CUTOFF, AUDIO_FILTERING_DT) {
+
 	m_continuousNoSoundRunInitialized = false;
 	m_runningMode = EMULATION_RUNNING_PAUSED;
 	m_userRequest = EMULATION_USER_REQUEST_NONE;
@@ -33,6 +34,7 @@ void* wxEmulationThread::Entry(){
 		try {
 			{
 				wxCriticalSectionLocker enter(m_audioCritSection);
+				this->HandelEmulationEvents();
 				this->HandleUserRequest();
 			}
 			switch (this->GetRunningMode()) {
@@ -121,7 +123,11 @@ void wxEmulationThread::SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& 
 
 void wxEmulationThread::RethrowIllegalInstructionException(IllegalInstructionException ex) {
 	m_illegalEx = ex;
-	this->SetUserRequest(EMULATION_USER_REQUEST_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION);
+	this->PostEmulationEvent(EMULATION_EVENT_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION);
+}
+
+void wxEmulationThread::HandlePRGRAMSave() {
+	this->PostEmulationEvent(EMULATION_EVENT_SAVE_PRGRAM);
 }
 
 NESState wxEmulationThread::GetCurrentNESState() {
@@ -196,6 +202,30 @@ void wxEmulationThread::EmulationWait() {
 	std::this_thread::sleep_until(m_sleepTargetTime);
 }
 
+void wxEmulationThread::PostEmulationEvent(EMULATION_EVENT evt) {
+	wxCriticalSectionLocker enter(m_pendingEmulationEventsCritSection);
+	m_pendingEmulationEvents.push(evt);
+}
+
+void wxEmulationThread::HandelEmulationEvents() {
+	wxCriticalSectionLocker enter(m_pendingEmulationEventsCritSection);
+	while (!m_pendingEmulationEvents.empty()) {
+		EMULATION_EVENT evt;
+		evt = m_pendingEmulationEvents.front();
+		m_pendingEmulationEvents.pop();
+		switch (evt) {
+		case EMULATION_EVENT_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION:
+			throw m_illegalEx;
+			break;
+		case EMULATION_EVENT_SAVE_PRGRAM:
+			if (m_nes.PRGRAMNeedsSaving()) {
+				SaveBatteryBackedRAM(m_mainFrame->GetLoadedROM()->GetChecksum(), m_nes.GetPRGRAM());
+			}
+			break;
+		}
+	}
+}
+
 void wxEmulationThread::HandleUserRequest() {
 	EMULATION_USER_REQUEST userRequest;
 	{
@@ -204,9 +234,6 @@ void wxEmulationThread::HandleUserRequest() {
 		m_userRequest = EMULATION_USER_REQUEST_NONE;
 	}
 	switch (userRequest) {
-	case EMULATION_USER_REQUEST_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION:
-		throw m_illegalEx;
-		break;
 	case EMULATION_USER_REQUEST_SOFT_RESET:
 		if (m_runningMode == EMULATION_RUNNING_CONTINUOUS_SOUND) {
 			m_soundGenerator->DisableSound();

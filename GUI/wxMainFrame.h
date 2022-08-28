@@ -14,6 +14,8 @@
 #include "wxEmulationThread.h"
 #include "../Environment.h"
 
+constexpr int PERIOD_BATTERY_BACKED_RAM_SAVE_MILLISECONDS = 60000;
+
 class wxEmulationThread;
 enum EMULATION_RUNNING_MODE;
 class wxROMInfoFrame;
@@ -51,6 +53,8 @@ public:
 	void ToggleRefreshRate();
 	void SelectNextPalette();
 	void ClearDisplay();
+	void OnPRGRAMSaveTick(wxTimerEvent& evt);
+
 
 	bool IsClosing() const;
 	
@@ -81,8 +85,8 @@ private:
 	
 
 	std::shared_ptr<INESFile> m_loadedROM;
-
 	wxCriticalSection m_currNESState_cs;
+	wxTimer* m_savePRGRAMTimer;
 
 	bool m_closingFlag;
 

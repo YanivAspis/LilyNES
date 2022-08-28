@@ -18,6 +18,7 @@ constexpr float HIGH_PASS_FILTER_2_CUTOFF = 440;
 constexpr float LOW_PASS_FILTER_CUTOFF = 14000;
 constexpr float AUDIO_FILTERING_DT = 3 * CPU_FREQUENCY;
 
+
 enum EMULATION_RUNNING_MODE {
 	EMULATION_RUNNING_PAUSED,
 	EMULATION_RUNNING_USER_CONTROLLED,
@@ -27,7 +28,6 @@ enum EMULATION_RUNNING_MODE {
 
 enum EMULATION_USER_REQUEST {
 	EMULATION_USER_REQUEST_NONE,
-	EMULATION_USER_REQUEST_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION,
 	EMULATION_USER_REQUEST_SOFT_RESET,
 	EMULATION_USER_REQUEST_HARD_RESET
 };
@@ -38,6 +38,11 @@ enum EMULATION_USER_DEBUG_REQUEST {
 	EMULATION_USER_DEBUG_REQUEST_NEXT_INSTRUCTION,
 	EMULATION_USER_DEBUG_REQUEST_NEXT_SCANLINE,
 	EMULATION_USER_DEBUG_REQUEST_NEXT_FRAME,
+};
+
+enum EMULATION_EVENT {
+	EMULATION_EVENT_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION,
+	EMULATION_EVENT_SAVE_PRGRAM
 };
 
 
@@ -59,6 +64,7 @@ public:
 	void SetUserRequest(const EMULATION_USER_REQUEST& userRequest);
 	void SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& userRequest);
 	void RethrowIllegalInstructionException(IllegalInstructionException ex);
+	void HandlePRGRAMSave();
 
 	NESState GetCurrentNESState();
 	float GetAudioSample();
@@ -77,6 +83,8 @@ private:
 	void RunUntilNextFrame();
 	void EmulationWait();
 
+	void PostEmulationEvent(EMULATION_EVENT evt);
+	void HandelEmulationEvents();
 	void HandleUserRequest();
 	void DoPause();
 	void DoUserDebugRequestRun();
@@ -90,11 +98,14 @@ private:
 	wxCriticalSection m_audioCritSection;
 	bool m_soundModeReady;
 
+
 	EMULATION_RUNNING_MODE m_runningMode;
 	wxCriticalSection m_userRequestCritSection;
 	EMULATION_USER_REQUEST m_userRequest;
 	wxCriticalSection m_runningModeCritSection;
 	wxMessageQueue<EMULATION_USER_DEBUG_REQUEST> m_userDebugRequestQueue;
+	std::queue<EMULATION_EVENT> m_pendingEmulationEvents;
+	wxCriticalSection m_pendingEmulationEventsCritSection;
 	NESState m_currentNESState;
 	wxCriticalSection m_currentStateCritSection;
 
