@@ -54,6 +54,8 @@ public:
 	void SelectNextPalette();
 	void ClearDisplay();
 	void OnPRGRAMSaveTick(wxTimerEvent& evt);
+	void SaveState();
+	void LoadState();
 
 
 	bool IsClosing() const;

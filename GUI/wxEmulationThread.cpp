@@ -19,6 +19,8 @@ wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNo
 
 	m_soundGenerator = new SoundGenerator(this);
 	m_cyclesRemainingForAudio = NUM_CYCLES_PER_AUDIO_SAMPLE;
+
+	m_saveStateValid = false;
 }
 
 wxEmulationThread::~wxEmulationThread() {
@@ -161,6 +163,7 @@ bool wxEmulationThread::IsEmulationRunning() const {
 
 void wxEmulationThread::Setup() {
 	m_nes.HardReset();
+	m_saveStateValid = false;
 }
 
 void wxEmulationThread::PostNESUpdate() {
@@ -256,6 +259,15 @@ void wxEmulationThread::HandleUserRequest() {
 			m_highPassFilter2.Restart();
 			m_lowPassFilter.Restart();
 			m_soundGenerator->EnableSound();
+		}
+		break;
+	case EMULATION_USER_REQUEST_SAVE_STATE:
+		m_saveState = m_nes.GetState();
+		m_saveStateValid = true;
+		break;
+	case EMULATION_USER_REQUEST_LOAD_STATE:
+		if (m_saveStateValid) {
+			m_nes.LoadState(m_saveState);
 		}
 		break;
 	}

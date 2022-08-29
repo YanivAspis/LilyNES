@@ -381,6 +381,18 @@ void wxMainFrame::OnPRGRAMSaveTick(wxTimerEvent& evt) {
     }
 }
 
+void wxMainFrame::SaveState() {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_SAVE_STATE);
+    }
+}
+
+void wxMainFrame::LoadState() {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_LOAD_STATE);
+    }
+}
+
 bool wxMainFrame::IsClosing() const {
     return m_closingFlag;
 }

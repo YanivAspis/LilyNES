@@ -16,6 +16,10 @@ LilyNESApp::LilyNESApp() {
 	m_keyPressFuncs['L'] = &(wxMainFrame::RunContinuouslyWithSound);
 	m_keyPressFuncs['Y'] = &(wxMainFrame::ToggleRefreshRate);
 	m_keyPressFuncs['U'] = &(wxMainFrame::SelectNextPalette);
+	
+	// User controls
+	m_keyPressFuncs['P'] = &(wxMainFrame::SaveState);
+	m_keyPressFuncs['R'] = &(wxMainFrame::LoadState);
 }
 
 bool LilyNESApp::OnInit() {

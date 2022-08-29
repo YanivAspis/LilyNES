@@ -93,7 +93,7 @@ private:
 
 	size_t m_numPRGROMBanks;
 	//size_t m_numCHRROMBanks;
-	bool m_batteryBackedRAM;
+	//bool m_batteryBackedRAM;
 
 	uint8_t m_loadData;
 	unsigned int m_loadCounter; // Count 5 writes to PRG ROM before making changes
