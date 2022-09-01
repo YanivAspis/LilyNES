@@ -144,8 +144,6 @@ bool PPU2C02::IsRenderingSprites() const {
 }
 
 void PPU2C02::RenderPixel() {
-	// At the moment, only render the background
-
 	// Fetch background and foreground colours
 	PixelColourInfo backgroundInfo = m_backgroundShiftRegister[m_fineX];
 	SpritePixelInfo spriteInfo = m_spriteLine[m_dot - 1];
@@ -199,7 +197,7 @@ void PPU2C02::GetPixelColour(uint8_t backgroundPalette, uint8_t backgroundColour
 		return;
 	}
 
-	// Both are opaque, so use background priority to resolve
+	// Case 6 - both are opaque, so use background priority to resolve
 	if (backgroundPriority) {
 		selectedPalette = backgroundPalette;
 		selectedColourIndex = backgroundColourIndex;

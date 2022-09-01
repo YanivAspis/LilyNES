@@ -258,6 +258,12 @@
     <ClInclude Include="utils\BitwiseUtils.h" />
     <ClInclude Include="utils\NESUtils.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\sample.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\lilyNES.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

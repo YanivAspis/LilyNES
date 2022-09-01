@@ -49,6 +49,8 @@ wxEND_EVENT_TABLE()
 
 
 wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_loadedROM(nullptr) {
+    SetIcon(wxIcon("sample"));
+
     Bind(EVT_NES_STATE_THREAD_UPDATE, &wxMainFrame::OnNESStateThreadUpdate, this);
     Bind(wxEVT_TIMER, &wxMainFrame::OnPRGRAMSaveTick, this);
 
