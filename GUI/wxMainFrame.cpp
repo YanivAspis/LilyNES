@@ -26,6 +26,7 @@ enum MenuOptions {
     wxID_LILYNES_HARD_RESET,
 
     // Debug options
+    wxID_LILYNES_DEBUG_VIEW,
     wxID_LILYNES_VIEW_ROM_INFO,
     wxID_LILYNES_TEST_CPU
 };
@@ -43,12 +44,13 @@ wxBEGIN_EVENT_TABLE(wxMainFrame, wxFrame)
     EVT_MENU(wxID_LILYNES_SOFT_RESET, wxMainFrame::OnSoftReset)
     EVT_MENU(wxID_LILYNES_HARD_RESET, wxMainFrame::OnHardReset)
 
+    EVT_MENU(wxID_LILYNES_DEBUG_VIEW, wxMainFrame::OnDebugView)
     EVT_MENU(wxID_LILYNES_VIEW_ROM_INFO, wxMainFrame::OnROMInformation)
     EVT_MENU(wxID_LILYNES_TEST_CPU, wxMainFrame::OnTestCPU)
 wxEND_EVENT_TABLE()
 
 
-wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_loadedROM(nullptr) {
+wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_loadedROM(nullptr), m_debugViewMode(false) {
     SetIcon(wxIcon("sample"));
 
     Bind(EVT_NES_STATE_THREAD_UPDATE, &wxMainFrame::OnNESStateThreadUpdate, this);
@@ -71,6 +73,9 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_emulationMenu->Enable(wxID_LILYNES_HARD_RESET, false);
 
     m_debugMenu = new wxMenu();
+    
+    m_debugMenu->Append(new wxMenuItem(m_debugMenu, wxID_LILYNES_DEBUG_VIEW, wxT("Debug View"), wxT(""), wxITEM_CHECK));
+    m_debugMenu->Check(wxID_LILYNES_DEBUG_VIEW, m_debugViewMode);
     m_debugMenu->Append(wxID_LILYNES_VIEW_ROM_INFO, wxT("ROM Information"));
     m_debugMenu->Enable(wxID_LILYNES_VIEW_ROM_INFO, false);
     m_debugMenu->Append(wxID_LILYNES_TEST_CPU, wxT("Test CPU"));
@@ -82,9 +87,9 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
 
     this->SetMenuBar(m_mainMenuBar);
 
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxBoxSizer* bottomSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_mainSizer = new wxBoxSizer(wxVERTICAL);
+    m_topSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_bottomSizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_displayPanel = new wxDisplayPanel(this);
     m_disassemblerPanel = new wxDisassemblerPanel(this);
@@ -95,21 +100,31 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_patternTablePanel = new wxPatternTablePanel(this);
     m_OAMPanel = new wxOAMPanel(this);
 
-    topSizer->Add(m_displayPanel, 1, wxSHAPED);
-    topSizer->Add(m_disassemblerPanel, 1, wxEXPAND);
-    topSizer->Add(m_cpuStatePanel, 1, wxEXPAND);
-    topSizer->Add(m_ramStatePanel, 2, wxEXPAND);
+    m_topSizer->Add(m_displayPanel, 1, wxEXPAND);
+    m_topSizer->Add(m_disassemblerPanel, 1, wxEXPAND);
+    m_topSizer->Add(m_cpuStatePanel, 1, wxEXPAND);
+    m_topSizer->Add(m_ramStatePanel, 2, wxEXPAND);
 
-    bottomSizer->Add(m_ppuStatePanel, 1, wxEXPAND);
-    bottomSizer->Add(m_paletteRAMPanel, 1, wxEXPAND);
-    bottomSizer->Add(m_patternTablePanel, 2, wxEXPAND);
-    bottomSizer->Add(m_OAMPanel, 2, wxEXPAND);
 
-    mainSizer->Add(topSizer, 3, wxEXPAND);
-    mainSizer->Add(bottomSizer, 2, wxEXPAND);
-    
-    this->SetSizer(mainSizer);
-    mainSizer->Fit(this);
+    m_bottomSizer->Add(m_ppuStatePanel, 1, wxEXPAND);
+    m_bottomSizer->Add(m_paletteRAMPanel, 1, wxEXPAND);
+    m_bottomSizer->Add(m_patternTablePanel, 2, wxEXPAND);
+    m_bottomSizer->Add(m_OAMPanel, 2, wxEXPAND);
+
+    m_mainSizer->Add(m_topSizer, 3, wxEXPAND);
+    m_mainSizer->Add(m_bottomSizer, 2, wxEXPAND);
+
+    this->SetSizer(m_mainSizer);
+
+    m_mainSizer->Show(1, m_debugViewMode);
+    for (size_t i = 1; i < m_topSizer->GetItemCount(); i++) {
+        m_topSizer->Show(i, m_debugViewMode);
+    }
+
+    m_mainSizer->Fit(this);
+
+
+
 
     m_environment.SetDisplayPanel(m_displayPanel);
     m_ROMInfoFrame = nullptr;
@@ -256,6 +271,19 @@ void wxMainFrame::OnHardReset(wxCommandEvent& evt) {
     }
     evt.Skip();
 }
+
+void wxMainFrame::OnDebugView(wxCommandEvent& evt) {
+    m_debugViewMode = !m_debugViewMode;
+    m_debugMenu->Check(wxID_LILYNES_DEBUG_VIEW, m_debugViewMode);
+
+    m_mainSizer->Show(1, m_debugViewMode);
+    for (size_t i = 1; i < m_topSizer->GetItemCount(); i++) {
+        m_topSizer->Show(i, m_debugViewMode);
+    }
+    m_mainSizer->Fit(this);
+
+}
+
 
 void wxMainFrame::OnROMInformation(wxCommandEvent& evt)
 {

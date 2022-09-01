@@ -34,6 +34,7 @@ public:
 	void OnSoftReset(wxCommandEvent& evt);
 	void OnHardReset(wxCommandEvent& evt);
 
+	void OnDebugView(wxCommandEvent& evt);
 	void OnROMInformation(wxCommandEvent& evt);
 	void OnTestCPU(wxCommandEvent& evt);
 	
@@ -70,6 +71,10 @@ private:
 	wxSemaphore m_emulationThreadExitNotice;
 	EMULATION_RUNNING_MODE m_lastRunningMode;
 
+	wxBoxSizer* m_mainSizer;
+	wxBoxSizer* m_topSizer;
+	wxBoxSizer* m_bottomSizer;
+
 	wxMenuBar* m_mainMenuBar;
 	wxMenu* m_fileMenu;
 	wxMenu* m_emulationMenu;
@@ -90,6 +95,7 @@ private:
 	wxCriticalSection m_currNESState_cs;
 	wxTimer* m_savePRGRAMTimer;
 
+	bool m_debugViewMode;
 	bool m_closingFlag;
 
 	wxDECLARE_EVENT_TABLE();

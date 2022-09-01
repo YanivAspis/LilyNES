@@ -4,7 +4,7 @@
 using namespace NESUtils;
 
 
-wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id) { //, m_image(NES_PICTURE_WIDTH, NES_PICTURE_HEIGHT) {
+wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id, wxDefaultPosition, wxSize(256, 240)) {
 	Bind(wxEVT_PAINT, &wxDisplayPanel::OnPaint, this);
 	Bind(wxEVT_SIZE, &wxDisplayPanel::OnSize, this);
 	Bind(wxEVT_THREAD, &wxDisplayPanel::OnImageUpdate, this);
@@ -24,7 +24,7 @@ wxDisplayPanel::wxDisplayPanel(wxWindow* parent, int id) : wxPanel(parent, id) {
 	}
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	m_surface = SDL_CreateRGBSurface(0, NES_PICTURE_WIDTH, NES_PICTURE_HEIGHT, 24, 0x0000FF, 0x00FF00, 0xFF0000, 0);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 	m_texture = nullptr;
 
 	if (TTF_Init() < 0) {
