@@ -411,14 +411,16 @@ void wxMainFrame::OnPRGRAMSaveTick(wxTimerEvent& evt) {
     }
 }
 
-void wxMainFrame::SaveState() {
+void wxMainFrame::QuickSaveState(unsigned int slot) {
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetSaveStateSlot(slot);
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_SAVE_STATE);
     }
 }
 
-void wxMainFrame::LoadState() {
+void wxMainFrame::QuickLoadState(unsigned int slot) {
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        m_emulationThread->SetSaveStateSlot(slot);
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_LOAD_STATE);
     }
 }

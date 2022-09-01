@@ -20,7 +20,8 @@ wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNo
 	m_soundGenerator = new SoundGenerator(this);
 	m_cyclesRemainingForAudio = NUM_CYCLES_PER_AUDIO_SAMPLE;
 
-	m_saveStateValid = false;
+	m_saveStateSlot = 0;
+	m_saveStateValid.fill(false);
 }
 
 wxEmulationThread::~wxEmulationThread() {
@@ -123,6 +124,11 @@ void wxEmulationThread::SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& 
 	m_userDebugRequestQueue.Post(userRequest);
 }
 
+void wxEmulationThread::SetSaveStateSlot(unsigned int slot) {
+	assert(slot >= 0 && slot < 8);
+	m_saveStateSlot = slot;
+}
+
 void wxEmulationThread::RethrowIllegalInstructionException(IllegalInstructionException ex) {
 	m_illegalEx = ex;
 	this->PostEmulationEvent(EMULATION_EVENT_RETHROW_ILLEGAL_INSTRUCTION_EXCEPTION);
@@ -163,7 +169,7 @@ bool wxEmulationThread::IsEmulationRunning() const {
 
 void wxEmulationThread::Setup() {
 	m_nes.HardReset();
-	m_saveStateValid = false;
+	m_saveStateValid.fill(false);
 }
 
 void wxEmulationThread::PostNESUpdate() {
@@ -262,12 +268,12 @@ void wxEmulationThread::HandleUserRequest() {
 		}
 		break;
 	case EMULATION_USER_REQUEST_SAVE_STATE:
-		m_saveState = m_nes.GetState();
-		m_saveStateValid = true;
+		m_saveState[m_saveStateSlot] = m_nes.GetState();
+		m_saveStateValid[m_saveStateSlot] = true;
 		break;
 	case EMULATION_USER_REQUEST_LOAD_STATE:
-		if (m_saveStateValid) {
-			m_nes.LoadState(m_saveState);
+		if (m_saveStateValid[m_saveStateSlot]) {
+			m_nes.LoadState(m_saveState[m_saveStateSlot]);
 		}
 		break;
 	}

@@ -30,6 +30,7 @@ enum EMULATION_USER_REQUEST {
 	EMULATION_USER_REQUEST_NONE,
 	EMULATION_USER_REQUEST_SOFT_RESET,
 	EMULATION_USER_REQUEST_HARD_RESET,
+
 	EMULATION_USER_REQUEST_SAVE_STATE,
 	EMULATION_USER_REQUEST_LOAD_STATE
 };
@@ -65,6 +66,7 @@ public:
 	void SetRunningMode(const EMULATION_RUNNING_MODE& runningMode);
 	void SetUserRequest(const EMULATION_USER_REQUEST& userRequest);
 	void SetUserDebugRequest(const EMULATION_USER_DEBUG_REQUEST& userRequest);
+	void SetSaveStateSlot(unsigned int slot);
 	void RethrowIllegalInstructionException(IllegalInstructionException ex);
 	void HandlePRGRAMSave();
 
@@ -119,8 +121,10 @@ private:
 	wxMainFrame* m_mainFrame;
 	wxSemaphore* m_exitNotice;
 
-	NESState m_saveState;
-	bool m_saveStateValid;
+	std::array<NESState, 8> m_saveState;
+	unsigned int m_saveStateSlot;
+	std::array<bool, 8> m_saveStateValid;
+
 	IllegalInstructionException m_illegalEx;
 	
 };
