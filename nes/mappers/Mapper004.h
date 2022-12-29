@@ -39,7 +39,8 @@ union BankSelectRegister {
 	uint8_t value;
 };
 
-struct Mapper004State : public MapperAdditionalState {
+
+struct Mapper004State {
 	Mapper004State();
 	MirroringMode mirroringMode;
 	BankSelectRegister bankSelectRegister;
@@ -49,18 +50,6 @@ struct Mapper004State : public MapperAdditionalState {
 	uint8_t irqLatchValue;
 	bool irqReload;
 	bool irqEnabled;
-
-private:
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive ar, const unsigned int version) {
-		ar& A12State;
-		ar& irqCounter;
-		ar& irqLatchValue;
-		ar& irqReload;
-		ar& irqEnabled;
-	}
-
 };
 
 class Mapper004 : public Cartridge {
@@ -79,8 +68,8 @@ public:
 	uint8_t ProbePPU(uint16_t address) override;
 
 private:
-	std::any GetAdditionalState() const;
-	void LoadAdditionalState(std::any state);
+	std::vector<uint8_t> GetAdditionalState() const;
+	void LoadAdditionalState(const std::vector<uint8_t>& state);
 
 	void PRGROMWrite(uint16_t address, uint8_t data);
 	void BankSelectWrite(uint8_t data);

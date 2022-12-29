@@ -8,7 +8,7 @@ constexpr uint16_t MAPPER_000_PRG_BANK_SIZE = 0x4000;
 constexpr uint16_t MAPPER_000_CHR_FIRST_BANK_START = 0x0;
 constexpr uint16_t MAPPER_000_CHR_BANK_SIZE = 0x2000;
 
-struct Mapper000State : public MapperAdditionalState {};
+//struct Mapper000State : public MapperAdditionalState {};
 
 class Mapper000 : public Cartridge {
 public:
@@ -20,8 +20,8 @@ public:
 	MirroringMode GetCurrentMirroringMode() override;
 
 private:
-	std::any GetAdditionalState() const;
-	void LoadAdditionalState(std::any state);
+	std::vector<uint8_t> GetAdditionalState() const;
+	void LoadAdditionalState(const std::vector<uint8_t>& state);
 
 	void PRGROMWrite(uint16_t address, uint8_t data);
 

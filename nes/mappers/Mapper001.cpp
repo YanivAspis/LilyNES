@@ -5,6 +5,7 @@
 
 using namespace BitwiseUtils;
 
+
 Mapper001State::Mapper001State() {
 	loadData = 0;
 	loadCounter = MAPPER_001_LOAD_REGISTER_NUM_WRITES;
@@ -81,18 +82,23 @@ MirroringMode Mapper001::GetCurrentMirroringMode()
 	return MIRRORING_SINGLE_SCREEN;
 }
 
-std::any Mapper001::GetAdditionalState() const
+std::vector<uint8_t> Mapper001::GetAdditionalState() const
 {
 	Mapper001State state;
 	state.loadData = m_loadData;
 	state.loadCounter = m_loadCounter;
 	state.controlRegister.value = m_controlRegister.value;
-	return state;
+
+	std::vector<uint8_t> stateVector;
+	stateVector.resize(sizeof(state));
+	std::memcpy(stateVector.data(), &state, sizeof(state));
+	return stateVector;
 }
 
-void Mapper001::LoadAdditionalState(std::any state)
+void Mapper001::LoadAdditionalState(const std::vector<uint8_t>& state)
 {
-	Mapper001State mapperState = std::any_cast<Mapper001State>(state);
+	Mapper001State mapperState;
+	std::memcpy(&mapperState, state.data(), sizeof(mapperState));
 	m_loadData = mapperState.loadData;
 	m_loadCounter = mapperState.loadCounter;
 	m_controlRegister.value = mapperState.controlRegister.value;

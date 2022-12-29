@@ -15,7 +15,7 @@ LogicalBank::LogicalBank(uint16_t sAddress, uint16_t bankSize) {
 	size = bankSize;
 }
 
-MapperAdditionalState::~MapperAdditionalState() {}
+//MapperAdditionalState::~MapperAdditionalState() {}
 
 CartridgeState::CartridgeState() {
 	mapperID = 0;

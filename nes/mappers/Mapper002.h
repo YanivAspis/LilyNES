@@ -12,7 +12,7 @@ constexpr unsigned int MAPPER_002_BANK_SELECT_STANDARD_HIGH_BIT = 2;
 constexpr unsigned int MAPPER_002_BANK_SELECT_NON_STANDARD_HIGH_BIT = 3;
 
 
-struct Mapper002State : public MapperAdditionalState {};
+//struct Mapper002State : public MapperAdditionalState {};
 
 class Mapper002 : public Cartridge {
 public:
@@ -24,8 +24,8 @@ public:
 	MirroringMode GetCurrentMirroringMode() override;
 
 private:
-	std::any GetAdditionalState() const;
-	void LoadAdditionalState(std::any state);
+	std::vector<uint8_t> GetAdditionalState() const;
+	void LoadAdditionalState(const std::vector<uint8_t>& state);
 
 	void PRGROMWrite(uint16_t address, uint8_t data);
 

@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <map>
-#include <any>
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -71,6 +70,7 @@ private:
 typedef std::map<unsigned int, size_t> BankMapping;
 
 // Each mapper inherits this to define its own specific state information
+/*
 struct MapperAdditionalState {
 	virtual ~MapperAdditionalState() = 0;
 
@@ -78,7 +78,7 @@ private:
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive ar, const unsigned int version) {}
-};
+};*/
 
 struct CartridgeState {
 	CartridgeState();
@@ -95,7 +95,7 @@ struct CartridgeState {
 
 
 	// Additional Mapper-specific state information
-	std::any additionalState;
+	std::vector<uint8_t> additionalState;
 
 private:
 	friend class boost::serialization::access;
@@ -112,6 +112,8 @@ private:
 
 		ar& PRGBankMapping;
 		ar& CHRBankMapping;
+
+		ar& additionalState;
 	}
 };
 
@@ -170,8 +172,8 @@ protected:
 
 private:
 	// Each mapper implements these to save/load its additional state
-	virtual std::any GetAdditionalState() const = 0;
-	virtual void LoadAdditionalState(std::any state) = 0;
+	virtual std::vector<uint8_t> GetAdditionalState() const = 0;
+	virtual void LoadAdditionalState(const std::vector<uint8_t>& state) = 0;
 
 	unsigned int GetLogicalBankIndex(std::vector<LogicalBank>& logicalBanks, uint16_t address);
 

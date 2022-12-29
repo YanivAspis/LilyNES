@@ -96,7 +96,7 @@ uint8_t Mapper004::ProbePPU(uint16_t address) {
 	return Cartridge::CHRROMRead(address);
 }
 
-std::any Mapper004::GetAdditionalState() const
+std::vector<uint8_t> Mapper004::GetAdditionalState() const
 {
 	Mapper004State state;
 	state.mirroringMode = m_mirroringMode;
@@ -108,12 +108,17 @@ std::any Mapper004::GetAdditionalState() const
 	state.irqReload = m_irqReload;
 	state.irqEnabled = m_irqEnabled;
 
-	return state;
+	std::vector<uint8_t> stateVector;
+	stateVector.resize(sizeof(state));
+	std::memcpy(stateVector.data(), &state, sizeof(state));
+
+	return stateVector;
 }
 
-void Mapper004::LoadAdditionalState(std::any state)
+void Mapper004::LoadAdditionalState(const std::vector<uint8_t>& state)
 {
-	Mapper004State mapperState = std::any_cast<Mapper004State>(state);
+	Mapper004State mapperState;
+	std::memcpy(&mapperState, state.data(), sizeof(mapperState));
 
 	m_mirroringMode = mapperState.mirroringMode;
 	m_bankSelectRegister.value = mapperState.bankSelectRegister.value;

@@ -30,9 +30,11 @@ MirroringMode Mapper002::GetCurrentMirroringMode()
 	return m_mirroringMode;
 }
 
-std::any Mapper002::GetAdditionalState() const { return 0; }
+std::vector<uint8_t> Mapper002::GetAdditionalState() const { 
+	return std::vector<uint8_t>(); 
+}
 
-void Mapper002::LoadAdditionalState(std::any state) {}
+void Mapper002::LoadAdditionalState(const std::vector<uint8_t>& state) {}
 
 void Mapper002::PRGROMWrite(uint16_t address, uint8_t data)
 {

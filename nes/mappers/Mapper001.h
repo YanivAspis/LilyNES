@@ -59,7 +59,7 @@ union ControlRegister {
 	uint8_t value;
 };
 
-struct Mapper001State : public MapperAdditionalState {
+struct Mapper001State {
 	Mapper001State();
 	uint8_t loadData;
 	unsigned int loadCounter;
@@ -79,8 +79,8 @@ public:
 	MirroringMode GetCurrentMirroringMode() override;
 
 private:
-	std::any GetAdditionalState() const;
-	void LoadAdditionalState(std::any state);
+	std::vector<uint8_t> GetAdditionalState() const;
+	void LoadAdditionalState(const std::vector<uint8_t>& state);
 
 	void PRGROMWrite(uint16_t address, uint8_t data);
 
