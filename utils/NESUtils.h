@@ -190,4 +190,5 @@ namespace NESUtils {
     void QuickSaveStateToFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, unsigned int slot, NESState& state);
     NESState LoadStateFromFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::string filepath);
     NESState QuickLoadStateFromFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, unsigned int slot);
+    std::vector<unsigned int> GetSaveStateSlotsAvailable(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum);
 }

@@ -172,6 +172,9 @@ bool wxEmulationThread::IsEmulationRunning() const {
 void wxEmulationThread::Setup() {
 	m_nes.HardReset();
 	m_saveStateValid.fill(false);
+	for (unsigned int slot : GetSaveStateSlotsAvailable(m_loadedROMChecksum)) {
+		m_saveStateValid[slot] = true;
+	}
 }
 
 void wxEmulationThread::PostNESUpdate() {

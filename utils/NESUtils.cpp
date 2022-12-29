@@ -339,4 +339,22 @@ namespace NESUtils {
 		std::string loadPath = "save/state/" + MD5::ChecksumToString(checksum) + "/" + std::to_string(slot) + ".sav";
 		return LoadStateFromFile(checksum, loadPath);
 	}
+
+	std::vector<unsigned int> GetSaveStateSlotsAvailable(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum) {
+		std::vector<unsigned int> slots;
+		std::string saveStatePath = "save/state/" + MD5::ChecksumToString(checksum) + "/";
+
+		// Find all sav files
+		boost::filesystem::directory_iterator endIt;
+		for (boost::filesystem::directory_iterator dirIt(saveStatePath); dirIt != endIt; dirIt++) {
+			if (boost::filesystem::is_regular_file(dirIt->status())) {
+				if (boost::filesystem::extension(dirIt->path().filename()) == ".sav") {
+					std::stringstream filename;
+					filename << dirIt->path().stem();
+					slots.push_back(std::atoi(filename.str().c_str()));
+				}
+			}
+		}
+		return slots;
+	}
 }
