@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "OAM.h"
 
 constexpr unsigned int OAM_ENTRY_SIZE = 4;
@@ -17,8 +20,31 @@ constexpr unsigned int SECONDARY_OAM_BACKGROUND_RENDER_END_DOT = 340;
 
 constexpr unsigned int SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS = 3;
 
+struct SecondaryOAMEntry;
+
+struct SecondaryOAMEntryState {
+	SecondaryOAMEntryState();
+	SecondaryOAMEntryState(const SecondaryOAMEntry& actualEntry);
+	SecondaryOAMEntryState& operator=(const SecondaryOAMEntry& actualEntry);
+
+	OAMEntryState entry;
+	unsigned int spriteID; // 0 - 64. 64 == No sprite present
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& entry;
+		ar& spriteID;
+	}
+};
 
 struct SecondaryOAMEntry {
+	SecondaryOAMEntry();
+	SecondaryOAMEntry(const SecondaryOAMEntryState& entryState);
+	SecondaryOAMEntry& operator=(const SecondaryOAMEntryState& entryState);
+
 	OAMEntry entry;
 	unsigned int spriteID; // 0 - 64. 64 == No sprite present
 };
@@ -33,14 +59,20 @@ enum SpriteEvaluationStep {
 
 struct SecondaryOAMState {
 	SecondaryOAMState();
-	std::array<SecondaryOAMEntry, SECONDARY_OAM_SIZE> entries;
+
+	std::array<SecondaryOAMEntryState, SECONDARY_OAM_SIZE> entries;
 	uint8_t internalBuffer;
-	//unsigned int byteIndex;
-	//unsigned int spriteIndex;
-	//unsigned int entriesAdded;
-	//SpriteEvaluationStep evaluationStep;
-	//unsigned int overflowFoundReadsLeft;
 	bool spriteOverflowDetected;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& entries;
+		ar& internalBuffer;
+		ar& spriteOverflowDetected;
+	}
 };
 
 class SecondaryOAM {

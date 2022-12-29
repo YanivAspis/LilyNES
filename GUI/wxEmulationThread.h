@@ -121,6 +121,7 @@ private:
 	wxMainFrame* m_mainFrame;
 	wxSemaphore* m_exitNotice;
 
+	std::array<uint8_t, MD5::CHECKSUM_SIZE> m_loadedROMChecksum;
 	std::array<NESState, 8> m_saveState;
 	unsigned int m_saveStateSlot;
 	std::array<bool, 8> m_saveStateValid;

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <array>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "../BusDevice.h"
 #include "../mappers/Cartridge.h"
 #include "PPU2C02.h"
@@ -20,8 +23,18 @@ constexpr unsigned int NAMETABLE_ATTRIBUTE_NUM_TILES_PER_BYTE = 4;
 
 struct NametableState {
 	NametableState();
+
 	std::array<uint8_t, NAMETABLE_SIZE> nametable0;
 	std::array<uint8_t, NAMETABLE_SIZE> nametable1;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& nametable0;
+		ar& nametable1;
+	}
 };
 
 class NametableDevice : public BusDevice {

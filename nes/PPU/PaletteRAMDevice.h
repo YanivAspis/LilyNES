@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include "../BusDevice.h"
 
@@ -15,11 +17,23 @@ constexpr uint8_t PALETTE_GREY_MODIFIER = 0x30;
 
 struct PaletteRAMState {
 	PaletteRAMState();
+
 	uint8_t universalBackgroundColour;
 	std::array<uint8_t, PALETTE_NUM_BACKGROUND_PALETTES - 1> otherBackgroundColours; // Other background colours can be written to, but are not normally displayed
 	std::array<std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>, PALETTE_NUM_BACKGROUND_PALETTES> backgroundPalettes;
 	std::array<std::array<uint8_t, PALETTE_NUM_PALETTE_COLOURS>, PALETTE_NUM_SPRITE_PALETTES> spritePalettes;
 	bool greyscaleMode;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& universalBackgroundColour;
+		ar& otherBackgroundColours;
+		ar& backgroundPalettes;
+		ar& spritePalettes;
+	}
 };
 
 class PaletteRAMDevice : public BusDevice {

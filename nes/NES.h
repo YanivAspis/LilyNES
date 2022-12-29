@@ -1,6 +1,8 @@
 #pragma once
 
 #include <exception>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include "../Environment.h"
 #include "Bus.h"
@@ -33,6 +35,24 @@ struct NESState {
 	APUState apuState;
 	unsigned int cycleCount;
 	uint8_t DMCDMACycles;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& cpuState;
+		ar& ramState;
+		ar& cartridgeState;
+		ar& paletteRAMState;
+		ar& nametableState;
+		ar& oamDMAState;
+		ar& ppuState;
+		ar& controllerState;
+		ar& apuState;
+		ar& cycleCount;
+		ar& DMCDMACycles;
+	}
 };
 
 

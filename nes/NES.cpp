@@ -12,6 +12,8 @@ NESState::NESState() {
 	DMCDMACycles = 0;
 }
 
+
+
 NES::NES(Environment* environment) : m_cpu(false), m_ppu(environment, &m_cpu, &m_paletteRAM), m_controllers(environment), 
 	m_apu(&m_cpu), m_frameCounterController2(&m_apu, &m_controllers) {
 

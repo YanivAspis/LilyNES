@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "../BusDevice.h"
 #include "../CPU/CPU2A03.h"
 #include "APUPulse.h"
@@ -118,6 +121,25 @@ struct APUState {
 	APUControlRegister controlRegister;
 	APUStatusRegister statusRegister;
 	FrameCounterRegister frameCounterRegister;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& pulse1State;
+		ar& pulse2State;
+		ar& triangleState;
+		ar& noiseState;
+		ar& dmcState;
+
+		ar& frameCounter;
+		ar& frameCounterWriteCycles;
+
+		ar& controlRegister.value;
+		ar& statusRegister.value;
+		ar& frameCounterRegister.value;
+	}
 };
 
 class APU2A03 : public BusDevice {

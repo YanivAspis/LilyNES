@@ -2,6 +2,9 @@
 
 #include <cstdint>
 #include <array>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "APUEnvelope.h"
 
 constexpr size_t APU_PULSE_NUM_DUTYCYCLES = 4;
@@ -72,6 +75,26 @@ struct APUPulseState {
 	bool sweepReloadFlag;
 
 	bool silenced;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& parameters.value;
+		ar& sweep.value;
+		ar& timerLow;
+		ar& timerHighLengthCounter.value;
+		
+		ar& timer;
+		ar& lengthCounter;
+		ar& waveformIndex;
+		ar& envelopeState;
+		ar& sweepDivider;
+		ar& sweepReloadFlag;
+
+		ar& silenced;
+	}
 };
 
 class APUPulse {

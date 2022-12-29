@@ -4,6 +4,11 @@
 
 using namespace BitwiseUtils;
 
+LogicalBank::LogicalBank() {
+	startAddress = 0;
+	size = 0;
+}
+
 LogicalBank::LogicalBank(uint16_t sAddress, uint16_t bankSize) {
 	assert(sAddress + bankSize <= (PRG_ROM_END_ADDRESS+1));
 	startAddress = sAddress;

@@ -1,6 +1,13 @@
 #pragma once
 
-#include <stack>
+//#include <stack>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/deque.hpp>
+//#include <boost/serialization/stack.hpp>
+
+
 
 #include "../../Environment.h"
 #include "../../utils/BitwiseUtils.h"
@@ -154,6 +161,17 @@ struct NextBackgroundTileInfo {
 	uint8_t paletteIndex; // Taken from the attribute table
 	uint8_t coloursLSB; // Least significant bits for a row in the tile, taken from the pattern table
 	uint8_t coloursMSB; // Most significant bits for a row in the tile, taken from the pattern table
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& tileID;
+		ar& paletteIndex;
+		ar& coloursLSB;
+		ar& coloursMSB;
+	}
 };
 
 // Used for background shift registers
@@ -161,6 +179,15 @@ struct PixelColourInfo {
 	PixelColourInfo();
 	uint8_t paletteIndex; // Shared across the tile
 	uint8_t colourIndex; // Unique for each pixel
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& paletteIndex;
+		ar& colourIndex;
+	}
 };
 
 struct SpritePixelInfo {
@@ -169,6 +196,17 @@ struct SpritePixelInfo {
 	uint8_t colourIndex;
 	unsigned int spriteID;
 	bool backgroundPriority;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& paletteIndex;
+		ar& colourIndex;
+		ar& spriteID;
+		ar& backgroundPriority;
+	}
 };
 
 struct SpriteRowInfo {
@@ -177,11 +215,24 @@ struct SpriteRowInfo {
 	std::array<uint8_t, PATTERN_TABLE_TILE_WIDTH> rowColours;
 	unsigned int spriteID;
 	bool backgroundPriority;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& x;
+		ar& paletteIndex;
+		ar& rowColours;
+		ar& spriteID;
+		ar& backgroundPriority;
+	}
 };
 
 
 struct PPUState {
 	PPUState();
+
 	unsigned int frameCount;
 	unsigned int scanline;
 	unsigned int dot;
@@ -208,8 +259,41 @@ struct PPUState {
 
 	// Sprite rendering state
 	uint8_t fetchedSpriteLSB;
-	std::stack<SpriteRowInfo> spritesToRender;
+	std::deque<SpriteRowInfo> spritesToRender;
 	std::array<SpritePixelInfo, NES_PICTURE_WIDTH> spriteLine;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& frameCount;
+		ar& scanline;
+		ar& dot;
+
+		ar& ioLatchValue;
+		ar& ioLatchCounter;
+		ar& PPUCTRL.value;
+		ar& PPUMASK.value;
+		ar& PPUSTATUS.value;
+		ar& PPUDATABuffer;
+		ar& OAMADDR;
+		
+		ar& TRAMAddress.address;
+		ar& VRAMAddress.address;
+		ar& fineX;
+		ar& loopyWriteToggle;
+		
+		ar& oam;
+		ar& secondaryOAM;
+
+		ar& nextBackgroundTileInfo;
+		ar& backgroundShiftRegister;
+		
+		ar& fetchedSpriteLSB;
+		ar& spritesToRender;// std::deque<SpriteRowInfo>(spritesToRender);
+		ar& spriteLine;
+	}
 };
 
 class PPU2C02 : public BusDevice {
@@ -299,7 +383,6 @@ private:
 
 	void SecondaryOAMInitialization();
 	void SecondaryOAMSpriteEvaluation();
-	//void SecondaryOAMClock();
 
 	void SetVBlank();
 	void ClearSTATUSFlags();
@@ -341,7 +424,7 @@ private:
 	NextBackgroundTileInfo m_nextBackgroundTileInfo;
 	ShiftRegister<PixelColourInfo> m_backgroundShiftRegister;
 	uint8_t m_fetchedSpriteLSB;
-	std::stack<SpriteRowInfo> m_spritesToRender;
+	std::deque<SpriteRowInfo> m_spritesToRender;
 	std::array<SpritePixelInfo, NES_PICTURE_WIDTH> m_spriteLine;
 
 

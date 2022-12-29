@@ -340,12 +340,12 @@ void PPU2C02::FetchSpriteMSB() {
 	rowInfo.rowColours = rowColours;
 	rowInfo.spriteID = entry.spriteID;
 	rowInfo.backgroundPriority = entry.entry.attribute.flags.backgroundPriority;
-	m_spritesToRender.push(rowInfo);
+	m_spritesToRender.push_back(rowInfo);
 }
 
 void PPU2C02::ClearSpritesStack() {
 	while (!m_spritesToRender.empty()) {
-		m_spritesToRender.pop();
+		m_spritesToRender.pop_back();
 	}
 }
 
@@ -355,7 +355,7 @@ void PPU2C02::ClearSpritesLine() {
 
 void PPU2C02::RenderToSpriteLine() {
 	while (!m_spritesToRender.empty()) {
-		SpriteRowInfo rowInfo = m_spritesToRender.top();
+		SpriteRowInfo rowInfo = m_spritesToRender.back();
 		for (unsigned int i = rowInfo.x; (i < rowInfo.x + PATTERN_TABLE_TILE_WIDTH) && i < NES_PICTURE_WIDTH; i++) {
 			if (rowInfo.rowColours[i - rowInfo.x] != 0) {
 				m_spriteLine[i].paletteIndex = rowInfo.paletteIndex;
@@ -364,7 +364,7 @@ void PPU2C02::RenderToSpriteLine() {
 				m_spriteLine[i].backgroundPriority = rowInfo.backgroundPriority;
 			}
 		}
-		m_spritesToRender.pop();
+		m_spritesToRender.pop_back();
 	}
 }
 

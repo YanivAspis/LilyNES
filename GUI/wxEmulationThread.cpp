@@ -20,6 +20,7 @@ wxEmulationThread::wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNo
 	m_soundGenerator = new SoundGenerator(this);
 	m_cyclesRemainingForAudio = NUM_CYCLES_PER_AUDIO_SAMPLE;
 
+	m_loadedROMChecksum.fill(0);
 	m_saveStateSlot = 0;
 	m_saveStateValid.fill(false);
 }
@@ -67,7 +68,7 @@ void* wxEmulationThread::Entry(){
 
 void wxEmulationThread::OnExit() {
 	if (m_nes.PRGRAMNeedsSaving()) {
-		SaveBatteryBackedRAM(m_mainFrame->GetLoadedROM()->GetChecksum(), m_nes.GetPRGRAM());
+		SaveBatteryBackedRAM(m_loadedROMChecksum, m_nes.GetPRGRAM());
 	}
 	s_emulationRunning = false;
 	m_soundGenerator->DisableSound();
@@ -77,9 +78,10 @@ void wxEmulationThread::OnExit() {
 
 void wxEmulationThread::LoadROM(const INESFile& romFile) {
 	m_nes.LoadROM(romFile);
+	m_loadedROMChecksum = romFile.GetChecksum();
 	if (romFile.GetHeader().IsPRGRAMBatteryBacked()) {
 		std::vector<uint8_t> PRGRAMContent;
-		if (LoadBatteryBackedRAM(romFile.GetChecksum(), PRGRAMContent)) {
+		if (LoadBatteryBackedRAM(m_loadedROMChecksum, PRGRAMContent)) {
 			m_nes.LoadPRGRAM(PRGRAMContent);
 		}
 	}
@@ -268,12 +270,16 @@ void wxEmulationThread::HandleUserRequest() {
 		}
 		break;
 	case EMULATION_USER_REQUEST_SAVE_STATE:
-		m_saveState[m_saveStateSlot] = m_nes.GetState();
+	{
+		NESState state = m_nes.GetState();
+		QuickSaveStateToFile(m_loadedROMChecksum, m_saveStateSlot, state);
 		m_saveStateValid[m_saveStateSlot] = true;
 		break;
+	}
 	case EMULATION_USER_REQUEST_LOAD_STATE:
 		if (m_saveStateValid[m_saveStateSlot]) {
-			m_nes.LoadState(m_saveState[m_saveStateSlot]);
+			NESState state = QuickLoadStateFromFile(m_loadedROMChecksum, m_saveStateSlot);
+			m_nes.LoadState(state);	
 		}
 		break;
 	}

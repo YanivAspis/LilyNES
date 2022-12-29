@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "../CPU/CPU2A03.h"
 
 constexpr uint8_t APU_DMC_OUTPUT_DELTA = 2;
@@ -52,6 +55,32 @@ struct APUDMCState {
 	bool outputSilenceFlag;
 
 	bool silenced;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& paraemters.value;
+		ar& sampleAddress;
+		ar& sampleLength;
+		
+		ar& timer;
+		ar& irqFlag;
+
+		ar& sampleBuffer;
+		ar& sampleBufferEmpty;
+		ar& bytesRemaining;
+		ar& currentSampleAddress;
+		ar& sampleNeeded;
+
+		ar& outputLevel;
+		ar& outputShiftRegister;
+		ar& shifterBitsRemaining;
+		ar& outputSilenceFlag;
+
+		ar& silenced;
+	}
 };
 
 

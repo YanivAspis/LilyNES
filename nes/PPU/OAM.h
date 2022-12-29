@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 #include <array>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 constexpr unsigned int OAM_NUM_SPRITES = 64;
 constexpr uint8_t OAM_ATTRIBUTE_UNUSED_MASK = 0xE3;
@@ -20,8 +22,34 @@ union Attribute {
 	uint8_t value;
 };
 
+struct OAMEntry;
+
+struct OAMEntryState {
+	OAMEntryState();
+	OAMEntryState(const OAMEntry& entry);
+	OAMEntryState& operator=(const OAMEntry& entry);
+
+	uint8_t y;
+	uint8_t tileID;
+	uint8_t attribute;
+	uint8_t x;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& y;
+		ar& tileID;
+		ar& attribute;
+		ar& x;
+	}
+};
+
 struct OAMEntry {
 	OAMEntry();
+	OAMEntry(const OAMEntryState& entry);
+	OAMEntry& operator=(const OAMEntryState& entry);
 
 	uint8_t y;
 	uint8_t tileID;
@@ -29,8 +57,18 @@ struct OAMEntry {
 	uint8_t x;
 };
 
+
+
 struct OAMState {
-	std::array<OAMEntry, OAM_NUM_SPRITES> entries;
+	std::array<OAMEntryState, OAM_NUM_SPRITES> entries;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& entries;
+	}
 };
 
 class OAM {

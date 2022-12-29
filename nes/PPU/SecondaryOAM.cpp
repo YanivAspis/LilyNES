@@ -1,5 +1,35 @@
 #include "SecondaryOAM.h"
 
+SecondaryOAMEntryState::SecondaryOAMEntryState() {
+	spriteID = OAM_NO_SPRITE_ID;
+}
+
+SecondaryOAMEntryState::SecondaryOAMEntryState(const SecondaryOAMEntry& actualEntry) {
+	entry = actualEntry.entry;
+	spriteID = actualEntry.spriteID;
+}
+
+SecondaryOAMEntryState& SecondaryOAMEntryState::operator=(const SecondaryOAMEntry& actualEntry) {
+	entry = actualEntry.entry;
+	spriteID = actualEntry.spriteID;
+	return *this;
+}
+
+SecondaryOAMEntry::SecondaryOAMEntry() {
+	spriteID = OAM_NO_SPRITE_ID;
+}
+
+SecondaryOAMEntry::SecondaryOAMEntry(const SecondaryOAMEntryState& entryState) {
+	entry = entryState.entry;
+	spriteID = entryState.spriteID;
+}
+
+SecondaryOAMEntry& SecondaryOAMEntry::operator=(const SecondaryOAMEntryState& entryState) {
+	entry = entryState.entry;
+	spriteID = entryState.spriteID;
+	return *this;
+}
+
 SecondaryOAMState::SecondaryOAMState() {
 	internalBuffer = OAM_INITIAL_VALUE;
 	//byteIndex = 0;
@@ -8,10 +38,6 @@ SecondaryOAMState::SecondaryOAMState() {
 	//evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
 	//overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 	spriteOverflowDetected = false;
-
-	for (SecondaryOAMEntry& entry : entries) {
-		entry.spriteID = OAM_NO_SPRITE_ID;
-	}
 }
 
 SecondaryOAM::SecondaryOAM(OAM* primaryOAM)
@@ -24,10 +50,6 @@ SecondaryOAM::SecondaryOAM(OAM* primaryOAM)
 	//m_evaluationStep = SPRITE_EVALUATION_SPRITE_SEARCH;
 	//m_overflowFoundReadsLeft = SECONDARY_OAM_ADDITIONAL_OVERFLOW_READS;
 	m_spriteOverflowDetected = false;
-
-	for (SecondaryOAMEntry& entry : m_entries) {
-		entry.spriteID = OAM_NO_SPRITE_ID;
-	}
 }
 
 void SecondaryOAM::SoftReset() {
@@ -159,7 +181,9 @@ bool SecondaryOAM::SpriteOverflowDetected() const
 
 SecondaryOAMState SecondaryOAM::GetState() const {
 	SecondaryOAMState state;
-	state.entries = m_entries;
+	for (size_t i = 0; i < SECONDARY_OAM_SIZE; i++) {
+		state.entries[i] = m_entries[i];
+	}
 	state.internalBuffer = m_internalBuffer;
 	//state.byteIndex = m_byteIndex;
 	//state.spriteIndex = m_spriteIndex;
@@ -171,7 +195,9 @@ SecondaryOAMState SecondaryOAM::GetState() const {
 }
 
 void SecondaryOAM::LoadState(SecondaryOAMState& state) {
-	m_entries = state.entries;
+	for (size_t i = 0; i < SECONDARY_OAM_SIZE; i++) {
+		m_entries[i] = state.entries[i];
+	}
 	m_internalBuffer = state.internalBuffer;
 	//m_byteIndex = m_byteIndex;
 	//m_spriteIndex = m_spriteIndex;

@@ -4,6 +4,13 @@
 #include <map>
 #include <any>
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/map.hpp>
+
+
+
 #include "../ROM/INESFile.h"
 #include "../BusDevice.h"
 #include "../../utils/NESUtils.h"
@@ -45,9 +52,19 @@ enum MirroringMode {
 };
 
 struct LogicalBank {
+	LogicalBank();
 	LogicalBank(uint16_t sAddress, uint16_t bankSize);
 	uint16_t startAddress;
 	uint16_t size;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& startAddress;
+		ar& size;
+	}
 };
 
 
@@ -56,6 +73,11 @@ typedef std::map<unsigned int, size_t> BankMapping;
 // Each mapper inherits this to define its own specific state information
 struct MapperAdditionalState {
 	virtual ~MapperAdditionalState() = 0;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive ar, const unsigned int version) {}
 };
 
 struct CartridgeState {
@@ -74,6 +96,23 @@ struct CartridgeState {
 
 	// Additional Mapper-specific state information
 	std::any additionalState;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& mapperID;
+
+		ar& CHRROM;
+		ar& PRGRAM;
+
+		ar& PRGLogicalBanks;
+		ar& CHRLogicalBanks;
+
+		ar& PRGBankMapping;
+		ar& CHRBankMapping;
+	}
 };
 
 class Cartridge : public BusDevice {

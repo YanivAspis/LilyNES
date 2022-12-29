@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "APUEnvelope.h"
 
 constexpr unsigned int APU_NOISE_LONG_MODE_BIT = 1;
@@ -57,6 +60,24 @@ struct APUNoiseState {
 
 	bool silenced;
 	bool powerup;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& parameters.value;
+		ar& periodMode.value;
+		ar& lengthCounterLoad.value;
+
+		ar& timer;
+		ar& linearFeedbackShiftRegister;
+		ar& lengthCounter;
+		ar& envelopeState;
+
+		ar& silenced;
+		ar& powerup;
+	}
 };
 
 class APUNoise {

@@ -2,6 +2,9 @@
 #include <iomanip>
 #include <fstream>
 
+#include <boost/filesystem.hpp>
+
+
 #include "NESUtils.h"
 #include "../nes/NES.h"
 //#include "../nes/CPU/CPU2A03.h"
@@ -284,6 +287,7 @@ namespace NESUtils {
 	}
 
 	void SaveBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t> PRGRAMContent) {
+		boost::filesystem::create_directories("save/battery/");
 		std::string savePath = "save/battery/" + MD5::ChecksumToString(checksum) + ".sav";
 		std::ofstream saveFile(savePath, std::ios::binary);
 		std::ostream_iterator<char> saveFileIterator(saveFile);
@@ -301,5 +305,38 @@ namespace NESUtils {
 		PRGRAMContent = std::vector<uint8_t>(loadFileIterator, {});
 
 		return true;
+	}
+
+	void SaveStateToFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::string filepath, NESState& state) {
+		// TODO: What if we cannot save to file
+		std::ofstream outfile(filepath, std::fstream::binary | std::fstream::out);
+		boost::archive::binary_oarchive outarchive(outfile);
+		outarchive << boost::serialization::make_array(checksum.data(), checksum.size());
+		outarchive << state;
+	}
+
+	void QuickSaveStateToFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, unsigned int slot, NESState& state) {
+		std::string saveDirectory = "save/state/" + MD5::ChecksumToString(checksum);
+		boost::filesystem::create_directories(saveDirectory);
+		SaveStateToFile(checksum, saveDirectory + "/" + std::to_string(slot) + ".sav", state);
+	}
+
+	NESState LoadStateFromFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::string filepath) {
+		// TODO: What if file cannot be read
+		std::ifstream infile(filepath, std::fstream::binary | std::fstream::in);
+		boost::archive::binary_iarchive inarchive(infile);
+		std::array<uint8_t, MD5::CHECKSUM_SIZE> checksumFromFile;
+		inarchive >> boost::serialization::make_array(checksumFromFile.data(), checksumFromFile.size());
+		if (checksumFromFile != checksum) {
+			// TODO: ROM mismatch
+		}
+		NESState state;
+		inarchive >> state;
+		return state;
+	}
+
+	NESState QuickLoadStateFromFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, unsigned int slot) {
+		std::string loadPath = "save/state/" + MD5::ChecksumToString(checksum) + "/" + std::to_string(slot) + ".sav";
+		return LoadStateFromFile(checksum, loadPath);
 	}
 }

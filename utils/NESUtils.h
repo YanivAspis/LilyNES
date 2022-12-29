@@ -7,7 +7,11 @@
 #include <deque>
 
 #include <SDL.h>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/array.hpp>
 
+struct NESState;
 
 namespace NESUtils {
     class SDLException : public std::exception {
@@ -91,11 +95,19 @@ namespace NESUtils {
             m_endIndex = 0;
         }
 
-
     private:
         std::deque<T> m_register;
         size_t m_endIndex;
         size_t m_size;
+
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive& ar, const unsigned int version)
+        {
+            ar& m_register;
+            ar& m_endIndex;
+            ar& m_size;
+        }
     };
 
     class HighPassFilter {
@@ -173,4 +185,9 @@ namespace NESUtils {
 
     void SaveBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t> PRGRAMContent);
     bool LoadBatteryBackedRAM(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::vector<uint8_t>& PRGRAMContent);
+
+    void SaveStateToFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::string filepath, NESState& state);
+    void QuickSaveStateToFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, unsigned int slot, NESState& state);
+    NESState LoadStateFromFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, std::string filepath);
+    NESState QuickLoadStateFromFile(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum, unsigned int slot);
 }

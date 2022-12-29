@@ -1,7 +1,10 @@
 #pragma once
 
-#include "BusDevice.h"
 #include <array>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
+#include "BusDevice.h"
 
 constexpr uint16_t RAM_ADDRESS_START = 0x0;
 constexpr uint16_t RAM_PHYSICAL_SIZE = 0x800;
@@ -10,7 +13,16 @@ constexpr uint16_t RAM_ADDRESS_END = RAM_ADDRESS_START + RAM_NUM_MIRRORS * RAM_P
 
 struct RAMState {
 	RAMState();
+
 	std::array<uint8_t, RAM_PHYSICAL_SIZE> content;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& content;
+	}
 };
 
 class RAMDevice : public BusDevice {

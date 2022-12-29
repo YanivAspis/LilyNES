@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "../BusDevice.h"
 
 constexpr uint16_t OAMDMA_ADDRESS = 0x4014;
@@ -15,6 +18,18 @@ struct OAMDMAState {
 	uint8_t loadedOAMData;
 	unsigned int cyclesRemaining;
 	unsigned int cpuCycleCount;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& page;
+		ar& readAddressLow;
+		ar& loadedOAMData;
+		ar& cyclesRemaining;
+		ar& cpuCycleCount;
+	}
 };
 
 class OAMDMADevice : public BusDevice {

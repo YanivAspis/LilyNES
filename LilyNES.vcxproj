@@ -78,13 +78,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SDLDir)/include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(SDLDir)/lib/x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BoostDir);$(SDLDir)/include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(BoostDir)/stage/lib;$(SDLDir)/lib/x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SDLDir)/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SDLDir)/lib/x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BoostDir);$(SDLDir)/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BoostDir)/stage/lib;$(SDLDir)/lib/x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

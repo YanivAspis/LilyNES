@@ -4,6 +4,10 @@
 #include <array>
 #include <map>
 #include <functional>
+
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "../Bus.h"
 #include "CPUInstruction.h"
 
@@ -53,6 +57,7 @@ union CPUStatusRegister {
 
 struct CurrentInstruction {
 	CurrentInstruction();
+
 	InstructionMnemonic mnemonic;
 	AddressingMode addressMode;
 	uint16_t instructionAddress;
@@ -62,6 +67,22 @@ struct CurrentInstruction {
 	unsigned int cycles;
 	bool reset;
 	bool interrupt;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& mnemonic;
+		ar& addressMode;
+		ar& instructionAddress;
+		ar& targetAddress;
+		ar& accumulatorMode;
+		ar& length;
+		ar& cycles;
+		ar& reset;
+		ar& interrupt;
+	}
 };
 
 
@@ -82,6 +103,27 @@ struct CPUState {
 	unsigned int cycleCount;
 
 	CPUState();
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& regA;
+		ar& regX;
+		ar& regY;
+		ar& regS;
+		ar& regPC;
+		ar& regP.value;
+
+		ar& cyclesRemaining;
+		ar& irqPending;
+		ar& nmiRaised;
+
+		ar& instructionFirstCycle;
+		ar& currInstruction;
+		ar& cycleCount;
+	}
 };
 
 

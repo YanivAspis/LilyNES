@@ -49,6 +49,18 @@ struct Mapper004State : public MapperAdditionalState {
 	uint8_t irqLatchValue;
 	bool irqReload;
 	bool irqEnabled;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive ar, const unsigned int version) {
+		ar& A12State;
+		ar& irqCounter;
+		ar& irqLatchValue;
+		ar& irqReload;
+		ar& irqEnabled;
+	}
+
 };
 
 class Mapper004 : public Cartridge {

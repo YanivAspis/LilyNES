@@ -1,10 +1,47 @@
 #include "OAM.h"
 
+OAMEntryState::OAMEntryState() {
+	y = OAM_INITIAL_VALUE;
+	tileID = 0;
+	attribute = 0;
+	x = 0;
+}
+
+OAMEntryState::OAMEntryState(const OAMEntry& entry) {
+	y = entry.y;
+	tileID = entry.tileID;
+	attribute = entry.attribute.value;
+	x = entry.x;
+}
+
+OAMEntryState& OAMEntryState::operator=(const OAMEntry& entry) {
+	y = entry.y;
+	tileID = entry.tileID;
+	attribute = entry.attribute.value;
+	x = entry.x;
+	return *this;
+}
+
 OAMEntry::OAMEntry() {
 	y = OAM_INITIAL_VALUE;
 	tileID = 0;
 	attribute.value = 0;
 	x = 0;
+}
+
+OAMEntry::OAMEntry(const OAMEntryState& entry) {
+	y = entry.y;
+	tileID = entry.tileID;
+	attribute.value = entry.attribute;
+	x = entry.x;
+}
+
+OAMEntry& OAMEntry::operator=(const OAMEntryState& entry) {
+	y = entry.y;
+	tileID = entry.tileID;
+	attribute.value = entry.attribute;
+	x = entry.x;
+	return *this;
 }
 
 // OAM Entries are unspecified on power/reset. I'll set them all to 0
@@ -62,12 +99,16 @@ void OAM::Write(uint8_t address, uint8_t data) {
 
 OAMState OAM::GetState() const {
 	OAMState state;
-	state.entries = m_entries;
+	for (size_t i = 0; i < OAM_NUM_SPRITES; i++) {
+		state.entries[i] = m_entries[i];
+	}
 	return state;
 }
 
 void OAM::LoadState(OAMState& state) {
-	m_entries = state.entries;
+	for (size_t i = 0; i < OAM_NUM_SPRITES; i++) {
+		m_entries[i] = state.entries[i];
+	}
 }
 
 // used to address OAM for enrties (0-63)

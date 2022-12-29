@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "BusDevice.h"
 #include "../Environment.h"
 
@@ -32,6 +35,16 @@ struct ControllerState {
 	uint8_t controller1Latch;
 	uint8_t controller2Latch;
 	bool latchFillToggle;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& controller1Latch;
+		ar& controller2Latch;
+		ar& latchFillToggle;
+	}
 };
 
 class ControllerDevice : public BusDevice {

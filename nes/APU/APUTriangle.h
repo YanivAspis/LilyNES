@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 constexpr uint8_t APU_TRIANGLE_MIN_TIMER_VALUE = 2;
 constexpr uint16_t APU_TRIANGLE_MAX_TIMER_VALUE = 0x7FF;
@@ -44,6 +46,24 @@ struct APUTriangleState {
 	size_t waveformIndex;
 
 	bool silenced;
+
+private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version)
+	{
+		ar& counterParameters.value;
+		ar& timerLow;
+		ar& timerHighLengthCounter.value;
+
+		ar& timer;
+		ar& linearCounter;
+		ar& linearCounterReloadFlag;
+		ar& lengthCounter;
+		ar& waveformIndex;
+
+		ar& silenced;
+	}
 };
 
 
