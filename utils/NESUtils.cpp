@@ -343,6 +343,9 @@ namespace NESUtils {
 	std::vector<unsigned int> GetSaveStateSlotsAvailable(std::array<uint8_t, MD5::CHECKSUM_SIZE> checksum) {
 		std::vector<unsigned int> slots;
 		std::string saveStatePath = "save/state/" + MD5::ChecksumToString(checksum) + "/";
+		if (! boost::filesystem::exists(saveStatePath)) {
+			return slots;
+		}
 
 		// Find all sav files
 		boost::filesystem::directory_iterator endIt;
