@@ -15,6 +15,8 @@
 #include "../Environment.h"
 
 constexpr int PERIOD_BATTERY_BACKED_RAM_SAVE_MILLISECONDS = 60000;
+constexpr int PERIOD_REWIND_SAVE_MILLISECONDS = 1000;
+constexpr size_t REWIND_TAPE_MAX_SIZE = 300;
 
 class wxEmulationThread;
 enum EMULATION_RUNNING_MODE;
@@ -55,8 +57,14 @@ public:
 	void SelectNextPalette();
 	void ClearDisplay();
 	void OnPRGRAMSaveTick(wxTimerEvent& evt);
+	void OnRewindAddTick(wxTimerEvent& evt);
 	void QuickSaveState(unsigned int slot);
 	void QuickLoadState(unsigned int slot);
+
+	void RewindStartCancel();
+	void RewindLoad();
+	void RewindBack();
+	void RewindForward();
 
 
 	bool IsClosing() const;
@@ -94,6 +102,7 @@ private:
 	std::shared_ptr<INESFile> m_loadedROM;
 	wxCriticalSection m_currNESState_cs;
 	wxTimer* m_savePRGRAMTimer;
+	wxTimer* m_rewindAddTimer;
 
 	bool m_debugViewMode;
 	bool m_closingFlag;

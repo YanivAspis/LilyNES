@@ -14,6 +14,8 @@ public:
 
 	void SetDisplayPanel(wxDisplayPanel* display);
 	void UpdateDisplay(const NESPicture& picture);
+	void SetDisplayMessage(std::string message, double duration);
+	void ClearDisplayMessage();
 
 	void GetControllerInputs(uint8_t& controller1Latch, uint8_t& controller2Latch);
 

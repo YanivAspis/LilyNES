@@ -8,6 +8,7 @@
 #include "../Environment.h"
 #include "../nes/NES.h"
 #include "../SoundGenerator.h"
+#include "../RewindTape.h"
 
 
 constexpr unsigned int FRAME_INTERVAL_NANOSECONDS = 16666667;
@@ -32,7 +33,13 @@ enum EMULATION_USER_REQUEST {
 	EMULATION_USER_REQUEST_HARD_RESET,
 
 	EMULATION_USER_REQUEST_SAVE_STATE,
-	EMULATION_USER_REQUEST_LOAD_STATE
+	EMULATION_USER_REQUEST_LOAD_STATE,
+
+	EMULATION_USER_REQUEST_REWIND_START,
+	EMULATION_USER_REQUEST_REWIND_CANCEL,
+	EMULATION_USER_REQUEST_REWIND_LOAD,
+	EMULATION_USER_REQUEST_REWIND_BACK,
+	EMULATION_USER_REQUEST_REWIND_FORWARD
 };
 
 enum EMULATION_USER_DEBUG_REQUEST {
@@ -56,7 +63,7 @@ wxDECLARE_EVENT(EVT_NES_STATE_THREAD_UPDATE, wxThreadEvent);
 
 class wxEmulationThread : public wxThread {
 public:
-	wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* enviroment);
+	wxEmulationThread(wxMainFrame* mainFrame, wxSemaphore* exitNotice, Environment* environment, size_t rewindTapeMaxSize);
 	~wxEmulationThread();
 	virtual void* Entry() wxOVERRIDE;
 	virtual void OnExit() wxOVERRIDE;
@@ -74,6 +81,8 @@ public:
 	float GetAudioSample();
 
 	bool IsEmulationRunning() const;
+	bool IsInRewind();
+	void RewindAddState();
 
 private:
 	void Setup();
@@ -88,19 +97,21 @@ private:
 	void EmulationWait();
 
 	void PostEmulationEvent(EMULATION_EVENT evt);
-	void HandelEmulationEvents();
+	void HandleEmulationEvents();
 	void HandleUserRequest();
+	void HandleRewindFlags();
 	void DoPause();
 	void DoUserDebugRequestRun();
 	void DoContinuousNoSoundRun();
 	void DoContinuousSoundRun();
 
+	Environment* m_environment;
 	NES m_nes;
 	std::chrono::time_point<std::chrono::steady_clock> m_sleepTargetTime;
 	SoundGenerator* m_soundGenerator;
 	double m_cyclesRemainingForAudio;
 	wxCriticalSection m_audioCritSection;
-	bool m_soundModeReady;
+	//bool m_soundModeReady;
 
 
 	EMULATION_RUNNING_MODE m_runningMode;
@@ -125,6 +136,14 @@ private:
 	std::array<NESState, 8> m_saveState;
 	unsigned int m_saveStateSlot;
 	std::array<bool, 8> m_saveStateValid;
+
+	RewindTape m_rewindTape;
+	bool m_rewindStartFlag;
+	EMULATION_RUNNING_MODE m_rewindPreviousRunningMode;
+	bool m_inRewind;
+	wxCriticalSection m_inRewindCritSection;
+	bool m_rewindAddFlag;
+	wxCriticalSection m_rewindAddFlagCritSection;
 
 	IllegalInstructionException m_illegalEx;
 	

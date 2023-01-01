@@ -39,6 +39,14 @@ void Environment::UpdateDisplay(const NESPicture& picture) {
 	m_display->SetImage(picture);
 }
 
+void Environment::SetDisplayMessage(std::string message, double duration) {
+	m_display->SetUserMessage(message, duration);
+}
+
+void Environment::ClearDisplayMessage() {
+	m_display->ClearUserMessage();
+}
+
 void Environment::GetControllerInputs(uint8_t& controller1Latch, uint8_t& controller2Latch) {
 	for (std::pair<const int, std::pair<NES_CONTROLLER_ID, NES_CONTROLLER_KEY>>& keyPressInfo : m_nesKeyTranslator) {
 		if (wxGetKeyState((wxKeyCode)keyPressInfo.first)) {

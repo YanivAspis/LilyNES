@@ -1,12 +1,9 @@
 #pragma once
 
-//#include <stack>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/deque.hpp>
-//#include <boost/serialization/stack.hpp>
-
 
 
 #include "../../Environment.h"
@@ -291,10 +288,11 @@ private:
 		ar& backgroundShiftRegister;
 		
 		ar& fetchedSpriteLSB;
-		ar& spritesToRender;// std::deque<SpriteRowInfo>(spritesToRender);
+		ar& spritesToRender;
 		ar& spriteLine;
 	}
 };
+
 
 class PPU2C02 : public BusDevice {
 public:
@@ -316,6 +314,8 @@ public:
 	void Clock();
 
 	unsigned int GetFrameCount() const;
+	bool IsInVBLANK() const;
+	NESPicture GetCurrentPicture() const;
 
 private:
 

@@ -218,3 +218,11 @@ unsigned int PPU2C02::GetFrameCount() const {
 	return m_frameCount;
 }
 
+bool PPU2C02::IsInVBLANK() const {
+	return m_PPUSTATUS.flags.VBlank;
+}
+
+NESPicture PPU2C02::GetCurrentPicture() const {
+	return m_picture;
+}
+

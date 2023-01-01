@@ -17,6 +17,11 @@ LilyNESApp::LilyNESApp() {
 	m_keyDownFuncs['L'] = &(wxMainFrame::RunContinuouslyWithSound);
 	m_keyDownFuncs['Y'] = &(wxMainFrame::ToggleRefreshRate);
 	m_keyDownFuncs['U'] = &(wxMainFrame::SelectNextPalette);
+	m_keyDownFuncs['R'] = &(wxMainFrame::RewindStartCancel);
+	m_keyDownFuncs['Q'] = &(wxMainFrame::RewindLoad);
+	m_keyDownFuncs['W'] = &(wxMainFrame::RewindBack);
+	m_keyDownFuncs['E'] = &(wxMainFrame::RewindForward);
+
 	
 	// User controls
 	//m_keyUpFuncs['P'] = &(wxMainFrame::SaveState);

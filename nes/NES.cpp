@@ -200,6 +200,14 @@ void NES::LoadPRGRAM(const std::vector<uint8_t>& PRGRAMContent) {
 	m_cartridge->LoadPRGRAM(PRGRAMContent);
 }
 
+bool NES::IsPictureReady() const {
+	return m_ppu.IsInVBLANK();
+}
+
+NESPicture NES::GetCurrentPicture() const {
+	return m_ppu.GetCurrentPicture();
+}
+
 uint8_t NES::ProbeCPUBus(uint16_t address) {
 	return m_cpuBus.Probe(address);
 }

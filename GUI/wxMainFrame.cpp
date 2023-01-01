@@ -15,6 +15,8 @@
 using namespace NESUtils;
 using namespace BitwiseUtils;
 
+enum {wxEVT_TIMER_SAVE_PRGRAM = 101, wxEVT_TIMER_REWIND_ADD = 102};
+
 
 enum MenuOptions {
     // File options
@@ -34,9 +36,9 @@ enum MenuOptions {
 
 wxBEGIN_EVENT_TABLE(wxMainFrame, wxFrame)
     EVT_CLOSE(wxMainFrame::OnClose)
-    EVT_MENU_OPEN(wxMainFrame::OnMenuOpen)
-    EVT_MENU_CLOSE(wxMainFrame::OnMenuClose)
-    EVT_ACTIVATE(wxMainFrame::OnWindowActivate)
+    //EVT_MENU_OPEN(wxMainFrame::OnMenuOpen)
+    //EVT_MENU_CLOSE(wxMainFrame::OnMenuClose)
+    //EVT_ACTIVATE(wxMainFrame::OnWindowActivate)
 
     EVT_MENU(wxID_LILYNES_OPEN_ROM, wxMainFrame::OnLoadROM)
     EVT_MENU(wxID_LILYNES_EXIT, wxMainFrame::OnMenuExit)
@@ -47,6 +49,9 @@ wxBEGIN_EVENT_TABLE(wxMainFrame, wxFrame)
     EVT_MENU(wxID_LILYNES_DEBUG_VIEW, wxMainFrame::OnDebugView)
     EVT_MENU(wxID_LILYNES_VIEW_ROM_INFO, wxMainFrame::OnROMInformation)
     EVT_MENU(wxID_LILYNES_TEST_CPU, wxMainFrame::OnTestCPU)
+
+    EVT_TIMER(wxEVT_TIMER_SAVE_PRGRAM, wxMainFrame::OnPRGRAMSaveTick)
+    EVT_TIMER(wxEVT_TIMER_REWIND_ADD, wxMainFrame::OnRewindAddTick)
 wxEND_EVENT_TABLE()
 
 
@@ -54,7 +59,6 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     SetIcon(wxIcon("sample"));
 
     Bind(EVT_NES_STATE_THREAD_UPDATE, &wxMainFrame::OnNESStateThreadUpdate, this);
-    Bind(wxEVT_TIMER, &wxMainFrame::OnPRGRAMSaveTick, this);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         throw SDLException("Error opening Video or Audio device.");
@@ -124,13 +128,12 @@ wxMainFrame::wxMainFrame() : wxFrame(nullptr, wxID_ANY, wxString("LilyNES")), m_
     m_mainSizer->Fit(this);
 
 
-
-
     m_environment.SetDisplayPanel(m_displayPanel);
     m_ROMInfoFrame = nullptr;
     m_emulationThread = nullptr;
     m_lastRunningMode = EMULATION_RUNNING_PAUSED;
-    m_savePRGRAMTimer = new wxTimer(this);
+    m_savePRGRAMTimer = new wxTimer(this, wxEVT_TIMER_SAVE_PRGRAM);
+    m_rewindAddTimer = new wxTimer(this, wxEVT_TIMER_REWIND_ADD);
     m_closingFlag = false;
 
     // Sound system initialization
@@ -147,7 +150,7 @@ void wxMainFrame::StartEmulation()
         return;
     }
 
-    m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice, &m_environment);
+    m_emulationThread = new wxEmulationThread(this, &m_emulationThreadExitNotice, &m_environment, REWIND_TAPE_MAX_SIZE);
 
     if (m_emulationThread->Create() != wxTHREAD_NO_ERROR) {
         m_emulationThread->Delete();
@@ -177,8 +180,9 @@ void wxMainFrame::StartEmulation()
     // Provide a bit of time for thread to set up before running the emulation
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    // Start periodic saving of battery-backed PRGRAM
+    // Start periodic saving of battery-backed PRGRAM and rewind states
     m_savePRGRAMTimer->Start(PERIOD_BATTERY_BACKED_RAM_SAVE_MILLISECONDS);
+    m_rewindAddTimer->Start(PERIOD_REWIND_SAVE_MILLISECONDS);
 
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
     //m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
@@ -355,7 +359,7 @@ void wxMainFrame::RunUntilNextCycle() {
 }
 
 void wxMainFrame::RunUntilNextInstruction() {
-    // Perhaps not thread safen
+    // Perhaps not thread safe
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_INSTRUCTION);
@@ -363,7 +367,7 @@ void wxMainFrame::RunUntilNextInstruction() {
 }
 
 void wxMainFrame::RunUntilNextScanline() {
-    // Perhaps not thread safen
+    // Perhaps not thread safe
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_SCANLINE);
@@ -371,7 +375,7 @@ void wxMainFrame::RunUntilNextScanline() {
 }
 
 void wxMainFrame::RunUntilNextFrame() {
-    // Perhaps not thread safen
+    // Perhaps not thread safe
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_USER_CONTROLLED);
         m_emulationThread->SetUserDebugRequest(EMULATION_USER_DEBUG_REQUEST_NEXT_FRAME);
@@ -379,14 +383,14 @@ void wxMainFrame::RunUntilNextFrame() {
 }
 
 void wxMainFrame::RunContinuouslyWithoutSound() {
-    // Perhaps not thread safen
+    // Perhaps not thread safe
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_NO_SOUND);
     }
 }
 
 void wxMainFrame::RunContinuouslyWithSound() {
-    // Perhaps not thread safen
+    // Perhaps not thread safe
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetRunningMode(EMULATION_RUNNING_CONTINUOUS_SOUND);
     }
@@ -411,6 +415,12 @@ void wxMainFrame::OnPRGRAMSaveTick(wxTimerEvent& evt) {
     }
 }
 
+void wxMainFrame::OnRewindAddTick(wxTimerEvent& evt) {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        m_emulationThread->RewindAddState();
+    }
+}
+
 void wxMainFrame::QuickSaveState(unsigned int slot) {
     if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
         m_emulationThread->SetSaveStateSlot(slot);
@@ -424,6 +434,40 @@ void wxMainFrame::QuickLoadState(unsigned int slot) {
         m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_LOAD_STATE);
     }
 }
+
+void wxMainFrame::RewindStartCancel() {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning()) {
+        if (m_emulationThread->IsInRewind()) {
+            m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_REWIND_CANCEL);
+            m_rewindAddTimer->Start();
+        }
+        else {
+            m_rewindAddTimer->Stop();
+            m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_REWIND_START);
+        }
+        
+    }
+}
+
+void wxMainFrame::RewindLoad() {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning() && m_emulationThread->IsInRewind()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_REWIND_LOAD);
+        m_rewindAddTimer->Start();
+    }
+}
+
+void wxMainFrame::RewindBack() {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning() && m_emulationThread->IsInRewind()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_REWIND_BACK);
+    }
+}
+
+void wxMainFrame::RewindForward() {
+    if (m_emulationThread != nullptr && m_emulationThread->IsEmulationRunning() && m_emulationThread->IsRunning() && m_emulationThread->IsInRewind()) {
+        m_emulationThread->SetUserRequest(EMULATION_USER_REQUEST_REWIND_FORWARD);
+    }
+}
+
 
 bool wxMainFrame::IsClosing() const {
     return m_closingFlag;

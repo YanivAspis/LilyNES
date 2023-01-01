@@ -225,6 +225,9 @@
     <ClCompile Include="nes\APU\APUDMC.cpp">
       <Filter>Source Files\nes\APU</Filter>
     </ClCompile>
+    <ClCompile Include="RewindTape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nes\Bus.h">
@@ -376,6 +379,9 @@
     </ClInclude>
     <ClInclude Include="nes\APU\APUDMC.h">
       <Filter>Header Files\nes\APU</Filter>
+    </ClInclude>
+    <ClInclude Include="RewindTape.h">
+      <Filter>Header Files\nes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

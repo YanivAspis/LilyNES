@@ -37,6 +37,7 @@ private:
 	}
 };
 
+
 class NametableDevice : public BusDevice {
 public:
 	NametableDevice();

@@ -202,6 +202,7 @@
     <ClCompile Include="nes\RAMDevice.cpp" />
     <ClCompile Include="nes\ROM\INESFile.cpp" />
     <ClCompile Include="nes\ROM\INESHeader.cpp" />
+    <ClCompile Include="RewindTape.cpp" />
     <ClCompile Include="SoundGenerator.cpp" />
     <ClCompile Include="utils\BitwiseUtils.cpp" />
     <ClCompile Include="utils\NESUtils.cpp" />
@@ -254,6 +255,7 @@
     <ClInclude Include="nes\RAMDevice.h" />
     <ClInclude Include="nes\ROM\INESFile.h" />
     <ClInclude Include="nes\ROM\INESHeader.h" />
+    <ClInclude Include="RewindTape.h" />
     <ClInclude Include="SoundGenerator.h" />
     <ClInclude Include="utils\BitwiseUtils.h" />
     <ClInclude Include="utils\NESUtils.h" />

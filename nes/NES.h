@@ -20,7 +20,6 @@
 #include "mappers/Cartridge.h"
 
 
-
 struct NESState {
 	NESState();
 	CPUState cpuState;
@@ -85,6 +84,9 @@ public:
 	bool PRGRAMNeedsSaving();
 	std::vector<uint8_t>& GetPRGRAM();
 	void LoadPRGRAM(const std::vector<uint8_t>& PRGRAMContent);
+
+	bool IsPictureReady() const;
+	NESPicture GetCurrentPicture() const;
 
 	// Functions for debugging
 	uint8_t ProbeCPUBus(uint16_t address);
