@@ -116,6 +116,7 @@ void wxDisplayPanel::OnImageUpdate(wxThreadEvent& evt) {
 }
 
 void wxDisplayPanel::ClearDisplay() {
+	this->ClearUserMessage();
 	SDL_RenderClear(m_renderer);
 	SDL_RenderPresent(m_renderer);
 	m_displayCleared = true;
