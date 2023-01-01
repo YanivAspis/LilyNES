@@ -36,9 +36,9 @@ enum MenuOptions {
 
 wxBEGIN_EVENT_TABLE(wxMainFrame, wxFrame)
     EVT_CLOSE(wxMainFrame::OnClose)
-    //EVT_MENU_OPEN(wxMainFrame::OnMenuOpen)
-    //EVT_MENU_CLOSE(wxMainFrame::OnMenuClose)
-    //EVT_ACTIVATE(wxMainFrame::OnWindowActivate)
+    EVT_MENU_OPEN(wxMainFrame::OnMenuOpen)
+    EVT_MENU_CLOSE(wxMainFrame::OnMenuClose)
+    EVT_ACTIVATE(wxMainFrame::OnWindowActivate)
 
     EVT_MENU(wxID_LILYNES_OPEN_ROM, wxMainFrame::OnLoadROM)
     EVT_MENU(wxID_LILYNES_EXIT, wxMainFrame::OnMenuExit)
