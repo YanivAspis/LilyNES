@@ -22,7 +22,6 @@ void RewindTape::RewindStart(const NESState& currState, const NESPicture& currPi
 	m_currState--;
 	m_currPicture = m_pictureTape.end();
 	m_currPicture--;
-	//m_display->SetUserMessage("REWIND", -1);
 }
 
 void RewindTape::RewindCancel() {
@@ -30,16 +29,16 @@ void RewindTape::RewindCancel() {
 	m_pictureTape.pop_back();
 	m_currState = m_stateTape.end();
 	m_currPicture = m_pictureTape.end();
-	//m_display->ClearUserMessage();
 }
 
 NESState RewindTape::RewindLoad() {
 	NESState state = *m_currState;
+	m_currState++;
+	m_currPicture++;
 	m_stateTape.erase(m_currState, m_stateTape.end());
 	m_pictureTape.erase(m_currPicture, m_pictureTape.end());
 	m_currState = m_stateTape.end();
 	m_currPicture = m_pictureTape.end();
-	//m_display->ClearUserMessage();
 	return state;
 
 }
