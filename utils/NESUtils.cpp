@@ -351,7 +351,7 @@ namespace NESUtils {
 		boost::filesystem::directory_iterator endIt;
 		for (boost::filesystem::directory_iterator dirIt(saveStatePath); dirIt != endIt; dirIt++) {
 			if (boost::filesystem::is_regular_file(dirIt->status())) {
-				if (boost::filesystem::extension(dirIt->path().filename()) == ".sav") {
+				if (boost::filesystem::path(dirIt->path().filename()).extension() == ".sav") {
 					std::stringstream filename;
 					filename << dirIt->path().stem();
 					slots.push_back(std::atoi(filename.str().c_str()));
