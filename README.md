@@ -1,3 +1,7 @@
+A NES emulator I wrote for my own enjoyment. Supports NTSC mappers 0-4 (about 80% of the North American library).<br/>
+Below are instructions I wrote in case I forget how to compile on Windows.<br/>
+Theoretically works on other OS since all of the libraries are cross-platform.<br/>
+
 1. Install Visual Studio Community (C++ environment)  
 2. Clone repo  
 3. Install and setup wxWidgets 3.X  
@@ -28,11 +32,19 @@
 5. Install and setup Boost:  
 	5.1. Download zip from Boost website  
 	5.2. Extract zip content to its own folder  
-	5.3. Add environtment variable "BoostDir" with the value being <boost_extracted_folder>  
+	5.3. Add environment variable "BoostDir" with the value being <boost_extracted_folder>  
 	5.4. Run bootstrap.bat in <boost_extracted_folder>, and then run b2  
 	5.5. Restart visual studio and open LilyNES solution  
 	5.6. Right click the solution in solution explorer->Properties  
 	5.7. Change configuration to All Configurations  
 	5.8. Under VC++ Directories->Include Directories add "$(BoostDir)"  
 	5.9. Under VC++ Directories->Library Directories add "$(BoostDir)/stage/lib"  
-6. Build LilyNES in release mode  
+6. Build LilyNES in release mode
+
+Features include save states (8 slots) and rewind.<br/>
+A feature I never implemented because I couldn't be bothered: changing key binding.<br/>
+So you're stuck to the default: A=X, B=Z, START=S, SELECT=A, D-PAD=directional keys.<br/>
+Save state: CTRL+#slot number (CTRL+1, CTRL+2, etc...)<br/>
+Load state: #slot number (1, 2, ...)<br/>
+Rewind keys:<br/>
+R = Start rewind/cancel rewind, W = Previous state, E = Next state, Q = Continue from current state
